@@ -8,7 +8,7 @@ A modern, internationalized web application built with Next.js, featuring authen
 - **Internationalization**: Support for multiple languages (English, French, Spanish, German, Italian)
 - **Password Management**: Forgot password and reset password flows
 - **Responsive Dashboard**: User-friendly interface that works on all devices
-- **Testing**: Comprehensive unit and end-to-end tests
+- **Testing**: Comprehensive unit tests
 
 ## Tech Stack
 
@@ -17,7 +17,7 @@ A modern, internationalized web application built with Next.js, featuring authen
 - **Database**: Prisma with SQLite (development) / PostgreSQL (production)
 - **Styling**: Tailwind CSS
 - **Internationalization**: next-intl
-- **Testing**: Jest (unit tests) and Playwright (e2e tests)
+- **Testing**: Jest (unit tests)
 - **Email**: Nodemailer with Mailjet support
 
 ## Getting Started
@@ -76,19 +76,6 @@ pnpm test:watch
 pnpm test:coverage
 ```
 
-### End-to-End Tests
-
-```bash
-# Run all e2e tests
-pnpm test:e2e
-
-# Run e2e tests with UI
-pnpm test:e2e:ui
-
-# Run e2e tests in debug mode
-pnpm test:e2e:debug
-```
-
 ## Project Structure
 
 ```
@@ -99,7 +86,6 @@ pnpm test:e2e:debug
 │   ├── locales/             # Internationalization files
 │   └── types/               # TypeScript type definitions
 ├── tests/
-│   ├── e2e/                 # End-to-end tests with Playwright
 │   └── unit/                # Unit tests with Jest
 ├── prisma/                  # Database schema and migrations
 └── public/                  # Static assets
