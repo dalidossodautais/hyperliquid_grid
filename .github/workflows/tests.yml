@@ -21,17 +21,8 @@ jobs:
           version: 8
       - name: Install dependencies
         run: pnpm install
-      - name: Run unit tests with coverage
-        run: pnpm test:coverage
-      - name: Display coverage summary
-        run: cat coverage/lcov-report/index.html | grep -o 'headerCovTableEntry.*>[0-9.]*%' | sed 's/.*>\([0-9.]*%\)<.*/\1/' || echo "No coverage summary available"
-      - name: Upload test coverage
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: coverage-report
-          path: coverage/
-          retention-days: 30
+      - name: Run unit tests
+        run: pnpm test:unit
 
   e2e-tests:
     name: E2E Tests
