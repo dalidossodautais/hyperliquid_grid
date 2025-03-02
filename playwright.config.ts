@@ -1,10 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-// Pour les tests e2e, définir la variable d'environnement
+// For e2e tests, set the environment variable
 process.env.NEXT_PUBLIC_E2E_TEST = "true";
 
 export default defineConfig({
-  testDir: "./e2e",
+  testDir: "./tests/e2e",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
