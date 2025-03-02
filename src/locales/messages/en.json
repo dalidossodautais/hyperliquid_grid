@@ -1,0 +1,11 @@
+{
+  "Index": {
+    "title": "Welcome to Hyperliquid Grid",
+    "description": "A powerful trading platform"
+  },
+  "Navigation": {
+    "home": "Home",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  }
+}
