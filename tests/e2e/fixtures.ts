@@ -1,5 +1,5 @@
-import { test as base } from "@playwright/test";
-import { authenticateUser } from "./utils";
+import { test as base, Page } from "@playwright/test";
+import { mockAuthentication } from "./utils";
 
 // Extend Playwright's fixture type to include our authenticated user
 export type AuthFixture = {
@@ -17,13 +17,20 @@ export const defaultUser: AuthFixture = {
 
 // Create an extended version of Playwright's test with our authentication fixture
 export const test = base.extend<{
-  authenticatedPage: any;
+  authenticatedPage: Page;
   authUser: AuthFixture;
 }>({
   // Define the authenticatedPage fixture
-  authenticatedPage: async ({ page, authUser }, use) => {
+  authenticatedPage: async (
+    { page, authUser },
+    use: (page: Page) => Promise<void>
+  ) => {
     // Authenticate the user before running the test
-    await authenticateUser(page, authUser);
+    await mockAuthentication(page, {
+      id: authUser.userId,
+      name: authUser.name,
+      email: authUser.email,
+    });
 
     // Provide the authenticated page to the test
     await use(page);

@@ -18,7 +18,7 @@ type Params = { locale: string };
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<Params> | Params;
+  params: Promise<Params>;
 }): Promise<Metadata> {
   try {
     // Attendre que params soit résolu
@@ -53,7 +53,7 @@ export default async function LocaleLayout({
   params,
 }: {
   children: React.ReactNode;
-  params: Promise<Params> | Params;
+  params: Promise<Params>;
 }) {
   try {
     // Attendre que params soit résolu
