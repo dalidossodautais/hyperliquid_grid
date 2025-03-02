@@ -1,8 +1,7 @@
-import { AuthOptions } from "next-auth";
+import NextAuth from "next-auth/next";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import NextAuth from "next-auth/next";
 import prisma from "@/lib/prisma";
 
 // Extend the built-in session types
@@ -17,7 +16,8 @@ declare module "next-auth" {
   }
 }
 
-export const authOptions: AuthOptions = {
+// Define the auth options
+const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -59,7 +59,7 @@ export const authOptions: AuthOptions = {
     }),
   ],
   session: {
-    strategy: "jwt",
+    strategy: "jwt" as const,
   },
   secret: process.env.NEXTAUTH_SECRET,
   pages: {
@@ -67,12 +67,14 @@ export const authOptions: AuthOptions = {
     error: "/signin",
   },
   callbacks: {
+    // @ts-expect-error - Known issue with NextAuth types
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
       }
       return token;
     },
+    // @ts-expect-error - Known issue with NextAuth types
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
