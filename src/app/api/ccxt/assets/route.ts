@@ -118,15 +118,19 @@ export async function GET(request: Request) {
       // Récupérer les balances
       const balance = await exchangeInstance.fetchBalance();
 
-      // Filtrer pour ne garder que les assets avec un solde non nul
-      const assets = Object.entries(balance.total)
-        .filter(([, amount]) => amount > 0)
-        .map(([asset, amount]) => ({
+      console.log("Balance brute:", JSON.stringify(balance, null, 2));
+
+      // Filtrer pour inclure tous les assets, même ceux avec un solde nul
+      const assets = Object.entries(balance.total || {}).map(
+        ([asset, amount]) => ({
           asset,
-          total: amount,
-          free: balance.free[asset as keyof typeof balance.free] || 0,
-          used: balance.used[asset as keyof typeof balance.used] || 0,
-        }));
+          total: amount || 0,
+          free: balance.free?.[asset as keyof typeof balance.free] || 0,
+          used: balance.used?.[asset as keyof typeof balance.used] || 0,
+        })
+      );
+
+      console.log("Assets filtrés:", JSON.stringify(assets, null, 2));
 
       return NextResponse.json(assets);
     } catch (error) {
