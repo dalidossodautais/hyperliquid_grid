@@ -3,8 +3,8 @@ import { getRequestConfig } from "next-intl/server";
 export default getRequestConfig(async ({ locale }) => {
   // Load messages for the current locale
   const messages = {
-    ...(await import(`./messages/${locale}/common.json`)).default,
-    ...(await import(`./messages/${locale}/auth.json`)).default,
+    auth: (await import(`./messages/${locale}/auth.json`)).default,
+    dashboard: (await import(`./messages/${locale}/dashboard.json`)).default,
   };
 
   return {

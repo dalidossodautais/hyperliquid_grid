@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { locales, Locale } from "@/locales/config";
+import { locales, Locale } from "@/config";
 import ClientLayout from "@/components/client-layout";
 import { Metadata } from "next";
 
@@ -67,8 +67,19 @@ export default async function LocaleLayout({
       notFound();
     }
 
+    // Load messages for the current locale
+    const [dashboardMessages, authMessages] = await Promise.all([
+      import(`@/locales/messages/${locale}/dashboard.json`),
+      import(`@/locales/messages/${locale}/auth.json`),
+    ]);
+
+    const messages = {
+      dashboard: dashboardMessages.default,
+      auth: authMessages.default,
+    };
+
     return (
-      <ClientLayout locale={locale}>
+      <ClientLayout locale={locale} messages={messages}>
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">{children}</main>
         </div>
@@ -78,8 +89,19 @@ export default async function LocaleLayout({
     console.error("Error in LocaleLayout:", error);
     // Fallback to default locale
     const defaultLocale = locales[0];
+    // Load messages for the default locale
+    const [dashboardMessages, authMessages] = await Promise.all([
+      import(`@/locales/messages/${defaultLocale}/dashboard.json`),
+      import(`@/locales/messages/${defaultLocale}/auth.json`),
+    ]);
+
+    const messages = {
+      dashboard: dashboardMessages.default,
+      auth: authMessages.default,
+    };
+
     return (
-      <ClientLayout locale={defaultLocale}>
+      <ClientLayout locale={defaultLocale} messages={messages}>
         <div className="min-h-screen flex flex-col">
           <main className="flex-1">{children}</main>
         </div>

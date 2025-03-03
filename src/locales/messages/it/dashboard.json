@@ -1,0 +1,44 @@
+{
+  "title": "Dashboard",
+  "welcome": "Benvenuto",
+  "signout": "Esci",
+  "content": {
+    "title": "Contenuto",
+    "description": "Descrizione"
+  },
+  "ccxt": {
+    "title": "Connessioni agli exchange",
+    "noConnections": "Nessuna connessione agli exchange trovata",
+    "addButton": "Aggiungi connessione",
+    "cancelButton": "Annulla",
+    "errors": {
+      "fetchFailed": "Impossibile recuperare le connessioni agli exchange",
+      "connectionFailed": "Impossibile connettersi all'exchange",
+      "invalidCredentials": "Credenziali exchange non valide",
+      "createFailed": "Impossibile creare la connessione",
+      "deleteFailed": "Impossibile eliminare la connessione"
+    },
+    "status": {
+      "connected": "Connesso",
+      "disconnected": "Disconnesso",
+      "error": "Errore"
+    },
+    "form": {
+      "name": "Nome connessione",
+      "exchange": "Exchange",
+      "apiKey": "Chiave API",
+      "apiSecret": "Segreto API",
+      "submit": "Aggiungi connessione"
+    },
+    "table": {
+      "name": "Nome",
+      "exchange": "Exchange",
+      "status": "Stato",
+      "createdAt": "Creato il",
+      "active": "Attivo",
+      "inactive": "Inattivo",
+      "delete": "Elimina",
+      "noConnections": "Nessuna connessione agli exchange trovata"
+    }
+  }
+}

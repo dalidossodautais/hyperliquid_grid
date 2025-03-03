@@ -16,7 +16,7 @@ export default function SignIn() {
     email: "",
     password: "",
   });
-  const t = useTranslations("signin");
+  const t = useTranslations("auth");
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -25,7 +25,7 @@ export default function SignIn() {
     if (name === "email") {
       if (value && !validateEmail(value)) {
         setEmailError(
-          t("email.invalid", { defaultValue: "Invalid email format" })
+          t("signin.email.invalid", { defaultValue: "Invalid email format" })
         );
       } else {
         setEmailError(null);
@@ -52,7 +52,7 @@ export default function SignIn() {
 
     if (!validateEmail(email)) {
       setEmailError(
-        t("email.invalid", { defaultValue: "Invalid email format" })
+        t("signin.email.invalid", { defaultValue: "Invalid email format" })
       );
       setLoading(false);
       return;
@@ -66,13 +66,13 @@ export default function SignIn() {
       });
 
       if (result?.error) {
-        setError(t("error.invalid"));
+        setError(t("signin.error.invalid"));
       } else {
         router.push("/dashboard");
         router.refresh();
       }
     } catch {
-      setError(t("error.generic"));
+      setError(t("signin.error.generic"));
     } finally {
       setLoading(false);
     }
@@ -84,7 +84,9 @@ export default function SignIn() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("signin.title")}
+              </h1>
             </div>
             <div className="flex items-center">
               <div className="h-10">
@@ -104,7 +106,7 @@ export default function SignIn() {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("email.label")}
+                  {t("signin.email.label")}
                 </label>
                 <div className="mt-1">
                   <input
@@ -113,7 +115,7 @@ export default function SignIn() {
                     type="email"
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("email.label")}
+                    placeholder={t("signin.email.label")}
                     value={formData.email}
                     onChange={handleChange}
                   />
@@ -128,7 +130,7 @@ export default function SignIn() {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("password")}
+                  {t("signin.password")}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -137,7 +139,7 @@ export default function SignIn() {
                     type={showPassword ? "text" : "password"}
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("password")}
+                    placeholder={t("signin.password")}
                     value={formData.password}
                     onChange={handleChange}
                   />
@@ -200,7 +202,7 @@ export default function SignIn() {
                     loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {loading ? t("loading") : t("button")}
+                  {loading ? t("signin.loading") : t("signin.button")}
                 </button>
               </div>
 
@@ -209,14 +211,16 @@ export default function SignIn() {
                   href="/signup"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  {t("noAccount")}
+                  {t("signin.noAccount")}
                 </Link>
                 <div className="mt-2">
                   <Link
                     href="/forgot-password"
                     className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
                   >
-                    {t("forgotPassword", { defaultValue: "Forgot password?" })}
+                    {t("signin.forgotPassword", {
+                      defaultValue: "Forgot password?",
+                    })}
                   </Link>
                 </div>
               </div>

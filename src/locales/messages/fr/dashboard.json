@@ -1,0 +1,54 @@
+{
+  "title": "Tableau de bord",
+  "welcome": "Bienvenue, {name}",
+  "signout": "Déconnexion",
+  "content": {
+    "title": "Contenu",
+    "description": "Description"
+  },
+  "ccxt": {
+    "title": "Connexions CCXT",
+    "noConnections": "Aucune connexion aux exchanges trouvée",
+    "addButton": "Ajouter une connexion",
+    "cancelButton": "Annuler",
+    "errors": {
+      "fetchFailed": "Impossible de récupérer les connexions",
+      "connectionFailed": "Échec de la connexion à l'exchange",
+      "invalidCredentials": "Identifiants d'exchange invalides",
+      "createFailed": "Impossible de créer la connexion",
+      "deleteFailed": "Impossible de supprimer la connexion"
+    },
+    "status": {
+      "connected": "Connecté",
+      "disconnected": "Déconnecté",
+      "error": "Erreur"
+    },
+    "form": {
+      "title": "Ajouter une nouvelle connexion",
+      "name": "Nom",
+      "exchange": "Exchange",
+      "apiKey": "Clé API",
+      "apiSecret": "Secret API",
+      "submit": "Ajouter",
+      "cancel": "Annuler",
+      "selectExchange": "Sélectionner un exchange",
+      "errors": {
+        "nameRequired": "Le nom est requis",
+        "nameLength": "Le nom doit contenir au moins 3 caractères",
+        "exchangeRequired": "L'exchange est requis",
+        "apiKeyRequired": "La clé API est requise",
+        "apiSecretRequired": "Le secret API est requis"
+      }
+    },
+    "table": {
+      "name": "Nom",
+      "exchange": "Exchange",
+      "status": "Statut",
+      "createdAt": "Créé le",
+      "delete": "Supprimer",
+      "active": "Actif",
+      "inactive": "Inactif",
+      "noConnections": "Aucune connexion trouvée"
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "title": "Panel de control",
+  "welcome": "Bienvenido",
+  "signout": "Cerrar sesión",
+  "content": {
+    "title": "Contenido",
+    "description": "Descripción"
+  },
+  "ccxt": {
+    "title": "Conexiones de intercambio",
+    "noConnections": "No se encontraron conexiones de intercambio",
+    "addButton": "Agregar conexión",
+    "cancelButton": "Cancelar",
+    "errors": {
+      "fetchFailed": "Error al obtener las conexiones de intercambio",
+      "connectionFailed": "Error al conectar con el intercambio",
+      "invalidCredentials": "Credenciales de intercambio inválidas",
+      "createFailed": "Error al crear la conexión",
+      "deleteFailed": "Error al eliminar la conexión"
+    },
+    "status": {
+      "connected": "Conectado",
+      "disconnected": "Desconectado",
+      "error": "Error"
+    },
+    "form": {
+      "name": "Nombre de la conexión",
+      "exchange": "Intercambio",
+      "apiKey": "Clave API",
+      "apiSecret": "Secreto API",
+      "submit": "Agregar conexión"
+    },
+    "table": {
+      "name": "Nombre",
+      "exchange": "Intercambio",
+      "status": "Estado",
+      "createdAt": "Creado el",
+      "active": "Activo",
+      "inactive": "Inactivo",
+      "delete": "Eliminar",
+      "noConnections": "No se encontraron conexiones de intercambio"
+    }
+  }
+}

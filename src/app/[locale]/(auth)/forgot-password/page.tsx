@@ -18,16 +18,14 @@ export default function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const t = useTranslations("forgotPassword");
+  const t = useTranslations("auth");
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setEmail(value);
 
     if (value && !validateEmail(value)) {
-      setEmailError(
-        t("email.invalid", { defaultValue: "Invalid email format" })
-      );
+      setEmailError(t("forgotPassword.error.invalidEmail"));
     } else {
       setEmailError(null);
     }
@@ -45,9 +43,7 @@ export default function ForgotPassword() {
 
     // Valider l'email
     if (!validateEmail(email)) {
-      setEmailError(
-        t("email.invalid", { defaultValue: "Invalid email format" })
-      );
+      setEmailError(t("forgotPassword.error.invalidEmail"));
       setLoading(false);
       return;
     }
@@ -72,11 +68,7 @@ export default function ForgotPassword() {
       setSuccess(true);
     } catch (error) {
       console.error(error);
-      setError(
-        t("error.generic", {
-          defaultValue: "An error occurred. Please try again.",
-        })
-      );
+      setError(t("forgotPassword.error.generic"));
     } finally {
       setLoading(false);
     }
@@ -89,7 +81,7 @@ export default function ForgotPassword() {
           <div className="flex justify-between h-16">
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">
-                {t("title", { defaultValue: "Forgot Password" })}
+                {t("forgotPassword.title")}
               </h1>
             </div>
             <div className="flex items-center">
@@ -123,35 +115,29 @@ export default function ForgotPassword() {
                   </svg>
                 </div>
                 <h2 className="text-xl font-semibold mb-2">
-                  {t("success.title", { defaultValue: "Check your email" })}
+                  {t("forgotPassword.success")}
                 </h2>
                 <p className="text-gray-600 mb-6">
-                  {t("success.message", {
-                    defaultValue:
-                      "If an account exists with this email, we've sent instructions to reset your password.",
-                  })}
+                  {t("forgotPassword.success")}
                 </p>
                 <Link
                   href="/signin"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  {t("backToSignIn", { defaultValue: "Back to Sign In" })}
+                  {t("forgotPassword.backToLogin")}
                 </Link>
               </div>
             ) : (
               <form className="space-y-6" onSubmit={handleSubmit}>
                 <div>
                   <p className="text-sm text-gray-600 mb-4">
-                    {t("instructions", {
-                      defaultValue:
-                        "Enter your email address and we'll send you a link to reset your password.",
-                    })}
+                    {t("forgotPassword.description")}
                   </p>
                   <label
                     htmlFor="email"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    {t("email.label", { defaultValue: "Email" })}
+                    {t("forgotPassword.emailLabel")}
                   </label>
                   <div className="mt-1">
                     <input
@@ -160,7 +146,7 @@ export default function ForgotPassword() {
                       type="email"
                       required
                       className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      placeholder={t("email.label", { defaultValue: "Email" })}
+                      placeholder={t("forgotPassword.emailPlaceholder")}
                       value={email}
                       onChange={handleEmailChange}
                     />
@@ -187,8 +173,10 @@ export default function ForgotPassword() {
                     }`}
                   >
                     {loading
-                      ? t("loading", { defaultValue: "Sending..." })
-                      : t("button", { defaultValue: "Send Reset Link" })}
+                      ? t("forgotPassword.loading", {
+                          defaultValue: "Sending...",
+                        })
+                      : t("forgotPassword.submitButton")}
                   </button>
                 </div>
 
@@ -197,7 +185,7 @@ export default function ForgotPassword() {
                     href="/signin"
                     className="font-medium text-blue-600 hover:text-blue-500"
                   >
-                    {t("backToSignIn", { defaultValue: "Back to Sign In" })}
+                    {t("forgotPassword.backToLogin")}
                   </Link>
                 </div>
               </form>

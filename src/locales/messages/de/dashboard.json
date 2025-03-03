@@ -1,0 +1,44 @@
+{
+  "title": "Dashboard",
+  "welcome": "Willkommen",
+  "signout": "Abmelden",
+  "content": {
+    "title": "Inhalt",
+    "description": "Beschreibung"
+  },
+  "ccxt": {
+    "title": "Börsenverbindungen",
+    "noConnections": "Keine Börsenverbindungen gefunden",
+    "addButton": "Verbindung hinzufügen",
+    "cancelButton": "Abbrechen",
+    "errors": {
+      "fetchFailed": "Fehler beim Abrufen der Börsenverbindungen",
+      "connectionFailed": "Verbindung zur Börse fehlgeschlagen",
+      "invalidCredentials": "Ungültige Börsenanmeldedaten",
+      "createFailed": "Fehler beim Erstellen der Verbindung",
+      "deleteFailed": "Fehler beim Löschen der Verbindung"
+    },
+    "status": {
+      "connected": "Verbunden",
+      "disconnected": "Getrennt",
+      "error": "Fehler"
+    },
+    "form": {
+      "name": "Verbindungsname",
+      "exchange": "Börse",
+      "apiKey": "API-Schlüssel",
+      "apiSecret": "API-Geheimnis",
+      "submit": "Verbindung hinzufügen"
+    },
+    "table": {
+      "name": "Name",
+      "exchange": "Börse",
+      "status": "Status",
+      "createdAt": "Erstellt am",
+      "active": "Aktiv",
+      "inactive": "Inaktiv",
+      "delete": "Löschen",
+      "noConnections": "Keine Börsenverbindungen gefunden"
+    }
+  }
+}
