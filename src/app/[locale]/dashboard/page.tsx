@@ -229,9 +229,12 @@ export default function Dashboard() {
 
   const fetchAssets = async (connectionId: string) => {
     try {
+      console.log("Fetching assets for connection:", connectionId);
       setLoadingAssets(connectionId);
       const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
       const data = await response.json();
+
+      console.log("Assets response:", data);
 
       if (!response.ok) {
         console.error("Error response:", data);
@@ -243,6 +246,8 @@ export default function Dashboard() {
           conn.id === connectionId ? { ...conn, assets: data } : conn
         )
       );
+
+      console.log("Updated connections:", connections);
     } catch (error) {
       console.error("Error fetching assets:", error);
     } finally {
