@@ -20,15 +20,15 @@ model User {
 }
 
 model ExchangeConnection {
-  id         String   @id @default(cuid())
-  name       String   // Nom de la connexion donné par l'utilisateur
-  exchange   String   // Nom de l'exchange (ex: binance, kraken)
-  key        String   // Clé API ou adresse wallet
-  secret     String?  // Secret API (optionnel pour les wallets)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-  userId     String
-  User       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(cuid())
+  name      String
+  exchange  String
+  key       String
+  secret    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    String
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, exchange, key])
   @@index([userId])
