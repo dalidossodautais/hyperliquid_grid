@@ -17,6 +17,22 @@ interface ExchangeConfig {
   };
 }
 
+// Interface pour les balances agrégées
+interface AggregatedBalances {
+  total: Record<string, number>;
+  free: Record<string, number>;
+  used: Record<string, number>;
+  [key: string]: Record<string, number> | unknown;
+}
+
+// Type pour les balances d'un portefeuille spécifique
+type WalletBalance = {
+  free?: Record<string, number>;
+  used?: Record<string, number>;
+  total?: Record<string, number>;
+  [key: string]: Record<string, number> | unknown;
+};
+
 // Récupérer les assets d'une connexion
 export async function GET(request: Request) {
   try {
@@ -134,36 +150,169 @@ export async function GET(request: Request) {
       }
 
       // Récupérer les balances
-      let balance;
+      let balance: WalletBalance;
+      const allBalances: AggregatedBalances = {
+        total: {},
+        free: {},
+        used: {},
+      };
+
       try {
-        // Essayer d'abord avec des paramètres spécifiques pour le spot
-        balance = await exchangeInstance.fetchBalance({ type: "spot" });
-      } catch (error) {
-        console.warn(
-          "Erreur lors de la récupération des balances spot avec paramètres:",
-          error
-        );
-        try {
-          // Si ça échoue, essayer sans paramètres
-          balance = await exchangeInstance.fetchBalance();
-        } catch (secondError) {
-          console.error(
-            "Erreur lors de la récupération des balances:",
-            secondError
-          );
-          throw secondError;
+        // Essayer de récupérer les balances de tous les types de portefeuilles
+        const walletTypes = [
+          "spot",
+          "margin",
+          "future",
+          "futures",
+          "swap",
+          "funding",
+        ];
+
+        // Pour Hyperliquid, on utilise uniquement swap
+        if (exchangeId === "hyperliquid") {
+          balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
+          if (balance.total) {
+            allBalances.total = { ...balance.total };
+            allBalances.free = { ...(balance.free || {}) };
+            allBalances.used = { ...(balance.used || {}) };
+          }
+        } else {
+          // Pour les autres exchanges, essayer tous les types de portefeuilles
+          for (const type of walletTypes) {
+            try {
+              console.log(
+                `Tentative de récupération des balances pour le portefeuille ${type}...`
+              );
+              const typeBalance = (await exchangeInstance.fetchBalance({
+                type,
+              })) as WalletBalance;
+
+              // Traiter les balances de ce type de portefeuille
+              if (typeBalance && typeBalance.total) {
+                Object.keys(typeBalance.total).forEach((asset) => {
+                  const assetKey = asset;
+                  const amount = typeBalance.total?.[asset] || 0;
+                  const numAmount =
+                    typeof amount === "string"
+                      ? parseFloat(amount)
+                      : Number(amount);
+
+                  // Si l'asset existe déjà, additionner les montants
+                  if (assetKey in allBalances.total) {
+                    allBalances.total[assetKey] =
+                      (allBalances.total[assetKey] || 0) + numAmount;
+
+                    if (typeBalance.free && asset in typeBalance.free) {
+                      const freeAmount = typeBalance.free[asset];
+                      const numFreeAmount =
+                        typeof freeAmount === "string"
+                          ? parseFloat(freeAmount)
+                          : Number(freeAmount);
+                      allBalances.free[assetKey] =
+                        (allBalances.free[assetKey] || 0) + numFreeAmount;
+                    }
+
+                    if (typeBalance.used && asset in typeBalance.used) {
+                      const usedAmount = typeBalance.used[asset];
+                      const numUsedAmount =
+                        typeof usedAmount === "string"
+                          ? parseFloat(usedAmount)
+                          : Number(usedAmount);
+                      allBalances.used[assetKey] =
+                        (allBalances.used[assetKey] || 0) + numUsedAmount;
+                    }
+                  } else {
+                    // Sinon, initialiser les valeurs
+                    allBalances.total[assetKey] = numAmount;
+
+                    if (typeBalance.free && asset in typeBalance.free) {
+                      const freeAmount = typeBalance.free[asset];
+                      allBalances.free[assetKey] =
+                        typeof freeAmount === "string"
+                          ? parseFloat(freeAmount)
+                          : Number(freeAmount);
+                    } else {
+                      allBalances.free[assetKey] = 0;
+                    }
+
+                    if (typeBalance.used && asset in typeBalance.used) {
+                      const usedAmount = typeBalance.used[asset];
+                      allBalances.used[assetKey] =
+                        typeof usedAmount === "string"
+                          ? parseFloat(usedAmount)
+                          : Number(usedAmount);
+                    } else {
+                      allBalances.used[assetKey] = 0;
+                    }
+                  }
+                });
+              }
+
+              console.log(`Balances récupérées pour le portefeuille ${type}`);
+            } catch (typeError: unknown) {
+              const errorMessage =
+                typeError instanceof Error
+                  ? typeError.message
+                  : String(typeError);
+              console.warn(
+                `Impossible de récupérer les balances pour le type ${type}:`,
+                errorMessage
+              );
+            }
+          }
         }
+
+        // Si aucune balance n'a été récupérée, essayer sans paramètres
+        if (Object.keys(allBalances.total).length === 0) {
+          console.log(
+            "Tentative de récupération des balances sans spécifier de type..."
+          );
+          balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
+
+          if (balance.total) {
+            Object.keys(balance.total).forEach((asset) => {
+              const amount = balance.total?.[asset] || 0;
+              allBalances.total[asset] =
+                typeof amount === "string"
+                  ? parseFloat(amount)
+                  : Number(amount);
+
+              if (balance.free && asset in balance.free) {
+                const freeAmount = balance.free[asset];
+                allBalances.free[asset] =
+                  typeof freeAmount === "string"
+                    ? parseFloat(freeAmount)
+                    : Number(freeAmount);
+              } else {
+                allBalances.free[asset] = 0;
+              }
+
+              if (balance.used && asset in balance.used) {
+                const usedAmount = balance.used[asset];
+                allBalances.used[asset] =
+                  typeof usedAmount === "string"
+                    ? parseFloat(usedAmount)
+                    : Number(usedAmount);
+              } else {
+                allBalances.used[asset] = 0;
+              }
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Erreur lors de la récupération des balances:", error);
+        throw error;
       }
 
-      console.log("Balance brute:", JSON.stringify(balance, null, 2));
+      console.log("Balances brutes:", JSON.stringify(allBalances, null, 2));
 
       // Filtrer pour inclure tous les assets, même ceux avec un solde nul
-      const assets = Object.entries(balance.total || {}).map(
+      const assets = Object.entries(allBalances.total || {}).map(
         ([asset, amount]) => ({
           asset,
           total: amount || 0,
-          free: balance.free?.[asset as keyof typeof balance.free] || 0,
-          used: balance.used?.[asset as keyof typeof balance.used] || 0,
+          free: allBalances.free?.[asset as keyof typeof allBalances.free] || 0,
+          used: allBalances.used?.[asset as keyof typeof allBalances.used] || 0,
         })
       );
 
