@@ -16,7 +16,21 @@
       "connectionFailed": "Impossibile connettersi all'exchange",
       "invalidCredentials": "Credenziali exchange non valide",
       "createFailed": "Impossibile creare la connessione",
-      "deleteFailed": "Impossibile eliminare la connessione"
+      "deleteFailed": "Impossibile eliminare la connessione",
+      "UNAUTHORIZED": "Non sei autorizzato a eseguire questa azione",
+      "MISSING_ID": "ID connessione mancante",
+      "CONNECTION_NOT_FOUND": "Connessione non trovata",
+      "DELETE_FAILED": "Impossibile eliminare la connessione",
+      "INTERNAL_ERROR": "Si è verificato un errore interno",
+      "USER_NOT_FOUND": "Utente non trovato",
+      "VALIDATION_ERROR": "Errore di validazione dei dati",
+      "INVALID_CREDENTIALS": "Credenziali exchange non valide",
+      "INVALID_WALLET": "L'indirizzo del wallet non è valido o inaccessibile",
+      "EXCHANGE_NOT_SUPPORTED": "Questo exchange non è supportato",
+      "EXCHANGE_ERROR": "Errore durante la comunicazione con l'exchange",
+      "EXCHANGE_CONFIG_ERROR": "Errore di configurazione dell'exchange",
+      "CONNECTION_ERROR": "Errore di connessione all'exchange",
+      "UNKNOWN_ERROR": "Si è verificato un errore sconosciuto"
     },
     "status": {
       "connected": "Connesso",

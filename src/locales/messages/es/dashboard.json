@@ -16,7 +16,21 @@
       "connectionFailed": "Error al conectar con el intercambio",
       "invalidCredentials": "Credenciales de intercambio inválidas",
       "createFailed": "Error al crear la conexión",
-      "deleteFailed": "Error al eliminar la conexión"
+      "deleteFailed": "Error al eliminar la conexión",
+      "UNAUTHORIZED": "No está autorizado para realizar esta acción",
+      "MISSING_ID": "Falta el ID de conexión",
+      "CONNECTION_NOT_FOUND": "Conexión no encontrada",
+      "DELETE_FAILED": "Error al eliminar la conexión",
+      "INTERNAL_ERROR": "Se ha producido un error interno",
+      "USER_NOT_FOUND": "Usuario no encontrado",
+      "VALIDATION_ERROR": "Error de validación de datos",
+      "INVALID_CREDENTIALS": "Credenciales de intercambio inválidas",
+      "INVALID_WALLET": "La dirección de la cartera es inválida o inaccesible",
+      "EXCHANGE_NOT_SUPPORTED": "Este intercambio no es compatible",
+      "EXCHANGE_ERROR": "Error al comunicarse con el intercambio",
+      "EXCHANGE_CONFIG_ERROR": "Error de configuración del intercambio",
+      "CONNECTION_ERROR": "Error de conexión al intercambio",
+      "UNKNOWN_ERROR": "Se ha producido un error desconocido"
     },
     "status": {
       "connected": "Conectado",

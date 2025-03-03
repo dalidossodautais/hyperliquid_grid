@@ -16,7 +16,21 @@
       "connectionFailed": "Verbindung zur Börse fehlgeschlagen",
       "invalidCredentials": "Ungültige Börsenanmeldedaten",
       "createFailed": "Fehler beim Erstellen der Verbindung",
-      "deleteFailed": "Fehler beim Löschen der Verbindung"
+      "deleteFailed": "Fehler beim Löschen der Verbindung",
+      "UNAUTHORIZED": "Sie sind nicht berechtigt, diese Aktion auszuführen",
+      "MISSING_ID": "Verbindungs-ID fehlt",
+      "CONNECTION_NOT_FOUND": "Verbindung nicht gefunden",
+      "DELETE_FAILED": "Fehler beim Löschen der Verbindung",
+      "INTERNAL_ERROR": "Ein interner Fehler ist aufgetreten",
+      "USER_NOT_FOUND": "Benutzer nicht gefunden",
+      "VALIDATION_ERROR": "Fehler bei der Datenvalidierung",
+      "INVALID_CREDENTIALS": "Ungültige Börsenanmeldedaten",
+      "INVALID_WALLET": "Die Wallet-Adresse ist ungültig oder nicht zugänglich",
+      "EXCHANGE_NOT_SUPPORTED": "Diese Börse wird nicht unterstützt",
+      "EXCHANGE_ERROR": "Fehler bei der Kommunikation mit der Börse",
+      "EXCHANGE_CONFIG_ERROR": "Fehler bei der Konfiguration der Börse",
+      "CONNECTION_ERROR": "Fehler bei der Verbindung zur Börse",
+      "UNKNOWN_ERROR": "Ein unbekannter Fehler ist aufgetreten"
     },
     "status": {
       "connected": "Verbunden",
