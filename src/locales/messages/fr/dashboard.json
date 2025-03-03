@@ -12,11 +12,21 @@
     "addButton": "Ajouter une connexion",
     "cancelButton": "Annuler",
     "errors": {
-      "fetchFailed": "Impossible de récupérer les connexions",
-      "connectionFailed": "Échec de la connexion à l'exchange",
-      "invalidCredentials": "Identifiants d'exchange invalides",
-      "createFailed": "Impossible de créer la connexion",
-      "deleteFailed": "Impossible de supprimer la connexion"
+      "INTERNAL_ERROR": "Une erreur interne est survenue",
+      "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action",
+      "USER_NOT_FOUND": "Utilisateur non trouvé",
+      "VALIDATION_ERROR": "Erreur de validation des données",
+      "INVALID_CREDENTIALS": "Les identifiants de l'exchange sont invalides",
+      "INVALID_WALLET": "L'adresse du wallet est invalide ou inaccessible",
+      "CREATE_FAILED": "Impossible de créer la connexion",
+      "DELETE_FAILED": "Impossible de supprimer la connexion",
+      "CONNECTION_NOT_FOUND": "Connexion introuvable ou non autorisée",
+      "MISSING_ID": "L'identifiant de la connexion est requis",
+      "EXCHANGE_NOT_SUPPORTED": "Cet exchange n'est pas supporté",
+      "EXCHANGE_ERROR": "Erreur lors de la communication avec l'exchange",
+      "EXCHANGE_CONFIG_ERROR": "Erreur de configuration de l'exchange",
+      "CONNECTION_ERROR": "Erreur de connexion à l'exchange",
+      "UNKNOWN_ERROR": "Une erreur inconnue est survenue"
     },
     "status": {
       "connected": "Connecté",
