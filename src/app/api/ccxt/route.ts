@@ -287,10 +287,10 @@ export async function POST(request: Request) {
     try {
       const connection = await prisma.exchangeConnection.create({
         data: {
+          name: validatedData.name,
           exchange: validatedData.exchange,
-          identifier: validatedData.key,
-          apiSecret: validatedData.secret || "",
-          isActive: true,
+          key: validatedData.key,
+          secret: validatedData.secret,
           userId: user.id,
         },
       });
