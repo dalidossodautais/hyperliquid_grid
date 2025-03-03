@@ -119,7 +119,11 @@ export default function Dashboard() {
           window.location.href = data.redirect;
           return;
         }
-        throw new Error(t(`ccxt.errors.${data.code}`));
+        if (data.message) {
+          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
+        } else {
+          throw new Error(t(`ccxt.errors.${data.code}`));
+        }
       }
 
       setConnections((prev) => [...prev, data]);
@@ -131,6 +135,7 @@ export default function Dashboard() {
         secret: "",
       });
     } catch (error) {
+      console.error("Detailed error:", error);
       setError(
         error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
       );

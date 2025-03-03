@@ -273,10 +273,55 @@ export async function POST(request: Request) {
       return NextResponse.json(connection);
     } catch (error) {
       console.error("Database error:", error);
+      // Amélioration de la gestion des erreurs pour identifier le problème spécifique
+      if (error instanceof Error) {
+        // Vérifier s'il s'agit d'une erreur de contrainte unique
+        if (error.message.includes("Unique constraint failed")) {
+          return NextResponse.json(
+            {
+              code: "DUPLICATE_CONNECTION",
+              message:
+                "Une connexion avec ce nom ou ces identifiants existe déjà",
+            },
+            { status: 400 }
+          );
+        }
+
+        // Vérifier s'il s'agit d'une erreur de champ manquant
+        if (error.message.includes("Field required")) {
+          return NextResponse.json(
+            {
+              code: "MISSING_FIELD",
+              message: error.message,
+            },
+            { status: 400 }
+          );
+        }
+
+        // Autres erreurs avec message détaillé
+        return NextResponse.json(
+          {
+            code: "CREATE_FAILED",
+            message: error.message,
+          },
+          { status: 500 }
+        );
+      }
+
       return NextResponse.json({ code: "CREATE_FAILED" }, { status: 500 });
     }
   } catch (error) {
     console.error("POST error:", error);
+    // Amélioration de la gestion des erreurs générales
+    if (error instanceof Error) {
+      return NextResponse.json(
+        {
+          code: "CREATE_FAILED",
+          message: error.message,
+        },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ code: "CREATE_FAILED" }, { status: 500 });
   }
 }
@@ -296,9 +341,6 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ code: "MISSING_ID" }, { status: 400 });
     }
 
-    // Log the connection ID for debugging
-    console.log("Attempting to delete connection with ID:", connectionId);
-
     const connection = await prisma.exchangeConnection.findFirst({
       where: {
         id: connectionId,
@@ -309,7 +351,6 @@ export async function DELETE(request: Request) {
     });
 
     if (!connection) {
-      console.log("Connection not found for ID:", connectionId);
       return NextResponse.json(
         { code: "CONNECTION_NOT_FOUND" },
         { status: 404 }
@@ -323,15 +364,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Connection deleted successfully" });
   } catch (error) {
     console.error("Error deleting connection:", error);
-    // Return more detailed error information
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json(
-      {
-        code: "DELETE_FAILED",
-        message: errorMessage,
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ code: "DELETE_FAILED" }, { status: 500 });
   }
 }

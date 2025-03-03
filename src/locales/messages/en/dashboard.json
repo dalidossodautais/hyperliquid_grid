@@ -21,7 +21,18 @@
       "MISSING_ID": "Connection ID is missing",
       "CONNECTION_NOT_FOUND": "Connection not found",
       "DELETE_FAILED": "Failed to delete connection",
-      "INTERNAL_ERROR": "An internal error occurred"
+      "INTERNAL_ERROR": "An internal error occurred",
+      "USER_NOT_FOUND": "User not found",
+      "VALIDATION_ERROR": "Data validation error",
+      "INVALID_CREDENTIALS": "Invalid exchange credentials",
+      "INVALID_WALLET": "Wallet address is invalid or inaccessible",
+      "EXCHANGE_NOT_SUPPORTED": "This exchange is not supported",
+      "EXCHANGE_ERROR": "Error communicating with the exchange",
+      "EXCHANGE_CONFIG_ERROR": "Exchange configuration error",
+      "CONNECTION_ERROR": "Error connecting to the exchange",
+      "UNKNOWN_ERROR": "An unknown error occurred",
+      "DUPLICATE_CONNECTION": "A connection with this name or credentials already exists",
+      "MISSING_FIELD": "A required field is missing"
     },
     "status": {
       "connected": "Connected",

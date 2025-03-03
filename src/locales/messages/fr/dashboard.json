@@ -26,7 +26,9 @@
       "EXCHANGE_ERROR": "Erreur lors de la communication avec l'exchange",
       "EXCHANGE_CONFIG_ERROR": "Erreur de configuration de l'exchange",
       "CONNECTION_ERROR": "Erreur de connexion à l'exchange",
-      "UNKNOWN_ERROR": "Une erreur inconnue est survenue"
+      "UNKNOWN_ERROR": "Une erreur inconnue est survenue",
+      "DUPLICATE_CONNECTION": "Une connexion avec ce nom ou ces identifiants existe déjà",
+      "MISSING_FIELD": "Un champ requis est manquant"
     },
     "status": {
       "connected": "Connecté",
