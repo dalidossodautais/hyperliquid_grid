@@ -73,6 +73,10 @@ async function testExchangeConnection(
 
           // Tester la connexion avec le wallet
           const balance = await exchangeInstance.fetchBalance();
+          console.log(
+            "Balance fetched successfully:",
+            Object.keys(balance).length > 0
+          );
           return { isValid: true };
         } catch (error) {
           console.error("Hyperliquid error:", error);
@@ -263,10 +267,10 @@ export async function POST(request: Request) {
     try {
       const connection = await prisma.exchangeConnection.create({
         data: {
-          name: validatedData.name,
           exchange: validatedData.exchange,
-          key: validatedData.key,
-          secret: validatedData.secret,
+          identifier: validatedData.key,
+          apiSecret: validatedData.secret || "",
+          isActive: true,
           userId: user.id,
         },
       });
@@ -341,10 +345,21 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ code: "MISSING_ID" }, { status: 400 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { code: "USER_NOT_FOUND", redirect: "/signin" },
+        { status: 404 }
+      );
+    }
+
     const connection = await prisma.exchangeConnection.findFirst({
       where: {
         id: connectionId,
-        User: {
+        user: {
           email: session.user.email,
         },
       },
