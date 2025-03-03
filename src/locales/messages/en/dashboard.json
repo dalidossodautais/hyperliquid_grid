@@ -65,7 +65,8 @@
       "total": "Total",
       "free": "Available",
       "used": "Used",
-      "noAssets": "No assets found for this connection"
+      "noAssets": "No assets found for this connection",
+      "showZeroBalances": "Show zero balances"
     }
   }
 }

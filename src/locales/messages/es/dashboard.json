@@ -62,7 +62,8 @@
       "total": "Total",
       "free": "Disponible",
       "used": "Utilizado",
-      "noAssets": "No se encontraron activos para esta conexión"
+      "noAssets": "No se encontraron activos para esta conexión",
+      "showZeroBalances": "Mostrar saldos cero"
     }
   }
 }

@@ -37,6 +37,16 @@ interface FormErrors {
   secret?: string;
 }
 
+const formatAssetValue = (value: number): string => {
+  if (value === 0) return "0";
+  if (value < 0.00000001) return "<0.00000001";
+  if (value < 0.0001) return value.toFixed(8);
+  if (value < 0.01) return value.toFixed(6);
+  if (value < 1) return value.toFixed(4);
+  if (value < 1000) return value.toFixed(2);
+  return value.toFixed(2);
+};
+
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const t = useTranslations("dashboard");
@@ -56,6 +66,7 @@ export default function Dashboard() {
     null
   );
   const [loadingAssets, setLoadingAssets] = useState<string | null>(null);
+  const [showZeroBalances, setShowZeroBalances] = useState(false);
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -563,6 +574,25 @@ export default function Dashboard() {
                               ) : connection.assets &&
                                 connection.assets.length > 0 ? (
                                 <div className="overflow-x-auto">
+                                  <div className="flex justify-between items-center mb-4">
+                                    <div className="flex items-center">
+                                      <input
+                                        type="checkbox"
+                                        id={`show-zero-${connection.id}`}
+                                        checked={showZeroBalances}
+                                        onChange={() =>
+                                          setShowZeroBalances(!showZeroBalances)
+                                        }
+                                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                      />
+                                      <label
+                                        htmlFor={`show-zero-${connection.id}`}
+                                        className="text-sm text-gray-700"
+                                      >
+                                        {t("ccxt.assets.showZeroBalances")}
+                                      </label>
+                                    </div>
+                                  </div>
                                   <table className="min-w-full divide-y divide-gray-200">
                                     <thead>
                                       <tr>
@@ -581,24 +611,29 @@ export default function Dashboard() {
                                       </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                      {connection.assets.map((asset, index) => (
-                                        <tr
-                                          key={`${connection.id}-${asset.asset}-${index}`}
-                                        >
-                                          <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-black">
-                                            {asset.asset}
-                                          </td>
-                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                            {asset.total.toFixed(8)}
-                                          </td>
-                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                            {asset.free.toFixed(8)}
-                                          </td>
-                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                            {asset.used.toFixed(8)}
-                                          </td>
-                                        </tr>
-                                      ))}
+                                      {connection.assets
+                                        .filter(
+                                          (asset) =>
+                                            showZeroBalances || asset.total > 0
+                                        )
+                                        .map((asset, index) => (
+                                          <tr
+                                            key={`${connection.id}-${asset.asset}-${index}`}
+                                          >
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-black">
+                                              {asset.asset}
+                                            </td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                              {formatAssetValue(asset.total)}
+                                            </td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                              {formatAssetValue(asset.free)}
+                                            </td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                              {formatAssetValue(asset.used)}
+                                            </td>
+                                          </tr>
+                                        ))}
                                     </tbody>
                                   </table>
                                 </div>

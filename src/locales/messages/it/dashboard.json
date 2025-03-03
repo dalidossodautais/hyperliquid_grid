@@ -62,7 +62,8 @@
       "total": "Totale",
       "free": "Disponibile",
       "used": "Utilizzato",
-      "noAssets": "Nessun asset trovato per questa connessione"
+      "noAssets": "Nessun asset trovato per questa connessione",
+      "showZeroBalances": "Mostra saldi zero"
     }
   }
 }
