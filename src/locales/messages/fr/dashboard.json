@@ -28,7 +28,8 @@
       "CONNECTION_ERROR": "Erreur de connexion à l'exchange",
       "UNKNOWN_ERROR": "Une erreur inconnue est survenue",
       "DUPLICATE_CONNECTION": "Une connexion avec ce nom ou ces identifiants existe déjà",
-      "MISSING_FIELD": "Un champ requis est manquant"
+      "MISSING_FIELD": "Un champ requis est manquant",
+      "DATABASE_ERROR": "Erreur de base de données"
     },
     "status": {
       "connected": "Connecté",

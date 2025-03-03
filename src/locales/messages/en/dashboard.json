@@ -32,7 +32,8 @@
       "CONNECTION_ERROR": "Error connecting to the exchange",
       "UNKNOWN_ERROR": "An unknown error occurred",
       "DUPLICATE_CONNECTION": "A connection with this name or credentials already exists",
-      "MISSING_FIELD": "A required field is missing"
+      "MISSING_FIELD": "A required field is missing",
+      "DATABASE_ERROR": "Database error"
     },
     "status": {
       "connected": "Connected",

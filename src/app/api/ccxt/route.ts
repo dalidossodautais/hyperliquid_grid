@@ -179,16 +179,36 @@ export async function GET() {
       );
     }
 
-    const connections = await prisma.exchangeConnection.findMany({
-      where: {
-        userId: user.id,
-      },
-    });
+    try {
+      const connections = await prisma.exchangeConnection.findMany({
+        where: {
+          userId: user.id,
+        },
+      });
 
-    return NextResponse.json(connections);
+      return NextResponse.json(connections);
+    } catch (dbError) {
+      console.error("Database error in GET:", dbError);
+      return NextResponse.json(
+        {
+          code: "DATABASE_ERROR",
+          message:
+            dbError instanceof Error
+              ? dbError.message
+              : "Unknown database error",
+        },
+        { status: 500 }
+      );
+    }
   } catch (error) {
     console.error("GET error:", error);
-    return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      {
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
 
