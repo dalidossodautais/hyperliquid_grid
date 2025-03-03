@@ -24,9 +24,7 @@ export default function SignIn() {
 
     if (name === "email") {
       if (value && !validateEmail(value)) {
-        setEmailError(
-          t("signin.email.invalid", { defaultValue: "Invalid email format" })
-        );
+        setEmailError(t("signin.email.invalid"));
       } else {
         setEmailError(null);
       }
@@ -51,9 +49,7 @@ export default function SignIn() {
     const { email, password } = formData;
 
     if (!validateEmail(email)) {
-      setEmailError(
-        t("signin.email.invalid", { defaultValue: "Invalid email format" })
-      );
+      setEmailError(t("signin.email.invalid"));
       setLoading(false);
       return;
     }
@@ -218,9 +214,7 @@ export default function SignIn() {
                     href="/forgot-password"
                     className="font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
                   >
-                    {t("signin.forgotPassword", {
-                      defaultValue: "Forgot password?",
-                    })}
+                    {t("signin.forgotPassword")}
                   </Link>
                 </div>
               </div>

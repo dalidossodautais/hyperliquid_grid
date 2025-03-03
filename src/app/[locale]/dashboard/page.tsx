@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import LanguageSelector from "@/components/LanguageSelector";
 import Modal from "@/components/Modal";
 
-interface CCXTConnection {
+interface ExchangeConnection {
   id: string;
   name: string;
   exchange: string;
@@ -18,21 +18,21 @@ interface CCXTConnection {
 interface ConnectionFormData {
   name: string;
   exchange: string;
-  apiKey: string;
-  apiSecret: string;
+  key: string;
+  secret: string;
 }
 
 interface FormErrors {
   name?: string;
   exchange?: string;
-  apiKey?: string;
-  apiSecret?: string;
+  key?: string;
+  secret?: string;
 }
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const t = useTranslations("dashboard");
-  const [connections, setConnections] = useState<CCXTConnection[]>([]);
+  const [connections, setConnections] = useState<ExchangeConnection[]>([]);
   const [exchanges, setExchanges] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -41,8 +41,8 @@ export default function Dashboard() {
   const [formData, setFormData] = useState<ConnectionFormData>({
     name: "",
     exchange: "",
-    apiKey: "",
-    apiSecret: "",
+    key: "",
+    secret: "",
   });
 
   useEffect(() => {
@@ -65,15 +65,31 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchConnections = async () => {
       try {
-        const response = await fetch("/api/ccxt");
-        if (!response.ok) {
-          throw new Error(t("ccxt.errors.fetchFailed"));
+        if (!session?.user) {
+          console.log("No session or user found");
+          return;
         }
+
+        const response = await fetch("/api/ccxt");
         const data = await response.json();
+
+        if (!response.ok) {
+          console.error("Error response:", data);
+          if (data.redirect) {
+            window.location.href = data.redirect;
+            return;
+          }
+          throw new Error(t(`ccxt.errors.${data.code}`));
+        }
+
         setConnections(data);
       } catch (error) {
-        setError(t("ccxt.errors.fetchFailed"));
-        console.error(error);
+        console.error("Detailed fetch error:", error);
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError(t("ccxt.errors.INTERNAL_ERROR"));
+        }
       } finally {
         setIsLoading(false);
       }
@@ -97,23 +113,26 @@ export default function Dashboard() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || t("ccxt.errors.createFailed"));
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        throw new Error(t(`ccxt.errors.${data.code}`));
       }
 
-      const newConnection = await response.json();
-      setConnections((prev) => [...prev, newConnection]);
+      setConnections((prev) => [...prev, data]);
       setShowAddForm(false);
       setFormData({
         name: "",
         exchange: "",
-        apiKey: "",
-        apiSecret: "",
+        key: "",
+        secret: "",
       });
     } catch (error) {
       setError(
-        error instanceof Error ? error.message : t("ccxt.errors.createFailed")
+        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
       );
     }
   };
@@ -124,13 +143,20 @@ export default function Dashboard() {
         method: "DELETE",
       });
 
+      const data = await response.json();
       if (!response.ok) {
-        throw new Error(t("ccxt.errors.deleteFailed"));
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        throw new Error(t(`ccxt.errors.${data.code}`));
       }
 
       setConnections((prev) => prev.filter((conn) => conn.id !== id));
     } catch (error) {
-      setError(t("ccxt.errors.deleteFailed"));
+      setError(
+        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
+      );
       console.error(error);
     }
   };
@@ -149,12 +175,12 @@ export default function Dashboard() {
       errors.exchange = t("ccxt.form.errors.exchangeRequired");
     }
 
-    if (!data.apiKey.trim()) {
-      errors.apiKey = t("ccxt.form.errors.apiKeyRequired");
+    if (!data.key.trim()) {
+      errors.key = t("ccxt.form.errors.apiKeyRequired");
     }
 
-    if (!data.apiSecret.trim()) {
-      errors.apiSecret = t("ccxt.form.errors.apiSecretRequired");
+    if (!data.secret.trim()) {
+      errors.secret = t("ccxt.form.errors.apiSecretRequired");
     }
 
     return errors;
@@ -235,12 +261,6 @@ export default function Dashboard() {
               </button>
             </div>
 
-            {error && (
-              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                {error}
-              </div>
-            )}
-
             <Modal
               isOpen={showAddForm}
               onClose={() => {
@@ -248,8 +268,8 @@ export default function Dashboard() {
                 setFormData({
                   name: "",
                   exchange: "",
-                  apiKey: "",
-                  apiSecret: "",
+                  key: "",
+                  secret: "",
                 });
                 setFormErrors({});
                 setError(null);
@@ -257,6 +277,11 @@ export default function Dashboard() {
               title={t("ccxt.form.title")}
             >
               <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+                    {error}
+                  </div>
+                )}
                 <div>
                   <label
                     htmlFor="name"
@@ -309,45 +334,45 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <label
-                    htmlFor="apiKey"
+                    htmlFor="key"
                     className="block text-sm font-medium text-gray-800"
                   >
                     {t("ccxt.form.apiKey")}
                   </label>
                   <input
                     type="text"
-                    id="apiKey"
-                    name="apiKey"
-                    value={formData.apiKey}
+                    id="key"
+                    name="key"
+                    value={formData.key}
                     onChange={handleInputChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
                     required
                   />
-                  {formErrors.apiKey && (
+                  {formErrors.key && (
                     <p className="mt-1 text-sm text-red-600">
-                      {formErrors.apiKey}
+                      {formErrors.key}
                     </p>
                   )}
                 </div>
                 <div>
                   <label
-                    htmlFor="apiSecret"
+                    htmlFor="secret"
                     className="block text-sm font-medium text-gray-800"
                   >
                     {t("ccxt.form.apiSecret")}
                   </label>
                   <input
                     type="password"
-                    id="apiSecret"
-                    name="apiSecret"
-                    value={formData.apiSecret}
+                    id="secret"
+                    name="secret"
+                    value={formData.secret}
                     onChange={handleInputChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
                     required
                   />
-                  {formErrors.apiSecret && (
+                  {formErrors.secret && (
                     <p className="mt-1 text-sm text-red-600">
-                      {formErrors.apiSecret}
+                      {formErrors.secret}
                     </p>
                   )}
                 </div>
@@ -359,8 +384,8 @@ export default function Dashboard() {
                       setFormData({
                         name: "",
                         exchange: "",
-                        apiKey: "",
-                        apiSecret: "",
+                        key: "",
+                        secret: "",
                       });
                       setFormErrors({});
                       setError(null);

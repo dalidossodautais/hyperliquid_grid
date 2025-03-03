@@ -61,7 +61,7 @@ export default function SignUp() {
     password: "",
     confirmPassword: "",
   });
-  const t = useTranslations("signup");
+  const t = useTranslations("auth");
 
   // Gérer les changements dans les champs du formulaire
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,9 +71,7 @@ export default function SignUp() {
     // Validation en temps réel
     if (name === "email") {
       if (value && !validateEmail(value)) {
-        setEmailError(
-          t("email.invalid", { defaultValue: "Invalid email format" })
-        );
+        setEmailError(t("signup.email.invalid"));
       } else {
         setEmailError(null);
       }
@@ -83,16 +81,14 @@ export default function SignUp() {
       if (value) {
         const passwordValidation = validatePassword(value);
         if (!passwordValidation.isValid) {
-          setPasswordError(t(passwordValidation.message as string));
+          setPasswordError(t(`signup.password.${passwordValidation.message}`));
         } else {
           setPasswordError(null);
         }
 
         // Vérifier également la correspondance avec le mot de passe de confirmation
         if (formData.confirmPassword && value !== formData.confirmPassword) {
-          setConfirmPasswordError(
-            t("password.mismatch", { defaultValue: "Passwords do not match" })
-          );
+          setConfirmPasswordError(t("signup.password.mismatch"));
         } else if (formData.confirmPassword) {
           setConfirmPasswordError(null);
         }
@@ -101,9 +97,7 @@ export default function SignUp() {
 
     if (name === "confirmPassword") {
       if (value && formData.password && value !== formData.password) {
-        setConfirmPasswordError(
-          t("password.mismatch", { defaultValue: "Passwords do not match" })
-        );
+        setConfirmPasswordError(t("signup.password.mismatch"));
       } else {
         setConfirmPasswordError(null);
       }
@@ -124,9 +118,7 @@ export default function SignUp() {
 
     // Valider l'email
     if (!validateEmail(email)) {
-      setEmailError(
-        t("email.invalid", { defaultValue: "Invalid email format" })
-      );
+      setEmailError(t("signup.email.invalid"));
       setLoading(false);
       return;
     }
@@ -134,16 +126,14 @@ export default function SignUp() {
     // Vérifier la complexité du mot de passe
     const passwordValidation = validatePassword(password);
     if (!passwordValidation.isValid) {
-      setPasswordError(t(passwordValidation.message as string));
+      setPasswordError(t(`signup.password.${passwordValidation.message}`));
       setLoading(false);
       return;
     }
 
     // Vérifier que les mots de passe correspondent
     if (password !== confirmPassword) {
-      setConfirmPasswordError(
-        t("password.mismatch", { defaultValue: "Passwords do not match" })
-      );
+      setConfirmPasswordError(t("signup.password.mismatch"));
       setLoading(false);
       return;
     }
@@ -177,7 +167,7 @@ export default function SignUp() {
         router.refresh();
       }
     } catch (error) {
-      setError(t("error.generic"));
+      setError(t("signup.error.generic"));
       console.error(error);
     } finally {
       setLoading(false);
@@ -190,7 +180,9 @@ export default function SignUp() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">{t("title")}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                {t("signup.title")}
+              </h1>
             </div>
             <div className="flex items-center">
               <div className="h-10">
@@ -210,7 +202,7 @@ export default function SignUp() {
                   htmlFor="name"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("name")}
+                  {t("signup.name")}
                 </label>
                 <div className="mt-1">
                   <input
@@ -219,7 +211,7 @@ export default function SignUp() {
                     type="text"
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("name")}
+                    placeholder={t("signup.name")}
                     value={formData.name}
                     onChange={handleChange}
                   />
@@ -231,7 +223,7 @@ export default function SignUp() {
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("email.label")}
+                  {t("signup.email.label")}
                 </label>
                 <div className="mt-1">
                   <input
@@ -240,7 +232,7 @@ export default function SignUp() {
                     type="email"
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("email.label")}
+                    placeholder={t("signup.email.label")}
                     value={formData.email}
                     onChange={handleChange}
                   />
@@ -255,7 +247,7 @@ export default function SignUp() {
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("password.label", { defaultValue: "Password" })}
+                  {t("signup.password.label", { defaultValue: "Password" })}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -265,7 +257,7 @@ export default function SignUp() {
                     autoComplete="new-password"
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("password.label", {
+                    placeholder={t("signup.password.label", {
                       defaultValue: "Password",
                     })}
                     value={formData.password}
@@ -324,7 +316,9 @@ export default function SignUp() {
                   htmlFor="confirmPassword"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  {t("password.confirm", { defaultValue: "Confirm Password" })}
+                  {t("signup.password.confirm", {
+                    defaultValue: "Confirm Password",
+                  })}
                 </label>
                 <div className="mt-1 relative">
                   <input
@@ -334,7 +328,7 @@ export default function SignUp() {
                     autoComplete="new-password"
                     required
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    placeholder={t("password.confirm", {
+                    placeholder={t("signup.password.confirm", {
                       defaultValue: "Confirm Password",
                     })}
                     value={formData.confirmPassword}
@@ -404,7 +398,7 @@ export default function SignUp() {
                     loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  {loading ? t("loading") : t("button")}
+                  {loading ? t("signup.loading") : t("signup.button")}
                 </button>
               </div>
 
@@ -413,7 +407,7 @@ export default function SignUp() {
                   href="/signin"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
-                  {t("hasAccount")}
+                  {t("signup.hasAccount")}
                 </Link>
               </div>
             </form>
