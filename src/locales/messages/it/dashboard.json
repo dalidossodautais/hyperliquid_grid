@@ -52,7 +52,17 @@
       "active": "Attivo",
       "inactive": "Inattivo",
       "delete": "Elimina",
-      "noConnections": "Nessuna connessione agli exchange trovata"
+      "noConnections": "Nessuna connessione agli exchange trovata",
+      "showAssets": "Mostra asset",
+      "hideAssets": "Nascondi asset"
+    },
+    "assets": {
+      "title": "Asset disponibili",
+      "asset": "Asset",
+      "total": "Totale",
+      "free": "Disponibile",
+      "used": "Utilizzato",
+      "noAssets": "Nessun asset trovato per questa connessione"
     }
   }
 }

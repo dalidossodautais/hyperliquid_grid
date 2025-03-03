@@ -52,7 +52,17 @@
       "active": "Aktiv",
       "inactive": "Inaktiv",
       "delete": "Löschen",
-      "noConnections": "Keine Börsenverbindungen gefunden"
+      "noConnections": "Keine Börsenverbindungen gefunden",
+      "showAssets": "Assets anzeigen",
+      "hideAssets": "Assets ausblenden"
+    },
+    "assets": {
+      "title": "Verfügbare Assets",
+      "asset": "Asset",
+      "total": "Gesamt",
+      "free": "Verfügbar",
+      "used": "Verwendet",
+      "noAssets": "Keine Assets für diese Verbindung gefunden"
     }
   }
 }

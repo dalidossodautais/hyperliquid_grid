@@ -61,7 +61,17 @@
       "delete": "Supprimer",
       "active": "Actif",
       "inactive": "Inactif",
-      "noConnections": "Aucune connexion trouvée"
+      "noConnections": "Aucune connexion trouvée",
+      "showAssets": "Voir les actifs",
+      "hideAssets": "Masquer les actifs"
+    },
+    "assets": {
+      "title": "Actifs disponibles",
+      "asset": "Actif",
+      "total": "Total",
+      "free": "Disponible",
+      "used": "Utilisé",
+      "noAssets": "Aucun actif trouvé pour cette connexion"
     }
   }
 }

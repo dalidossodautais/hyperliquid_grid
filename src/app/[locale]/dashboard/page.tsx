@@ -13,6 +13,14 @@ interface ExchangeConnection {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  assets?: Asset[];
+}
+
+interface Asset {
+  asset: string;
+  total: number;
+  free: number;
+  used: number;
 }
 
 interface ConnectionFormData {
@@ -44,6 +52,10 @@ export default function Dashboard() {
     key: "",
     secret: "",
   });
+  const [expandedConnection, setExpandedConnection] = useState<string | null>(
+    null
+  );
+  const [loadingAssets, setLoadingAssets] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -213,6 +225,41 @@ export default function Dashboard() {
       ...prev,
       [name]: errors[name as keyof FormErrors],
     }));
+  };
+
+  const fetchAssets = async (connectionId: string) => {
+    try {
+      setLoadingAssets(connectionId);
+      const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        console.error("Error response:", data);
+        throw new Error(t(`ccxt.errors.${data.code}`));
+      }
+
+      setConnections((prevConnections) =>
+        prevConnections.map((conn) =>
+          conn.id === connectionId ? { ...conn, assets: data } : conn
+        )
+      );
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+    } finally {
+      setLoadingAssets(null);
+    }
+  };
+
+  const toggleConnectionExpand = (connectionId: string) => {
+    if (expandedConnection === connectionId) {
+      setExpandedConnection(null);
+    } else {
+      setExpandedConnection(connectionId);
+      const connection = connections.find((conn) => conn.id === connectionId);
+      if (connection && !connection.assets) {
+        fetchAssets(connectionId);
+      }
+    }
   };
 
   if (status === "loading" || isLoading) {
@@ -463,12 +510,24 @@ export default function Dashboard() {
                         {new Date(connection.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => handleDelete(connection.id)}
-                          className="text-red-600 hover:text-red-900 cursor-pointer"
-                        >
-                          {t("ccxt.table.delete")}
-                        </button>
+                        <div className="flex justify-end space-x-4">
+                          <button
+                            onClick={() =>
+                              toggleConnectionExpand(connection.id)
+                            }
+                            className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                          >
+                            {expandedConnection === connection.id
+                              ? t("ccxt.table.hideAssets")
+                              : t("ccxt.table.showAssets")}
+                          </button>
+                          <button
+                            onClick={() => handleDelete(connection.id)}
+                            className="text-red-600 hover:text-red-900 cursor-pointer"
+                          >
+                            {t("ccxt.table.delete")}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -481,6 +540,72 @@ export default function Dashboard() {
                         {t("ccxt.table.noConnections")}
                       </td>
                     </tr>
+                  )}
+
+                  {connections.map(
+                    (connection) =>
+                      expandedConnection === connection.id && (
+                        <tr key={`assets-${connection.id}`}>
+                          <td colSpan={5} className="px-6 py-4">
+                            <div className="bg-gray-50 p-4 rounded-lg">
+                              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                                {t("ccxt.assets.title")}
+                              </h3>
+                              {loadingAssets === connection.id ? (
+                                <div className="flex justify-center py-4">
+                                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-900"></div>
+                                </div>
+                              ) : connection.assets &&
+                                connection.assets.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full divide-y divide-gray-200">
+                                    <thead>
+                                      <tr>
+                                        <th className="px-4 py-2 bg-gray-100 text-left text-xs font-medium text-black uppercase tracking-wider">
+                                          {t("ccxt.assets.asset")}
+                                        </th>
+                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
+                                          {t("ccxt.assets.total")}
+                                        </th>
+                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
+                                          {t("ccxt.assets.free")}
+                                        </th>
+                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
+                                          {t("ccxt.assets.used")}
+                                        </th>
+                                      </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                      {connection.assets.map((asset, index) => (
+                                        <tr
+                                          key={`${connection.id}-${asset.asset}-${index}`}
+                                        >
+                                          <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-black">
+                                            {asset.asset}
+                                          </td>
+                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                            {asset.total.toFixed(8)}
+                                          </td>
+                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                            {asset.free.toFixed(8)}
+                                          </td>
+                                          <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                            {asset.used.toFixed(8)}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              ) : (
+                                <p className="text-center text-gray-500">
+                                  {t("ccxt.assets.noAssets")}
+                                </p>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      )
                   )}
                 </tbody>
               </table>

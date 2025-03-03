@@ -52,7 +52,17 @@
       "active": "Activo",
       "inactive": "Inactivo",
       "delete": "Eliminar",
-      "noConnections": "No se encontraron conexiones de intercambio"
+      "noConnections": "No se encontraron conexiones de intercambio",
+      "showAssets": "Mostrar activos",
+      "hideAssets": "Ocultar activos"
+    },
+    "assets": {
+      "title": "Activos disponibles",
+      "asset": "Activo",
+      "total": "Total",
+      "free": "Disponible",
+      "used": "Utilizado",
+      "noAssets": "No se encontraron activos para esta conexión"
     }
   }
 }

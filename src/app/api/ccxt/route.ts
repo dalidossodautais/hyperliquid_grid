@@ -379,9 +379,7 @@ export async function DELETE(request: Request) {
     const connection = await prisma.exchangeConnection.findFirst({
       where: {
         id: connectionId,
-        user: {
-          email: session.user.email,
-        },
+        userId: user.id,
       },
     });
 

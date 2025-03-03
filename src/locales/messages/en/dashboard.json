@@ -55,7 +55,17 @@
       "active": "Active",
       "inactive": "Inactive",
       "delete": "Delete",
-      "noConnections": "No exchange connections found"
+      "noConnections": "No exchange connections found",
+      "showAssets": "Show Assets",
+      "hideAssets": "Hide Assets"
+    },
+    "assets": {
+      "title": "Available Assets",
+      "asset": "Asset",
+      "total": "Total",
+      "free": "Available",
+      "used": "Used",
+      "noAssets": "No assets found for this connection"
     }
   }
 }
