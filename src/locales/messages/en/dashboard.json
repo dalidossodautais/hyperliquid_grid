@@ -16,7 +16,12 @@
       "connectionFailed": "Failed to connect to exchange",
       "invalidCredentials": "Invalid exchange credentials",
       "createFailed": "Failed to create connection",
-      "deleteFailed": "Failed to delete connection"
+      "deleteFailed": "Failed to delete connection",
+      "UNAUTHORIZED": "You are not authorized to perform this action",
+      "MISSING_ID": "Connection ID is missing",
+      "CONNECTION_NOT_FOUND": "Connection not found",
+      "DELETE_FAILED": "Failed to delete connection",
+      "INTERNAL_ERROR": "An internal error occurred"
     },
     "status": {
       "connected": "Connected",

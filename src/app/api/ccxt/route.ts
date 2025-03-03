@@ -296,6 +296,9 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ code: "MISSING_ID" }, { status: 400 });
     }
 
+    // Log the connection ID for debugging
+    console.log("Attempting to delete connection with ID:", connectionId);
+
     const connection = await prisma.exchangeConnection.findFirst({
       where: {
         id: connectionId,
@@ -306,6 +309,7 @@ export async function DELETE(request: Request) {
     });
 
     if (!connection) {
+      console.log("Connection not found for ID:", connectionId);
       return NextResponse.json(
         { code: "CONNECTION_NOT_FOUND" },
         { status: 404 }
@@ -319,6 +323,15 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ message: "Connection deleted successfully" });
   } catch (error) {
     console.error("Error deleting connection:", error);
-    return NextResponse.json({ code: "DELETE_FAILED" }, { status: 500 });
+    // Return more detailed error information
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    return NextResponse.json(
+      {
+        code: "DELETE_FAILED",
+        message: errorMessage,
+      },
+      { status: 500 }
+    );
   }
 }

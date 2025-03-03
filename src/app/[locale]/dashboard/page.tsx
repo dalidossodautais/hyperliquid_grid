@@ -149,7 +149,11 @@ export default function Dashboard() {
           window.location.href = data.redirect;
           return;
         }
-        throw new Error(t(`ccxt.errors.${data.code}`));
+        if (data.message) {
+          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
+        } else {
+          throw new Error(t(`ccxt.errors.${data.code}`));
+        }
       }
 
       setConnections((prev) => prev.filter((conn) => conn.id !== id));
@@ -157,7 +161,7 @@ export default function Dashboard() {
       setError(
         error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
       );
-      console.error(error);
+      console.error("Delete error:", error);
     }
   };
 
