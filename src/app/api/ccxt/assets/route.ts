@@ -108,6 +108,11 @@ export async function GET(request: Request) {
           defaultType: "swap",
           fetchMarkets: ["swap"],
         };
+      } else {
+        // Pour les autres exchanges, configurer pour utiliser le spot par défaut
+        config.options = {
+          defaultType: "spot",
+        };
       }
 
       // Créer l'instance de l'exchange
@@ -115,8 +120,40 @@ export async function GET(request: Request) {
         config: ExchangeConfig
       ) => Exchange)(config);
 
+      // Définir le type de marché sur spot si disponible
+      if (exchangeInstance.has["fetchBalance"]) {
+        try {
+          // Certains exchanges nécessitent de spécifier explicitement le type de compte
+          exchangeInstance.options = {
+            ...exchangeInstance.options,
+            defaultType: exchangeId === "hyperliquid" ? "swap" : "spot",
+          };
+        } catch (error) {
+          console.warn("Impossible de définir defaultType:", error);
+        }
+      }
+
       // Récupérer les balances
-      const balance = await exchangeInstance.fetchBalance();
+      let balance;
+      try {
+        // Essayer d'abord avec des paramètres spécifiques pour le spot
+        balance = await exchangeInstance.fetchBalance({ type: "spot" });
+      } catch (error) {
+        console.warn(
+          "Erreur lors de la récupération des balances spot avec paramètres:",
+          error
+        );
+        try {
+          // Si ça échoue, essayer sans paramètres
+          balance = await exchangeInstance.fetchBalance();
+        } catch (secondError) {
+          console.error(
+            "Erreur lors de la récupération des balances:",
+            secondError
+          );
+          throw secondError;
+        }
+      }
 
       console.log("Balance brute:", JSON.stringify(balance, null, 2));
 
