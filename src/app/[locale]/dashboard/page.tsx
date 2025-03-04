@@ -146,7 +146,10 @@ export default function Dashboard() {
             window.location.href = data.redirect;
             return;
           }
-          throw new Error(t(`bots.errors.${data.code}`));
+          const errorMessage = t(`bots.errors.${data.code}`, {
+            fallback: data.message || "Une erreur est survenue",
+          });
+          throw new Error(errorMessage);
         }
 
         setBots(data);

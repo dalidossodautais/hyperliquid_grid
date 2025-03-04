@@ -7,6 +7,8 @@ interface Bot {
   status: "running" | "stopped" | "error";
   createdAt: string;
   updatedAt: string;
+  baseAsset: string | null;
+  quoteAsset: string | null;
 }
 
 interface BotsTableProps {
@@ -29,6 +31,9 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
               {t("bots.table.type")}
             </th>
             <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
+              {t("bots.table.pair")}
+            </th>
+            <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
               {t("bots.table.status")}
             </th>
             <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
@@ -45,6 +50,11 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
                 {bot.type}
+              </td>
+              <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
+                {bot.baseAsset && bot.quoteAsset
+                  ? `${bot.baseAsset}/${bot.quoteAsset}`
+                  : "-"}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-sm">
                 <span
@@ -63,14 +73,12 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
                 {new Date(bot.createdAt).toLocaleDateString()}
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                <div className="flex justify-end space-x-4">
-                  <button
-                    onClick={() => onDelete(bot.id)}
-                    className="text-red-600 hover:text-red-900 cursor-pointer"
-                  >
-                    {t("delete")}
-                  </button>
-                </div>
+                <button
+                  onClick={() => onDelete(bot.id)}
+                  className="text-red-600 hover:text-red-900"
+                >
+                  {t("delete")}
+                </button>
               </td>
             </tr>
           ))}

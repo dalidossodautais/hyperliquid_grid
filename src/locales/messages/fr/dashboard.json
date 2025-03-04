@@ -138,6 +138,7 @@
     "table": {
       "name": "Nom",
       "type": "Type",
+      "pair": "Paire",
       "status": "Statut",
       "createdAt": "Créé le",
       "start": "Démarrer",
