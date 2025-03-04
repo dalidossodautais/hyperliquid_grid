@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface InputProps {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ interface InputProps {
   placeholder?: string;
   className?: string;
   unit?: string;
+  onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
 }
 
 export default function Input({
@@ -30,6 +33,7 @@ export default function Input({
   placeholder,
   className = "",
   unit,
+  onBlur,
 }: InputProps) {
   return (
     <div className={`mb-4 ${className}`}>
@@ -37,32 +41,40 @@ export default function Input({
         {label}
       </label>
       <div className="relative">
-        <input
-          type={type}
-          id={id}
-          name={name}
-          value={value}
-          onChange={onChange}
-          required={required}
-          min={min}
-          step={step}
-          disabled={disabled}
-          placeholder={placeholder}
-          className={`appearance-none block w-full px-3 py-2 border ${
-            error ? "border-red-300" : "border-gray-300"
-          } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black] ${
-            disabled ? "opacity-50 cursor-not-allowed" : ""
-          } ${unit ? "pr-14" : ""} ${
-            type === "number"
-              ? "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-              : ""
-          }`}
-        />
-        {unit && (
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <span className="text-gray-500 sm:text-sm">{unit}</span>
-          </div>
-        )}
+        <div className="flex items-center">
+          <input
+            type={type}
+            id={id}
+            name={name}
+            value={value}
+            onChange={onChange}
+            onBlur={onBlur}
+            disabled={disabled}
+            required={required}
+            min={min}
+            step={step}
+            placeholder={placeholder}
+            className={cn(
+              "block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-white text-black [color:black]",
+              error ? "border-red-300" : "border-gray-300",
+              disabled && "opacity-50 cursor-not-allowed",
+              !disabled && "hover:border-gray-400",
+              unit && "pr-12",
+              type === "number" &&
+                "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            )}
+          />
+          {unit && (
+            <span
+              className={cn(
+                "absolute right-3 text-gray-500 text-sm",
+                disabled && "opacity-50"
+              )}
+            >
+              {unit}
+            </span>
+          )}
+        </div>
       </div>
       {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
     </div>
