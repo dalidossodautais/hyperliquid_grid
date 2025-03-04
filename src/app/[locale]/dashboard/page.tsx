@@ -95,7 +95,6 @@ export default function Dashboard() {
     const fetchConnections = async () => {
       try {
         if (!session?.user) {
-          console.log("No session or user found");
           return;
         }
 
@@ -103,7 +102,6 @@ export default function Dashboard() {
         const data = await response.json();
 
         if (!response.ok) {
-          console.error("Error response:", data);
           if (data.redirect) {
             window.location.href = data.redirect;
             return;
@@ -112,8 +110,42 @@ export default function Dashboard() {
         }
 
         setConnections(data);
+
+        // Précharger les caches pour chaque connexion
+        await Promise.all(
+          data.map(async (connection: ExchangeConnection) => {
+            try {
+              // Précharger les assets pour chaque connexion
+              const assetsResponse = await fetch(
+                `/api/ccxt/assets?id=${connection.id}`
+              );
+              const assetsData = await assetsResponse.json();
+
+              if (assetsResponse.ok && assetsData) {
+                // Précharger les prix pour chaque asset
+                await Promise.all(
+                  assetsData
+                    .filter(
+                      (asset: Asset) =>
+                        asset.total > 0 && asset.asset !== "USDC"
+                    )
+                    .map(async (asset: Asset) => {
+                      try {
+                        await fetch(
+                          `/api/ccxt/price?id=${connection.id}&symbol=${asset.asset}`
+                        );
+                      } catch {
+                        // Ignorer les erreurs de préchargement des prix
+                      }
+                    })
+                );
+              }
+            } catch {
+              // Ignorer les erreurs de préchargement des assets
+            }
+          })
+        );
       } catch (error) {
-        console.error("Detailed fetch error:", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
