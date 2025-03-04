@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import ccxt, { Exchange } from "ccxt";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
-// Type pour la configuration de l'exchange
+// Type for exchange configuration
 interface ExchangeConfig {
   apiKey: string;
   secret?: string;
@@ -17,7 +17,7 @@ interface ExchangeConfig {
   };
 }
 
-// Interface pour les balances agrégées
+// Interface for aggregated balances
 interface AggregatedBalances {
   total: Record<string, number>;
   free: Record<string, number>;
@@ -25,7 +25,7 @@ interface AggregatedBalances {
   [key: string]: Record<string, number> | unknown;
 }
 
-// Type pour les balances d'un portefeuille spécifique
+// Type for specific wallet balance
 type WalletBalance = {
   free?: Record<string, number>;
   used?: Record<string, number>;
@@ -33,7 +33,7 @@ type WalletBalance = {
   [key: string]: Record<string, number> | unknown;
 };
 
-// Récupérer les assets d'une connexion
+// Retrieve assets from a connection
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Récupérer la connexion
+    // Retrieve the connection
     const connection = await prisma.exchangeConnection.findFirst({
       where: {
         id: connectionId,
@@ -93,7 +93,7 @@ export async function GET(request: Request) {
       );
     }
 
-    // Créer une instance de l'exchange
+    // Create an exchange instance
     try {
       const exchangeId = connection.exchange.toLowerCase();
       const exchangeClass = ccxt[exchangeId as keyof typeof ccxt];
@@ -105,19 +105,19 @@ export async function GET(request: Request) {
         );
       }
 
-      // Configuration de base pour l'exchange
+      // Basic configuration for the exchange
       const config: ExchangeConfig = {
         apiKey: connection.key,
         enableRateLimit: true,
         timeout: 30000,
       };
 
-      // Ajouter le secret si disponible
+      // Add secret if available
       if (connection.secret) {
         config.secret = connection.secret;
       }
 
-      // Configuration spécifique pour Hyperliquid
+      // Specific configuration for Hyperliquid
       if (exchangeId === "hyperliquid") {
         config.walletAddress = connection.key;
         config.options = {
@@ -125,31 +125,31 @@ export async function GET(request: Request) {
           fetchMarkets: ["swap"],
         };
       } else {
-        // Pour les autres exchanges, configurer pour utiliser le spot par défaut
+        // For other exchanges, configure to use spot by default
         config.options = {
           defaultType: "spot",
         };
       }
 
-      // Créer l'instance de l'exchange
+      // Create the exchange instance
       const exchangeInstance = new (exchangeClass as new (
         config: ExchangeConfig
       ) => Exchange)(config);
 
-      // Définir le type de marché sur spot si disponible
+      // Set market type to spot if available
       if (exchangeInstance.has["fetchBalance"]) {
         try {
-          // Certains exchanges nécessitent de spécifier explicitement le type de compte
+          // Some exchanges require explicitly specifying the account type
           exchangeInstance.options = {
             ...exchangeInstance.options,
             defaultType: exchangeId === "hyperliquid" ? "swap" : "spot",
           };
         } catch (error) {
-          console.warn("Impossible de définir defaultType:", error);
+          console.warn("Unable to set defaultType:", error);
         }
       }
 
-      // Récupérer les balances
+      // Retrieve balances
       let balance: WalletBalance;
       const allBalances: AggregatedBalances = {
         total: {},
@@ -158,7 +158,7 @@ export async function GET(request: Request) {
       };
 
       try {
-        // Essayer de récupérer les balances de tous les types de portefeuilles
+        // Try to retrieve balances from all wallet types
         const walletTypes = [
           "spot",
           "margin",
@@ -168,7 +168,7 @@ export async function GET(request: Request) {
           "funding",
         ];
 
-        // Pour Hyperliquid, on utilise uniquement swap
+        // For Hyperliquid, only use swap
         if (exchangeId === "hyperliquid") {
           balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
           if (balance.total) {
@@ -177,14 +177,14 @@ export async function GET(request: Request) {
             allBalances.used = { ...(balance.used || {}) };
           }
         } else {
-          // Pour les autres exchanges, essayer tous les types de portefeuilles
+          // For other exchanges, try all wallet types
           for (const type of walletTypes) {
             try {
               const typeBalance = (await exchangeInstance.fetchBalance({
                 type,
               })) as WalletBalance;
 
-              // Traiter les balances de ce type de portefeuille
+              // Process balances for this wallet type
               if (typeBalance && typeBalance.total) {
                 Object.keys(typeBalance.total).forEach((asset) => {
                   const assetKey = asset;
@@ -194,7 +194,7 @@ export async function GET(request: Request) {
                       ? parseFloat(amount)
                       : Number(amount);
 
-                  // Si l'asset existe déjà, additionner les montants
+                  // If the asset already exists, add the amounts
                   if (assetKey in allBalances.total) {
                     allBalances.total[assetKey] =
                       (allBalances.total[assetKey] || 0) + numAmount;
@@ -219,7 +219,7 @@ export async function GET(request: Request) {
                         (allBalances.used[assetKey] || 0) + numUsedAmount;
                     }
                   } else {
-                    // Sinon, initialiser les valeurs
+                    // Otherwise, initialize the values
                     allBalances.total[assetKey] = numAmount;
 
                     if (typeBalance.free && asset in typeBalance.free) {
@@ -250,14 +250,14 @@ export async function GET(request: Request) {
                   ? typeError.message
                   : String(typeError);
               console.warn(
-                `Impossible de récupérer les balances pour le type ${type}:`,
+                `Unable to retrieve balances for wallet type ${type}:`,
                 errorMessage
               );
             }
           }
         }
 
-        // Si aucune balance n'a été récupérée, essayer sans paramètres
+        // If no balance was retrieved, try without parameters
         if (Object.keys(allBalances.total).length === 0) {
           balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
 
@@ -292,11 +292,11 @@ export async function GET(request: Request) {
           }
         }
       } catch (error) {
-        console.error("Erreur lors de la récupération des balances:", error);
+        console.error("Error retrieving balances:", error);
         throw error;
       }
 
-      // Filtrer pour inclure tous les assets, même ceux avec un solde nul
+      // Filter to include all assets, even those with zero balance
       const assets = Object.entries(allBalances.total || {}).map(
         ([asset, amount]) => ({
           asset,
@@ -311,7 +311,7 @@ export async function GET(request: Request) {
       console.error("Error fetching assets:", error);
 
       if (error instanceof Error) {
-        // Gérer les erreurs spécifiques
+        // Handle specific errors
         const errorMessage = error.message.toLowerCase();
 
         if (

@@ -8,7 +8,7 @@ type EmailPayload = {
 };
 
 /**
- * Envoie un email en utilisant Mailjet en production/local ou Ethereal en développement
+ * Sends an email using Mailjet in production/local or Ethereal in development
  */
 export const sendEmail = async (data: EmailPayload) => {
   try {
@@ -38,20 +38,20 @@ export const sendEmail = async (data: EmailPayload) => {
       ...data,
     };
 
-    // Envoyer l'email
+    // Send the email
     const info = await transporter.sendMail(mailOptions);
 
-    // Afficher l'URL de prévisualisation pour Ethereal en développement
+    // Display preview URL for Ethereal in development
     if (!useMailjet && info.messageId) {
       console.log(
-        "Email de test envoyé. Prévisualisez-le ici :",
+        "Test email sent. Preview it here:",
         nodemailer.getTestMessageUrl(info)
       );
     }
 
     return info;
   } catch (error) {
-    console.error("Erreur lors de l'envoi de l'email:", error);
+    console.error("Error sending email:", error);
     throw error;
   }
 };

@@ -5,11 +5,11 @@ import { sendEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
-    console.log("Début de la route forgot-password");
+    console.log("Starting forgot-password route");
     const { email, locale = "en" } = await request.json();
-    console.log("Email reçu:", email);
+    console.log("Email received:", email);
 
-    // Vérifier si l'email existe
+    // Check if the email exists
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -46,30 +46,27 @@ export async function POST(request: Request) {
     try {
       await sendEmail({
         to: user.email,
-        subject: "Réinitialisation de votre mot de passe",
-        text: `Vous avez demandé une réinitialisation de mot de passe. Veuillez cliquer sur le lien suivant pour réinitialiser votre mot de passe: ${resetUrl}`,
+        subject: "Reset your password",
+        text: `You requested a password reset. Please click on the following link to reset your password: ${resetUrl}`,
         html: `
           <div>
-            <p>Vous avez demandé une réinitialisation de mot de passe.</p>
-            <p>Veuillez cliquer sur le lien suivant pour réinitialiser votre mot de passe:</p>
+            <p>You requested a password reset.</p>
+            <p>Please click on the following link to reset your password:</p>
             <a href="${resetUrl}">${resetUrl}</a>
-            <p>Ce lien expirera dans 1 heure.</p>
-            <p>Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer cet email.</p>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you did not request this reset, you can ignore this email.</p>
           </div>
         `,
       });
-      console.log("Email envoyé avec succès");
+      console.log("Email sent successfully");
     } catch (emailError) {
-      console.error("Erreur lors de l'envoi de l'email:", emailError);
-      // On continue malgré l'erreur d'envoi d'email
+      console.error("Error sending email:", emailError);
+      // Continue despite email sending error
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error in forgot-password route:", error);
-    return NextResponse.json(
-      { error: "Une erreur est survenue" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "An error occurred" }, { status: 500 });
   }
 }

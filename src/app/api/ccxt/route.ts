@@ -5,7 +5,7 @@ import { z } from "zod";
 import ccxt, { Exchange } from "ccxt";
 import { authOptions } from "../auth/[...nextauth]/route";
 
-// Schéma de validation pour la création d'une connexion
+// Validation schema for connection creation
 const createConnectionSchema = z.object({
   name: z.string().min(1, "Name is required"),
   exchange: z.string().min(1, "Exchange is required"),
@@ -13,7 +13,7 @@ const createConnectionSchema = z.object({
   secret: z.string().optional(),
 });
 
-// Type pour la configuration de l'exchange
+// Type for exchange configuration
 interface ExchangeConfig {
   apiKey: string;
   secret?: string;
@@ -26,14 +26,14 @@ interface ExchangeConfig {
   };
 }
 
-// Fonction pour tester la connexion à l'exchange
+// Function to test the exchange connection
 async function testExchangeConnection(
   exchange: string,
   key: string,
   secret?: string
 ): Promise<{ isValid: boolean; error?: string }> {
   try {
-    // Vérifier si l'exchange est supporté par CCXT
+    // Check if the exchange is supported by CCXT
     const exchangeId = exchange.toLowerCase();
 
     const exchangeClass = ccxt[exchangeId as keyof typeof ccxt];
@@ -42,27 +42,27 @@ async function testExchangeConnection(
       return { isValid: false, error: "EXCHANGE_NOT_SUPPORTED" };
     }
 
-    // Créer une instance de l'exchange avec plus d'options de configuration
+    // Create an exchange instance with more configuration options
     const exchangeInstance = new (exchangeClass as new (
       config: ExchangeConfig
     ) => Exchange)({
       apiKey: key,
       secret,
       enableRateLimit: true,
-      timeout: 30000, // 30 secondes de timeout
+      timeout: 30000, // 30 seconds timeout
     });
 
-    // Si pas de secret, on considère que c'est une connexion en lecture seule (wallet)
+    // If no secret is provided, consider it a read-only connection (wallet)
     if (!secret) {
-      // Pour Hyperliquid, on utilise l'adresse du wallet comme paramètre
+      // For Hyperliquid, use the wallet address as a parameter
       if (exchange.toLowerCase() === "hyperliquid") {
         try {
-          // Créer une instance spécifique pour Hyperliquid
+          // Create a specific instance for Hyperliquid
           const exchangeInstance = new (exchangeClass as new (
             config: ExchangeConfig
           ) => Exchange)({
             apiKey: key,
-            walletAddress: key, // Utiliser l'adresse comme walletAddress
+            walletAddress: key, // Use the address as walletAddress
             enableRateLimit: true,
             timeout: 30000,
             options: {
@@ -71,7 +71,7 @@ async function testExchangeConnection(
             },
           });
 
-          // Tester la connexion avec le wallet
+          // Test the connection with the wallet
           const balance = await exchangeInstance.fetchBalance();
           console.log(
             "Balance fetched successfully:",
@@ -86,14 +86,14 @@ async function testExchangeConnection(
       return { isValid: true };
     }
 
-    // Activer les logs détaillés
+    // Enable detailed logs
     exchangeInstance.verbose = true;
 
     try {
-      // Tester d'abord loadMarkets qui est moins restrictif
+      // First test loadMarkets which is less restrictive
       await exchangeInstance.loadMarkets();
 
-      // Ensuite tester l'authentification
+      // Then test authentication
       if (exchange.toLowerCase() === "hyperliquid") {
         await exchangeInstance.fetchBalance({ wallet: key });
       } else {
@@ -141,7 +141,7 @@ async function testExchangeConnection(
   }
 }
 
-// Récupérer toutes les connexions de l'utilisateur
+// Retrieve all user connections
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
@@ -212,7 +212,7 @@ export async function GET() {
   }
 }
 
-// Créer une nouvelle connexion
+// Create a new connection
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -248,7 +248,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Pour Hyperliquid, on teste toujours la connexion
+    // For Hyperliquid, always test the connection
     if (validatedData.exchange.toLowerCase() === "hyperliquid") {
       const testResult = await testExchangeConnection(
         validatedData.exchange,
@@ -265,7 +265,7 @@ export async function POST(request: Request) {
         );
       }
     }
-    // Pour les autres exchanges, on teste seulement si un secret est fourni
+    // For other exchanges, only test if a secret is provided
     else if (validatedData.secret) {
       const testResult = await testExchangeConnection(
         validatedData.exchange,
@@ -297,21 +297,21 @@ export async function POST(request: Request) {
       return NextResponse.json(connection);
     } catch (error) {
       console.error("Database error:", error);
-      // Amélioration de la gestion des erreurs pour identifier le problème spécifique
+      // Improved error handling to identify the specific problem
       if (error instanceof Error) {
-        // Vérifier s'il s'agit d'une erreur de contrainte unique
+        // Check if it's a unique constraint error
         if (error.message.includes("Unique constraint failed")) {
           return NextResponse.json(
             {
               code: "DUPLICATE_CONNECTION",
               message:
-                "Une connexion avec ce nom ou ces identifiants existe déjà",
+                "A connection with this name or credentials already exists",
             },
             { status: 400 }
           );
         }
 
-        // Vérifier s'il s'agit d'une erreur de champ manquant
+        // Check if it's a missing field error
         if (error.message.includes("Field required")) {
           return NextResponse.json(
             {
@@ -322,7 +322,7 @@ export async function POST(request: Request) {
           );
         }
 
-        // Autres erreurs avec message détaillé
+        // Other errors with detailed message
         return NextResponse.json(
           {
             code: "CREATE_FAILED",
@@ -336,7 +336,7 @@ export async function POST(request: Request) {
     }
   } catch (error) {
     console.error("POST error:", error);
-    // Amélioration de la gestion des erreurs générales
+    // Improved general error handling
     if (error instanceof Error) {
       return NextResponse.json(
         {
@@ -350,7 +350,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Supprimer une connexion
+// Delete a connection
 export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
