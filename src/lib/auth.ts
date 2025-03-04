@@ -2,6 +2,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import NextAuth from "next-auth";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -82,3 +83,6 @@ export const authOptions = {
     },
   },
 };
+
+// Export the auth function
+export const { auth, signIn, signOut } = NextAuth(authOptions);

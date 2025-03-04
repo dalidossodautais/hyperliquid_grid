@@ -127,8 +127,27 @@ export default function Dashboard() {
         const response = await fetch("/api/ccxt");
         const contentType = response.headers.get("content-type");
 
+        // Log the response details for debugging
+        console.log("Response status:", response.status);
+        console.log("Content-Type:", contentType);
+        console.log(
+          "Response headers:",
+          Object.fromEntries(response.headers.entries())
+        );
+
+        // Check if the response is a redirect
+        if (response.redirected) {
+          window.location.href = response.url;
+          return;
+        }
+
+        // If the response is not JSON, try to get the text content for debugging
         if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Server returned non-JSON response");
+          const textContent = await response.text();
+          console.error("Non-JSON response received:", textContent);
+          throw new Error(
+            "Server returned non-JSON response. Please check your authentication."
+          );
         }
 
         const data = await response.json();
@@ -143,6 +162,7 @@ export default function Dashboard() {
 
         setConnections(data);
       } catch (error) {
+        console.error("Error fetching connections:", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
@@ -158,14 +178,28 @@ export default function Dashboard() {
     }
   }, [session, t]);
 
-  // Fonction pour charger les assets d'une connexion
   const fetchAssets = async (connectionId: string) => {
     try {
       const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
       const contentType = response.headers.get("content-type");
 
+      // Log response details for debugging
+      console.log("Assets Response status:", response.status);
+      console.log("Assets Content-Type:", contentType);
+
+      // Check if the response is a redirect
+      if (response.redirected) {
+        window.location.href = response.url;
+        return [];
+      }
+
+      // If the response is not JSON, try to get the text content for debugging
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned non-JSON response");
+        const textContent = await response.text();
+        console.error("Non-JSON response received for assets:", textContent);
+        throw new Error(
+          "Server returned non-JSON response for assets. Please check your authentication."
+        );
       }
 
       if (!response.ok) {
@@ -327,7 +361,6 @@ export default function Dashboard() {
     setExpandedConnections(newExpandedConnections);
   };
 
-  // Fonction pour charger les bots
   useEffect(() => {
     const fetchBots = async () => {
       try {
@@ -338,8 +371,23 @@ export default function Dashboard() {
         const response = await fetch("/api/bots");
         const contentType = response.headers.get("content-type");
 
+        // Log response details for debugging
+        console.log("Bots Response status:", response.status);
+        console.log("Bots Content-Type:", contentType);
+
+        // Check if the response is a redirect
+        if (response.redirected) {
+          window.location.href = response.url;
+          return;
+        }
+
+        // If the response is not JSON, try to get the text content for debugging
         if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Server returned non-JSON response");
+          const textContent = await response.text();
+          console.error("Non-JSON response received for bots:", textContent);
+          throw new Error(
+            "Server returned non-JSON response for bots. Please check your authentication."
+          );
         }
 
         const data = await response.json();
@@ -354,6 +402,7 @@ export default function Dashboard() {
 
         setBots(data);
       } catch (error) {
+        console.error("Error fetching bots:", error);
         if (error instanceof Error) {
           setError(error.message);
         } else {
