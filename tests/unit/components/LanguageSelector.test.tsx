@@ -50,9 +50,6 @@ describe("LanguageSelector", () => {
 
     // Assert - dropdown is open and shows language options
     expect(screen.getByText("Français")).toBeInTheDocument();
-    expect(screen.getByText("Español")).toBeInTheDocument();
-    expect(screen.getByText("Deutsch")).toBeInTheDocument();
-    expect(screen.getByText("Italiano")).toBeInTheDocument();
   });
 
   it("changes language when a language option is selected", async () => {

@@ -7,9 +7,6 @@ import { useState, useEffect } from "react";
 const languages = {
   en: { flag: "🇺🇸", name: "English" },
   fr: { flag: "🇫🇷", name: "Français" },
-  es: { flag: "🇪🇸", name: "Español" },
-  de: { flag: "🇩🇪", name: "Deutsch" },
-  it: { flag: "🇮🇹", name: "Italiano" },
 };
 
 export default function LanguageSelector() {

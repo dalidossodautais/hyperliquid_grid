@@ -1,10 +1,17 @@
 import { getRequestConfig } from "next-intl/server";
+import { locales, defaultLocale, Locale } from "../config";
 
 export default getRequestConfig(async ({ locale }) => {
+  // Ensure locale is valid, fallback to default if not
+  const validLocale = locales.includes(locale as Locale)
+    ? locale
+    : defaultLocale;
+
   // Load messages for the current locale
   const messages = {
-    auth: (await import(`./messages/${locale}/auth.json`)).default,
-    dashboard: (await import(`./messages/${locale}/dashboard.json`)).default,
+    auth: (await import(`./messages/${validLocale}/auth.json`)).default,
+    dashboard: (await import(`./messages/${validLocale}/dashboard.json`))
+      .default,
   };
 
   return {

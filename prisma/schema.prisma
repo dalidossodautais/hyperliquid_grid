@@ -20,15 +20,17 @@ model User {
 }
 
 model ExchangeConnection {
-  id        String   @id @default(cuid())
-  name      String
-  exchange  String
-  key       String
-  secret    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  userId    String
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String   @id @default(cuid())
+  name            String
+  exchange        String
+  key             String
+  secret          String?
+  apiWalletAddress String?
+  apiPrivateKey   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  userId          String
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, exchange, key])
   @@index([userId])

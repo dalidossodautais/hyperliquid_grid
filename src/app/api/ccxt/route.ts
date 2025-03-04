@@ -11,6 +11,8 @@ const createConnectionSchema = z.object({
   exchange: z.string().min(1, "Exchange is required"),
   key: z.string().min(1, "Key is required"),
   secret: z.string().optional(),
+  apiWalletAddress: z.string().optional(),
+  apiPrivateKey: z.string().optional(),
 });
 
 // Type for exchange configuration
@@ -18,6 +20,8 @@ interface ExchangeConfig {
   apiKey: string;
   secret?: string;
   walletAddress?: string;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
   enableRateLimit?: boolean;
   timeout?: number;
   options?: {
@@ -30,7 +34,9 @@ interface ExchangeConfig {
 async function testExchangeConnection(
   exchange: string,
   key: string,
-  secret?: string
+  secret?: string,
+  apiWalletAddress?: string,
+  apiPrivateKey?: string
 ): Promise<{ isValid: boolean; error?: string }> {
   try {
     // Check if the exchange is supported by CCXT
@@ -63,6 +69,8 @@ async function testExchangeConnection(
           ) => Exchange)({
             apiKey: key,
             walletAddress: key, // Use the address as walletAddress
+            apiWalletAddress: apiWalletAddress,
+            apiPrivateKey: apiPrivateKey,
             enableRateLimit: true,
             timeout: 30000,
             options: {
@@ -252,7 +260,10 @@ export async function POST(request: Request) {
     if (validatedData.exchange.toLowerCase() === "hyperliquid") {
       const testResult = await testExchangeConnection(
         validatedData.exchange,
-        validatedData.key
+        validatedData.key,
+        undefined,
+        validatedData.apiWalletAddress,
+        validatedData.apiPrivateKey
       );
 
       if (!testResult.isValid) {
@@ -285,15 +296,40 @@ export async function POST(request: Request) {
     }
 
     try {
+      // Créer un objet de données conforme au schéma Prisma
+      const connectionData: {
+        name: string;
+        exchange: string;
+        key: string;
+        userId: string;
+        secret?: string;
+        apiWalletAddress?: string;
+        apiPrivateKey?: string;
+      } = {
+        name: validatedData.name,
+        exchange: validatedData.exchange,
+        key: validatedData.key,
+        userId: user.id,
+      };
+
+      // Ajouter les champs optionnels s'ils sont présents
+      if (validatedData.secret) {
+        connectionData.secret = validatedData.secret;
+      }
+
+      if (validatedData.apiWalletAddress) {
+        connectionData.apiWalletAddress = validatedData.apiWalletAddress;
+      }
+
+      if (validatedData.apiPrivateKey) {
+        connectionData.apiPrivateKey = validatedData.apiPrivateKey;
+      }
+
+      // Créer la connexion avec l'objet de données
       const connection = await prisma.exchangeConnection.create({
-        data: {
-          name: validatedData.name,
-          exchange: validatedData.exchange,
-          key: validatedData.key,
-          secret: validatedData.secret,
-          userId: user.id,
-        },
+        data: connectionData,
       });
+
       return NextResponse.json(connection);
     } catch (error) {
       console.error("Database error:", error);
@@ -310,29 +346,12 @@ export async function POST(request: Request) {
             { status: 400 }
           );
         }
-
-        // Check if it's a missing field error
-        if (error.message.includes("Field required")) {
-          return NextResponse.json(
-            {
-              code: "MISSING_FIELD",
-              message: error.message,
-            },
-            { status: 400 }
-          );
-        }
-
-        // Other errors with detailed message
-        return NextResponse.json(
-          {
-            code: "CREATE_FAILED",
-            message: error.message,
-          },
-          { status: 500 }
-        );
       }
 
-      return NextResponse.json({ code: "CREATE_FAILED" }, { status: 500 });
+      return NextResponse.json(
+        { code: "DATABASE_ERROR", message: "Failed to create connection" },
+        { status: 500 }
+      );
     }
   } catch (error) {
     console.error("POST error:", error);

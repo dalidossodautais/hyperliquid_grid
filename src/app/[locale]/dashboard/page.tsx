@@ -28,6 +28,8 @@ interface ConnectionFormData {
   exchange: string;
   key: string;
   secret: string;
+  apiWalletAddress: string;
+  apiPrivateKey: string;
 }
 
 interface FormErrors {
@@ -35,6 +37,8 @@ interface FormErrors {
   exchange?: string;
   key?: string;
   secret?: string;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
 }
 
 const formatAssetValue = (value: number): string => {
@@ -61,6 +65,8 @@ export default function Dashboard() {
     exchange: "",
     key: "",
     secret: "",
+    apiWalletAddress: "",
+    apiPrivateKey: "",
   });
   const [expandedConnection, setExpandedConnection] = useState<string | null>(
     null
@@ -156,6 +162,8 @@ export default function Dashboard() {
         exchange: "",
         key: "",
         secret: "",
+        apiWalletAddress: "",
+        apiPrivateKey: "",
       });
     } catch (error) {
       console.error("Detailed error:", error);
@@ -215,13 +223,39 @@ export default function Dashboard() {
       errors.secret = t("ccxt.form.errors.apiSecretRequired");
     }
 
+    if (!data.apiWalletAddress.trim()) {
+      errors.apiWalletAddress = t("ccxt.form.errors.apiWalletAddressRequired");
+    }
+
+    if (!data.apiPrivateKey.trim()) {
+      errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
+    }
+
     return errors;
   };
 
   // Vérifier si le formulaire est valide
-  const isFormValid = (): boolean => {
-    const errors = validateForm(formData);
-    return Object.keys(errors).length === 0;
+  const isFormValid = () => {
+    // Basic validation
+    if (!formData.name || !formData.exchange || !formData.key) {
+      return false;
+    }
+
+    // For exchanges other than Hyperliquid, require secret
+    if (formData.exchange.toLowerCase() !== "hyperliquid" && !formData.secret) {
+      return false;
+    }
+
+    // For Hyperliquid, require API wallet address and private key if provided
+    if (
+      formData.exchange.toLowerCase() === "hyperliquid" &&
+      ((formData.apiWalletAddress && !formData.apiPrivateKey) ||
+        (!formData.apiWalletAddress && formData.apiPrivateKey))
+    ) {
+      return false;
+    }
+
+    return true;
   };
 
   const handleInputChange = (
@@ -229,13 +263,7 @@ export default function Dashboard() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-
-    // Valider le champ modifié
-    const errors = validateForm({ ...formData, [name]: value });
-    setFormErrors((prev) => ({
-      ...prev,
-      [name]: errors[name as keyof FormErrors],
-    }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const fetchAssets = async (connectionId: string) => {
@@ -342,6 +370,8 @@ export default function Dashboard() {
                   exchange: "",
                   key: "",
                   secret: "",
+                  apiWalletAddress: "",
+                  apiPrivateKey: "",
                 });
                 setFormErrors({});
                 setError(null);
@@ -409,7 +439,9 @@ export default function Dashboard() {
                     htmlFor="key"
                     className="block text-sm font-medium text-gray-800"
                   >
-                    {t("ccxt.form.apiKey")}
+                    {formData.exchange.toLowerCase() === "hyperliquid"
+                      ? t("ccxt.form.walletAddress")
+                      : t("ccxt.form.apiKey")}
                   </label>
                   <input
                     type="text"
@@ -426,28 +458,82 @@ export default function Dashboard() {
                     </p>
                   )}
                 </div>
-                <div>
-                  <label
-                    htmlFor="secret"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("ccxt.form.apiSecret")}
-                  </label>
-                  <input
-                    type="password"
-                    id="secret"
-                    name="secret"
-                    value={formData.secret}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  />
-                  {formErrors.secret && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formErrors.secret}
-                    </p>
-                  )}
-                </div>
+                {formData.exchange.toLowerCase() !== "hyperliquid" && (
+                  <div>
+                    <label
+                      htmlFor="secret"
+                      className="block text-sm font-medium text-gray-800"
+                    >
+                      {t("ccxt.form.apiSecret")}
+                    </label>
+                    <input
+                      type="password"
+                      id="secret"
+                      name="secret"
+                      value={formData.secret}
+                      onChange={handleInputChange}
+                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                      required
+                    />
+                    {formErrors.secret && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {formErrors.secret}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {formData.exchange.toLowerCase() === "hyperliquid" && (
+                  <>
+                    <div>
+                      <label
+                        htmlFor="apiWalletAddress"
+                        className="block text-sm font-medium text-gray-800"
+                      >
+                        {t("ccxt.form.apiWalletAddress")}
+                      </label>
+                      <input
+                        type="text"
+                        id="apiWalletAddress"
+                        name="apiWalletAddress"
+                        value={formData.apiWalletAddress}
+                        onChange={handleInputChange}
+                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        {t("ccxt.form.apiWalletAddressHelp")}
+                      </p>
+                      {formErrors.apiWalletAddress && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {formErrors.apiWalletAddress}
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="apiPrivateKey"
+                        className="block text-sm font-medium text-gray-800"
+                      >
+                        {t("ccxt.form.apiPrivateKey")}
+                      </label>
+                      <input
+                        type="password"
+                        id="apiPrivateKey"
+                        name="apiPrivateKey"
+                        value={formData.apiPrivateKey}
+                        onChange={handleInputChange}
+                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                      />
+                      <p className="mt-1 text-xs text-gray-500">
+                        {t("ccxt.form.apiPrivateKeyHelp")}
+                      </p>
+                      {formErrors.apiPrivateKey && (
+                        <p className="mt-1 text-sm text-red-600">
+                          {formErrors.apiPrivateKey}
+                        </p>
+                      )}
+                    </div>
+                  </>
+                )}
                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
                   <button
                     type="button"
@@ -458,6 +544,8 @@ export default function Dashboard() {
                         exchange: "",
                         key: "",
                         secret: "",
+                        apiWalletAddress: "",
+                        apiPrivateKey: "",
                       });
                       setFormErrors({});
                       setError(null);

@@ -41,11 +41,27 @@
       "error": "Error"
     },
     "form": {
+      "title": "Add Exchange Connection",
       "name": "Connection Name",
       "exchange": "Exchange",
       "apiKey": "API Key",
       "apiSecret": "API Secret",
-      "submit": "Add Connection"
+      "walletAddress": "Wallet Address",
+      "apiWalletAddress": "API Wallet Address",
+      "apiWalletAddressHelp": "Optional. Required for trading operations.",
+      "apiPrivateKey": "API Private Key",
+      "apiPrivateKeyHelp": "Optional. Required for trading operations.",
+      "selectExchange": "Select an exchange",
+      "submit": "Add Connection",
+      "cancel": "Cancel",
+      "errors": {
+        "nameRequired": "Connection name is required",
+        "exchangeRequired": "Exchange is required",
+        "apiKeyRequired": "API key is required",
+        "apiSecretRequired": "API secret is required",
+        "apiWalletAddressRequired": "API wallet address is required",
+        "apiPrivateKeyRequired": "API private key is required"
+      }
     },
     "table": {
       "name": "Name",

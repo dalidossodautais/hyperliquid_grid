@@ -42,6 +42,11 @@
       "exchange": "Exchange",
       "apiKey": "Clé API",
       "apiSecret": "Secret API",
+      "walletAddress": "Adresse du portefeuille",
+      "apiWalletAddress": "Adresse du portefeuille API",
+      "apiWalletAddressHelp": "Optionnel. Requis pour les opérations de trading.",
+      "apiPrivateKey": "Clé privée API",
+      "apiPrivateKeyHelp": "Optionnel. Requis pour les opérations de trading.",
       "submit": "Ajouter",
       "cancel": "Annuler",
       "selectExchange": "Sélectionner un exchange",
@@ -50,7 +55,9 @@
         "nameLength": "Le nom doit contenir au moins 3 caractères",
         "exchangeRequired": "L'exchange est requis",
         "apiKeyRequired": "La clé API est requise",
-        "apiSecretRequired": "Le secret API est requis"
+        "apiSecretRequired": "Le secret API est requis",
+        "apiWalletAddressRequired": "L'adresse du portefeuille API est requise",
+        "apiPrivateKeyRequired": "La clé privée API est requise"
       }
     },
     "table": {
