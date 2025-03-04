@@ -314,6 +314,7 @@ export default function BotForm({
                   required
                   min={0}
                   step={0.000001}
+                  unit={baseAsset}
                 />
                 <Input
                   id="quoteAssetQuantity"
@@ -326,6 +327,7 @@ export default function BotForm({
                   required
                   min={0}
                   step={0.000001}
+                  unit={quoteAsset}
                 />
               </div>
             )}
