@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
-import ccxt, { Exchange } from "ccxt";
+import ccxt, { Exchange, Market as CCXTMarket } from "ccxt";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
 // Interface for exchange configuration
@@ -52,9 +52,9 @@ interface ExtendedConnection {
 // Interface for asset
 interface Asset {
   asset: string;
+  total: number;
   free: number;
   used: number;
-  total: number;
   usdValue?: number;
 }
 
@@ -65,7 +65,12 @@ interface BalanceCache {
 }
 
 const balanceCache: Record<string, BalanceCache> = {};
-const CACHE_DURATION = 60 * 1000; // 1 minute en millisecondes
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
+const priceCache: Record<
+  string,
+  { prices: Record<string, number>; timestamp: number }
+> = {};
+const PRICE_CACHE_DURATION = 5 * 60 * 1000; // 5 minutes en millisecondes
 
 // Configuration des types de wallet par exchange
 const WALLET_TYPES: Record<string, string[]> = {
@@ -75,6 +80,13 @@ const WALLET_TYPES: Record<string, string[]> = {
   kraken: ["spot", "margin"],
   default: ["spot"],
 };
+
+// Interface for market
+interface Market {
+  base: string;
+  quote: string;
+  [key: string]: any;
+}
 
 // Retrieve assets from a connection
 export async function GET(request: Request) {
@@ -105,6 +117,7 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const connectionId = searchParams.get("id");
+    const allAssets = searchParams.get("all") === "true";
 
     if (!connectionId) {
       return NextResponse.json({ code: "MISSING_ID" }, { status: 400 });
@@ -114,7 +127,8 @@ export async function GET(request: Request) {
     const cachedBalances = balanceCache[connectionId];
     if (
       cachedBalances &&
-      Date.now() - cachedBalances.timestamp < CACHE_DURATION
+      Date.now() - cachedBalances.timestamp < CACHE_DURATION &&
+      !allAssets
     ) {
       return NextResponse.json(cachedBalances.balances);
     }
@@ -209,7 +223,7 @@ export async function GET(request: Request) {
         }
       }
 
-      // Retrieve balances
+      // Retrieve balances and markets
       let balance: WalletBalance;
       const allBalances: AggregatedBalances = {
         total: {},
@@ -406,94 +420,93 @@ export async function GET(request: Request) {
             });
           }
         }
-      } catch (error) {
-        console.error("Error retrieving balances:", error);
-        throw error;
-      }
 
-      // Filter to include all assets, even those with zero balance
-      const assets = Object.entries(allBalances.total || {})
-        .filter(([, amount]) => amount > 0) // Filter out assets with zero balance
-        .map(([asset, amount]) => {
-          // Use raw values directly
-          const total = amount as number;
-          const free = allBalances.free?.[
-            asset as keyof typeof allBalances.free
-          ] as number;
-          const used = allBalances.used?.[
-            asset as keyof typeof allBalances.used
-          ] as number;
+        // Fetch all available markets
+        const markets = await exchangeInstance.loadMarkets();
+        const allAssets = new Set<string>();
 
-          return {
-            asset,
-            free,
-            used,
-            total,
-          } as Asset;
+        // Add all assets from markets
+        Object.values(markets).forEach((market) => {
+          if (market && market.base) allAssets.add(market.base);
+          if (market && market.quote) allAssets.add(market.quote);
         });
 
-      // Regrouper les HYPE-STAKED avec les HYPE
-      const groupedAssets = assets.reduce((acc, asset) => {
-        if (asset.asset === "HYPE-STAKED") {
-          const existingHype = acc.find((a) => a.asset === "HYPE");
-          if (existingHype) {
-            existingHype.total += asset.total;
-            existingHype.used += asset.used;
-            existingHype.free += asset.free;
-          } else {
-            acc.push({
-              asset: "HYPE",
-              free: asset.free,
-              used: asset.used,
-              total: asset.total,
-            });
-          }
-        } else if (asset.asset !== "HYPE") {
-          acc.push(asset);
-        }
-        return acc;
-      }, [] as Asset[]);
+        // Add all assets from balances
+        Object.keys(allBalances.total).forEach((asset) => {
+          allAssets.add(asset);
+        });
 
-      // Récupérer les prix pour les assets non-USDC
-      const nonUsdcAssets = groupedAssets.filter(
-        (asset) => asset.asset !== "USDC"
-      );
-      if (nonUsdcAssets.length > 0) {
-        try {
-          const symbols = nonUsdcAssets.map((asset) => asset.asset).join(",");
-          const requestUrl = new URL(request.url);
-          const priceResponse = await fetch(
-            `${requestUrl.origin}/api/ccxt/price?id=${connectionId}&symbols=${symbols}`,
-            {
-              headers: {
-                cookie: request.headers.get("cookie") || "",
-              },
+        // Convert to array and sort
+        const assets: Asset[] = Array.from(allAssets)
+          .sort()
+          .map((asset) => ({
+            asset,
+            total: allBalances.total[asset] || 0,
+            free: allBalances.free[asset] || 0,
+            used: allBalances.used[asset] || 0,
+          }));
+
+        // Récupérer les prix pour les assets non-USDC
+        const nonUsdcAssets = assets.filter((asset) => asset.asset !== "USDC");
+        if (nonUsdcAssets.length > 0) {
+          try {
+            const symbols = nonUsdcAssets.map((asset) => asset.asset).join(",");
+            const requestUrl = new URL(request.url);
+
+            // Vérifier le cache des prix
+            const cachedPrices = priceCache[connectionId];
+            let prices: Record<string, number> = {};
+
+            if (
+              cachedPrices &&
+              Date.now() - cachedPrices.timestamp < PRICE_CACHE_DURATION
+            ) {
+              prices = cachedPrices.prices;
+            } else {
+              const priceResponse = await fetch(
+                `${requestUrl.origin}/api/ccxt/price?id=${connectionId}&symbols=${symbols}`,
+                {
+                  headers: {
+                    cookie: request.headers.get("cookie") || "",
+                  },
+                }
+              );
+              if (priceResponse.ok) {
+                const { prices: newPrices } = await priceResponse.json();
+                prices = newPrices;
+
+                // Mettre à jour le cache des prix
+                priceCache[connectionId] = {
+                  prices,
+                  timestamp: Date.now(),
+                };
+              }
             }
-          );
-          if (priceResponse.ok) {
-            const { prices } = await priceResponse.json();
 
             // Ajouter les valeurs en dollar aux assets
-            groupedAssets.forEach((asset) => {
+            assets.forEach((asset) => {
               if (asset.asset === "USDC") {
                 asset.usdValue = asset.total;
               } else if (prices[asset.asset]) {
                 asset.usdValue = asset.total * prices[asset.asset];
               }
             });
+          } catch (error) {
+            console.error("Error fetching prices:", error);
           }
-        } catch (error) {
-          console.error("Error fetching prices:", error);
         }
+
+        // Mettre à jour le cache
+        balanceCache[connectionId] = {
+          balances: assets,
+          timestamp: Date.now(),
+        };
+
+        return NextResponse.json(assets);
+      } catch (error) {
+        console.error("Error retrieving balances:", error);
+        throw error;
       }
-
-      // Mettre à jour le cache
-      balanceCache[connectionId] = {
-        balances: groupedAssets,
-        timestamp: Date.now(),
-      };
-
-      return NextResponse.json(groupedAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
 

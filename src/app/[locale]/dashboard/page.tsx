@@ -44,10 +44,14 @@ interface Bot {
 
 interface BotFormData {
   name: string;
-  type: string;
-  connectionId: string;
-  baseAsset: string;
-  quoteAsset: string;
+}
+
+interface BotFormErrors {
+  name?: string;
+  connection?: string;
+  baseAsset?: string;
+  quoteAsset?: string;
+  submit?: string;
 }
 
 interface FormErrors {
@@ -57,14 +61,6 @@ interface FormErrors {
   secret?: string;
   apiWalletAddress?: string;
   apiPrivateKey?: string;
-}
-
-interface BotFormErrors {
-  name?: string;
-  type?: string;
-  connectionId?: string;
-  baseAsset?: string;
-  quoteAsset?: string;
 }
 
 const formatAssetValue = (value: number): string => {
@@ -102,12 +98,16 @@ export default function Dashboard() {
   const [showBotForm, setShowBotForm] = useState(false);
   const [botFormData, setBotFormData] = useState<BotFormData>({
     name: "",
-    type: "",
-    connectionId: "",
-    baseAsset: "",
-    quoteAsset: "",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
+  const [isBotFormValid, setIsBotFormValid] = useState(false);
+
+  const [selectedConnection, setSelectedConnection] = useState<string>("");
+  const [availableAssets, setAvailableAssets] = useState<
+    Array<{ asset: string; total: number }>
+  >([]);
+  const [baseAsset, setBaseAsset] = useState<string>("");
+  const [quoteAsset, setQuoteAsset] = useState<string>("");
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -189,7 +189,9 @@ export default function Dashboard() {
 
   const fetchAssets = async (connectionId: string) => {
     try {
-      const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
+      const response = await fetch(
+        `/api/ccxt/assets?id=${connectionId}&all=true`
+      );
       const contentType = response.headers.get("content-type");
 
       // Log response details for debugging
@@ -425,10 +427,49 @@ export default function Dashboard() {
     }
   }, [session, t]);
 
-  // Fonction pour gérer la soumission du formulaire de bot
+  const validateBotForm = (data: BotFormData): boolean => {
+    const errors: BotFormErrors = {};
+
+    if (!data.name) {
+      errors.name = t("bots.form.errors.nameRequired");
+    } else if (data.name.length < 3) {
+      errors.name = t("bots.form.errors.nameLength");
+    }
+
+    if (!selectedConnection) {
+      errors.connection = t("bots.form.errors.connectionRequired");
+    }
+
+    if (!baseAsset) {
+      errors.baseAsset = t("bots.form.errors.baseAssetRequired");
+    }
+
+    if (!quoteAsset) {
+      errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
+    }
+
+    if (baseAsset === quoteAsset) {
+      errors.quoteAsset = t("bots.form.errors.sameAsset");
+    }
+
+    setBotFormErrors(errors);
+    const isValid = Object.keys(errors).length === 0;
+    setIsBotFormValid(isValid);
+    return isValid;
+  };
+
+  // Update validation when form data changes
+  useEffect(() => {
+    validateBotForm(botFormData);
+  }, [botFormData, selectedConnection, baseAsset, quoteAsset]);
+
   const handleBotSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
+    setBotFormErrors({});
+
+    if (!validateBotForm(botFormData)) {
+      return;
+    }
 
     try {
       const response = await fetch("/api/bots", {
@@ -436,36 +477,35 @@ export default function Dashboard() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(botFormData),
+        body: JSON.stringify({
+          name: botFormData.name,
+          type: "dca",
+          connectionId: selectedConnection,
+          config: {
+            baseAsset,
+            quoteAsset,
+          },
+        }),
       });
 
-      const data = await response.json();
       if (!response.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
-        }
-        if (data.message) {
-          throw new Error(`${t(`bots.errors.${data.code}`)}: ${data.message}`);
-        } else {
-          throw new Error(t(`bots.errors.${data.code}`));
-        }
+        const data = await response.json();
+        throw new Error(data.message || "Failed to create bot");
       }
 
-      setBots((prev) => [...prev, data]);
+      const newBot = await response.json();
+      setBots((prev) => [...prev, newBot]);
       setShowBotForm(false);
-      setBotFormData({
-        name: "",
-        type: "",
-        connectionId: "",
-        baseAsset: "",
-        quoteAsset: "",
-      });
+      setBotFormData({ name: "" });
+      setSelectedConnection("");
+      setBaseAsset("");
+      setQuoteAsset("");
+      setAvailableAssets([]);
     } catch (error) {
-      console.error("Detailed error:", error);
-      setError(
-        error instanceof Error ? error.message : t("bots.errors.INTERNAL_ERROR")
-      );
+      console.error("Error creating bot:", error);
+      setBotFormErrors({
+        submit: error instanceof Error ? error.message : "Failed to create bot",
+      });
     }
   };
 
@@ -560,7 +600,6 @@ export default function Dashboard() {
     }
   };
 
-  // Fonction pour gérer les changements dans le formulaire de bot
   const handleBotInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -568,44 +607,29 @@ export default function Dashboard() {
     setBotFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Fonction pour valider le formulaire de bot
-  const validateBotForm = (data: BotFormData): BotFormErrors => {
-    const errors: BotFormErrors = {};
+  const handleConnectionChange = async (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const connectionId = e.target.value;
+    setSelectedConnection(connectionId);
+    setBaseAsset("");
+    setQuoteAsset("");
 
-    if (!data.name) {
-      errors.name = t("bots.form.errors.nameRequired");
-    } else if (data.name.length < 3) {
-      errors.name = t("bots.form.errors.nameLength");
+    if (connectionId) {
+      const assets = await fetchAssets(connectionId);
+      setAvailableAssets(assets);
+    } else {
+      setAvailableAssets([]);
     }
-
-    if (!data.type) {
-      errors.type = t("bots.form.errors.typeRequired");
-    }
-
-    if (!data.connectionId) {
-      errors.connectionId = t("bots.form.errors.connectionRequired");
-    }
-
-    if (!data.baseAsset) {
-      errors.baseAsset = t("bots.form.errors.baseAssetRequired");
-    }
-
-    if (!data.quoteAsset) {
-      errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
-    }
-
-    if (data.baseAsset === data.quoteAsset) {
-      errors.baseAsset = t("bots.form.errors.sameAsset");
-      errors.quoteAsset = t("bots.form.errors.sameAsset");
-    }
-
-    return errors;
   };
 
-  // Vérifier si le formulaire de bot est valide
-  const isBotFormValid = () => {
-    const errors = validateBotForm(botFormData);
-    return Object.keys(errors).length === 0;
+  const handleBaseAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setBaseAsset(e.target.value);
+    setQuoteAsset("");
+  };
+
+  const handleQuoteAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setQuoteAsset(e.target.value);
   };
 
   if (status === "loading" || loading) {
@@ -1074,10 +1098,6 @@ export default function Dashboard() {
                 setShowBotForm(false);
                 setBotFormData({
                   name: "",
-                  type: "",
-                  connectionId: "",
-                  baseAsset: "",
-                  quoteAsset: "",
                 });
                 setBotFormErrors({});
                 setError(null);
@@ -1112,42 +1132,18 @@ export default function Dashboard() {
                     </p>
                   )}
                 </div>
-                <div>
+                <div className="mb-4">
                   <label
-                    htmlFor="type"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("bots.form.type")}
-                  </label>
-                  <select
-                    id="type"
-                    name="type"
-                    value={botFormData.type}
-                    onChange={handleBotInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  >
-                    <option value="">{t("bots.form.selectType")}</option>
-                    <option value="dca">DCA</option>
-                  </select>
-                  {botFormErrors.type && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {botFormErrors.type}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="connectionId"
+                    htmlFor="connection"
                     className="block text-sm font-medium text-gray-800"
                   >
                     {t("bots.form.connection")}
                   </label>
                   <select
-                    id="connectionId"
-                    name="connectionId"
-                    value={botFormData.connectionId}
-                    onChange={handleBotInputChange}
+                    id="connection"
+                    name="connection"
+                    value={selectedConnection}
+                    onChange={handleConnectionChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
                     required
                   >
@@ -1158,13 +1154,13 @@ export default function Dashboard() {
                       </option>
                     ))}
                   </select>
-                  {botFormErrors.connectionId && (
+                  {botFormErrors.connection && (
                     <p className="mt-1 text-sm text-red-600">
-                      {botFormErrors.connectionId}
+                      {botFormErrors.connection}
                     </p>
                   )}
                 </div>
-                <div>
+                <div className="mb-4">
                   <label
                     htmlFor="baseAsset"
                     className="block text-sm font-medium text-gray-800"
@@ -1174,28 +1170,26 @@ export default function Dashboard() {
                   <select
                     id="baseAsset"
                     name="baseAsset"
-                    value={botFormData.baseAsset}
-                    onChange={handleBotInputChange}
+                    value={baseAsset}
+                    onChange={handleBaseAssetChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
                     required
+                    disabled={!selectedConnection}
                   >
                     <option value="">{t("bots.form.selectBaseAsset")}</option>
-                    {connections
-                      .find((conn) => conn.id === botFormData.connectionId)
-                      ?.assets?.filter((asset) => asset.total > 0)
-                      .map((asset) => (
-                        <option key={asset.asset} value={asset.asset}>
-                          {asset.asset}
-                        </option>
-                      ))}
+                    {availableAssets.map((asset) => (
+                      <option key={asset.asset} value={asset.asset}>
+                        {asset.asset}
+                      </option>
+                    ))}
                   </select>
                   {botFormErrors.baseAsset && (
                     <p className="mt-1 text-sm text-red-600">
-                      {t("bots.form.errors.baseAssetRequired")}
+                      {botFormErrors.baseAsset}
                     </p>
                   )}
                 </div>
-                <div>
+                <div className="mb-4">
                   <label
                     htmlFor="quoteAsset"
                     className="block text-sm font-medium text-gray-800"
@@ -1205,15 +1199,15 @@ export default function Dashboard() {
                   <select
                     id="quoteAsset"
                     name="quoteAsset"
-                    value={botFormData.quoteAsset}
-                    onChange={handleBotInputChange}
+                    value={quoteAsset}
+                    onChange={handleQuoteAssetChange}
                     className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
                     required
+                    disabled={!baseAsset}
                   >
                     <option value="">{t("bots.form.selectQuoteAsset")}</option>
-                    {connections
-                      .find((conn) => conn.id === botFormData.connectionId)
-                      ?.assets?.filter((asset) => asset.total > 0)
+                    {availableAssets
+                      .filter((asset) => asset.asset !== baseAsset)
                       .map((asset) => (
                         <option key={asset.asset} value={asset.asset}>
                           {asset.asset}
@@ -1233,10 +1227,6 @@ export default function Dashboard() {
                       setShowBotForm(false);
                       setBotFormData({
                         name: "",
-                        type: "",
-                        connectionId: "",
-                        baseAsset: "",
-                        quoteAsset: "",
                       });
                       setBotFormErrors({});
                       setError(null);
@@ -1247,9 +1237,9 @@ export default function Dashboard() {
                   </button>
                   <button
                     type="submit"
-                    disabled={!isBotFormValid()}
+                    disabled={!isBotFormValid}
                     className={`w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                      !isBotFormValid()
+                      !isBotFormValid
                         ? "opacity-50 cursor-not-allowed"
                         : "hover:bg-blue-700 cursor-pointer"
                     }`}
