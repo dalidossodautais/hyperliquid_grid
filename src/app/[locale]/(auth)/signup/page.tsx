@@ -5,6 +5,7 @@ import { useRouter, Link } from "@/navigation";
 import { useTranslations } from "next-intl";
 import LanguageSelector from "@/components/LanguageSelector";
 import Input from "@/components/ui/Input";
+import Button from "@/components/ui/Button";
 import { signIn } from "next-auth/react";
 
 // Fonction pour vérifier la complexité du mot de passe
@@ -255,15 +256,9 @@ export default function SignUp() {
               )}
 
               <div>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                    loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-                  }`}
-                >
+                <Button type="submit" disabled={loading} fullWidth>
                   {loading ? t("signup.loading") : t("signup.button")}
-                </button>
+                </Button>
               </div>
 
               <div className="text-center text-sm">
