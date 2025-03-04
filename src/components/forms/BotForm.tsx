@@ -4,6 +4,7 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import Alert from "@/components/ui/Alert";
+import Label from "@/components/ui/Label";
 
 interface BotFormData {
   name: string;
@@ -19,6 +20,7 @@ interface BotFormErrors {
   quoteAsset?: string;
   quoteAssetQuantity?: string;
   submit?: string;
+  quantities?: string;
 }
 
 interface ExchangeConnection {
@@ -92,28 +94,8 @@ export default function BotForm({
         errors.baseAsset = t("bots.form.errors.baseAssetRequired");
       }
 
-      if (!data.baseAssetQuantity) {
-        errors.baseAssetQuantity = t(
-          "bots.form.errors.baseAssetQuantityRequired"
-        );
-      } else if (parseFloat(data.baseAssetQuantity) <= 0) {
-        errors.baseAssetQuantity = t(
-          "bots.form.errors.baseAssetQuantityInvalid"
-        );
-      }
-
       if (!quoteAsset) {
         errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
-      }
-
-      if (!data.quoteAssetQuantity) {
-        errors.quoteAssetQuantity = t(
-          "bots.form.errors.quoteAssetQuantityRequired"
-        );
-      } else if (parseFloat(data.quoteAssetQuantity) <= 0) {
-        errors.quoteAssetQuantity = t(
-          "bots.form.errors.quoteAssetQuantityInvalid"
-        );
       }
 
       if (baseAsset === quoteAsset) {
@@ -131,6 +113,16 @@ export default function BotForm({
         )
       ) {
         errors.quoteAsset = t("bots.form.errors.invalidTradingPair");
+      }
+
+      // Validation globale des quantités
+      if (!data.baseAssetQuantity || !data.quoteAssetQuantity) {
+        errors.quantities = t("bots.form.errors.quantitiesRequired");
+      } else if (
+        parseFloat(data.baseAssetQuantity) <= 0 &&
+        parseFloat(data.quoteAssetQuantity) <= 0
+      ) {
+        errors.quantities = t("bots.form.errors.quantitiesInvalid");
       }
 
       setBotFormErrors(errors);
@@ -309,36 +301,41 @@ export default function BotForm({
             !botFormErrors.baseAsset &&
             quoteAsset &&
             !botFormErrors.quoteAsset && (
-              <div className="grid grid-cols-2 gap-4">
-                <Input
-                  id="baseAssetQuantity"
-                  name="baseAssetQuantity"
-                  label={t("bots.form.baseAssetQuantity")}
-                  type="number"
-                  value={botFormData.baseAssetQuantity}
-                  onChange={handleBotInputChange}
-                  error={botFormErrors.baseAssetQuantity}
-                  required
-                  min={0}
-                  step={0.00000001}
-                  unit={baseAsset}
-                  disabled={isLoadingAssets}
-                />
-                <Input
-                  id="quoteAssetQuantity"
-                  name="quoteAssetQuantity"
-                  label={t("bots.form.quoteAssetQuantity")}
-                  type="number"
-                  value={botFormData.quoteAssetQuantity}
-                  onChange={handleBotInputChange}
-                  error={botFormErrors.quoteAssetQuantity}
-                  required
-                  min={0}
-                  step={0.00000001}
-                  unit={quoteAsset}
-                  disabled={isLoadingAssets}
-                />
-              </div>
+              <Label
+                title={t("bots.form.quantity")}
+                error={botFormErrors.quantities}
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    id="baseAssetQuantity"
+                    name="baseAssetQuantity"
+                    label=""
+                    type="number"
+                    value={botFormData.baseAssetQuantity}
+                    onChange={handleBotInputChange}
+                    error={botFormErrors.baseAssetQuantity}
+                    required
+                    min={0}
+                    step={0.00000001}
+                    unit={baseAsset}
+                    disabled={isLoadingAssets}
+                  />
+                  <Input
+                    id="quoteAssetQuantity"
+                    name="quoteAssetQuantity"
+                    label=""
+                    type="number"
+                    value={botFormData.quoteAssetQuantity}
+                    onChange={handleBotInputChange}
+                    error={botFormErrors.quoteAssetQuantity}
+                    required
+                    min={0}
+                    step={0.00000001}
+                    unit={quoteAsset}
+                    disabled={isLoadingAssets}
+                  />
+                </div>
+              </Label>
             )}
         </div>
       )}

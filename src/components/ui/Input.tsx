@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import Label from "./Label";
 
 interface InputProps {
   id: string;
@@ -37,46 +38,44 @@ export default function Input({
 }: InputProps) {
   return (
     <div className={`mb-4 ${className}`}>
-      <label htmlFor={id} className="block text-sm font-medium text-gray-800">
-        {label}
-      </label>
-      <div className="relative">
-        <div className="flex items-center">
-          <input
-            type={type}
-            id={id}
-            name={name}
-            value={value}
-            onChange={onChange}
-            onBlur={onBlur}
-            disabled={disabled}
-            required={required}
-            min={min}
-            step={step}
-            placeholder={placeholder}
-            className={cn(
-              "block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-white text-black [color:black]",
-              error ? "border-red-300" : "border-gray-300",
-              disabled && "opacity-50 cursor-not-allowed",
-              !disabled && "hover:border-gray-400",
-              unit && "pr-12",
-              type === "number" &&
-                "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-            )}
-          />
-          {unit && (
-            <span
+      <Label title={label} error={error} required={required}>
+        <div className="relative">
+          <div className="flex items-center">
+            <input
+              type={type}
+              id={id}
+              name={name}
+              value={value}
+              onChange={onChange}
+              onBlur={onBlur}
+              disabled={disabled}
+              required={required}
+              min={min}
+              step={step}
+              placeholder={placeholder}
               className={cn(
-                "absolute right-3 text-gray-500 text-sm",
-                disabled && "opacity-50"
+                "block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-white text-black [color:black]",
+                error ? "border-red-300" : "border-gray-300",
+                disabled && "opacity-50 cursor-not-allowed",
+                !disabled && "hover:border-gray-400",
+                unit && "pr-12",
+                type === "number" &&
+                  "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
               )}
-            >
-              {unit}
-            </span>
-          )}
+            />
+            {unit && (
+              <span
+                className={cn(
+                  "absolute right-3 text-gray-500 text-sm",
+                  disabled && "opacity-50"
+                )}
+              >
+                {unit}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      </Label>
     </div>
   );
 }

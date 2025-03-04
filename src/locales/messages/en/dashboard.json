@@ -126,6 +126,7 @@
       "quoteAsset": "Quote Asset",
       "selectQuoteAsset": "Select quote asset",
       "quoteAssetQuantity": "Quote Asset Quantity",
+      "quantity": "Quantity",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
@@ -138,7 +139,9 @@
         "quoteAssetQuantityRequired": "Please enter a quote asset quantity",
         "quoteAssetQuantityInvalid": "Quote asset quantity must be greater than 0",
         "sameAsset": "Base and quote assets cannot be the same",
-        "invalidTradingPair": "This trading pair is not available on the exchange"
+        "invalidTradingPair": "This trading pair is not available on the exchange",
+        "quantitiesRequired": "Please enter at least one quantity",
+        "quantitiesInvalid": "At least one quantity must be greater than 0"
       }
     },
     "table": {

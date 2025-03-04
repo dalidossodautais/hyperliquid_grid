@@ -126,6 +126,7 @@
       "quoteAsset": "Actif de cotation",
       "selectQuoteAsset": "Sélectionner l'actif de cotation",
       "quoteAssetQuantity": "Quantité d'actif de cotation",
+      "quantity": "Quantité",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
@@ -138,7 +139,9 @@
         "quoteAssetQuantityRequired": "Veuillez entrer une quantité d'actif de cotation",
         "quoteAssetQuantityInvalid": "La quantité d'actif de cotation doit être supérieure à 0",
         "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
-        "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange"
+        "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange",
+        "quantitiesRequired": "Veuillez entrer au moins une quantité",
+        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0"
       }
     },
     "table": {
