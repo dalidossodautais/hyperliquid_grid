@@ -45,6 +45,9 @@ interface Bot {
 interface BotFormData {
   name: string;
   type: string;
+  connectionId: string;
+  baseAsset: string;
+  quoteAsset: string;
 }
 
 interface FormErrors {
@@ -59,6 +62,9 @@ interface FormErrors {
 interface BotFormErrors {
   name?: string;
   type?: string;
+  connectionId?: string;
+  baseAsset?: string;
+  quoteAsset?: string;
 }
 
 const formatAssetValue = (value: number): string => {
@@ -97,6 +103,9 @@ export default function Dashboard() {
   const [botFormData, setBotFormData] = useState<BotFormData>({
     name: "",
     type: "",
+    connectionId: "",
+    baseAsset: "",
+    quoteAsset: "",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
 
@@ -448,6 +457,9 @@ export default function Dashboard() {
       setBotFormData({
         name: "",
         type: "",
+        connectionId: "",
+        baseAsset: "",
+        quoteAsset: "",
       });
     } catch (error) {
       console.error("Detailed error:", error);
@@ -568,6 +580,23 @@ export default function Dashboard() {
 
     if (!data.type) {
       errors.type = t("bots.form.errors.typeRequired");
+    }
+
+    if (!data.connectionId) {
+      errors.connectionId = t("bots.form.errors.connectionRequired");
+    }
+
+    if (!data.baseAsset) {
+      errors.baseAsset = t("bots.form.errors.baseAssetRequired");
+    }
+
+    if (!data.quoteAsset) {
+      errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
+    }
+
+    if (data.baseAsset === data.quoteAsset) {
+      errors.baseAsset = t("bots.form.errors.sameAsset");
+      errors.quoteAsset = t("bots.form.errors.sameAsset");
     }
 
     return errors;
@@ -1046,6 +1075,9 @@ export default function Dashboard() {
                 setBotFormData({
                   name: "",
                   type: "",
+                  connectionId: "",
+                  baseAsset: "",
+                  quoteAsset: "",
                 });
                 setBotFormErrors({});
                 setError(null);
@@ -1104,6 +1136,96 @@ export default function Dashboard() {
                     </p>
                   )}
                 </div>
+                <div>
+                  <label
+                    htmlFor="connectionId"
+                    className="block text-sm font-medium text-gray-800"
+                  >
+                    {t("bots.form.connection")}
+                  </label>
+                  <select
+                    id="connectionId"
+                    name="connectionId"
+                    value={botFormData.connectionId}
+                    onChange={handleBotInputChange}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                    required
+                  >
+                    <option value="">{t("bots.form.selectConnection")}</option>
+                    {connections.map((connection) => (
+                      <option key={connection.id} value={connection.id}>
+                        {connection.name} ({connection.exchange})
+                      </option>
+                    ))}
+                  </select>
+                  {botFormErrors.connectionId && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {botFormErrors.connectionId}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="baseAsset"
+                    className="block text-sm font-medium text-gray-800"
+                  >
+                    {t("bots.form.baseAsset")}
+                  </label>
+                  <select
+                    id="baseAsset"
+                    name="baseAsset"
+                    value={botFormData.baseAsset}
+                    onChange={handleBotInputChange}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                    required
+                  >
+                    <option value="">{t("bots.form.selectBaseAsset")}</option>
+                    {connections
+                      .find((conn) => conn.id === botFormData.connectionId)
+                      ?.assets?.filter((asset) => asset.total > 0)
+                      .map((asset) => (
+                        <option key={asset.asset} value={asset.asset}>
+                          {asset.asset}
+                        </option>
+                      ))}
+                  </select>
+                  {botFormErrors.baseAsset && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {t("bots.form.errors.baseAssetRequired")}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <label
+                    htmlFor="quoteAsset"
+                    className="block text-sm font-medium text-gray-800"
+                  >
+                    {t("bots.form.quoteAsset")}
+                  </label>
+                  <select
+                    id="quoteAsset"
+                    name="quoteAsset"
+                    value={botFormData.quoteAsset}
+                    onChange={handleBotInputChange}
+                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+                    required
+                  >
+                    <option value="">{t("bots.form.selectQuoteAsset")}</option>
+                    {connections
+                      .find((conn) => conn.id === botFormData.connectionId)
+                      ?.assets?.filter((asset) => asset.total > 0)
+                      .map((asset) => (
+                        <option key={asset.asset} value={asset.asset}>
+                          {asset.asset}
+                        </option>
+                      ))}
+                  </select>
+                  {botFormErrors.quoteAsset && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {botFormErrors.quoteAsset}
+                    </p>
+                  )}
+                </div>
                 <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
                   <button
                     type="button"
@@ -1112,6 +1234,9 @@ export default function Dashboard() {
                       setBotFormData({
                         name: "",
                         type: "",
+                        connectionId: "",
+                        baseAsset: "",
+                        quoteAsset: "",
                       });
                       setBotFormErrors({});
                       setError(null);

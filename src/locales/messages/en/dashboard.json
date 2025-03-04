@@ -1,15 +1,15 @@
 {
   "title": "Dashboard",
-  "welcome": "Welcome, {name}",
-  "signout": "Sign out",
+  "welcome": "Welcome, {name}!",
+  "signout": "Sign Out",
   "content": {
     "title": "Content",
     "description": "Description"
   },
   "ccxt": {
-    "title": "Connections",
+    "title": "Exchange Connections",
     "noConnections": "No exchange connections found",
-    "addButton": "Add connection",
+    "addButton": "Add Connection",
     "cancelButton": "Cancel",
     "errors": {
       "fetchFailed": "Failed to fetch exchange connections",
@@ -19,7 +19,7 @@
       "INTERNAL_ERROR": "An internal error occurred",
       "UNAUTHORIZED": "You are not authorized to perform this action",
       "USER_NOT_FOUND": "User not found",
-      "VALIDATION_ERROR": "Data validation error",
+      "VALIDATION_ERROR": "Invalid input data",
       "INVALID_CREDENTIALS": "Invalid exchange credentials",
       "INVALID_WALLET": "Invalid or inaccessible wallet address",
       "CREATE_FAILED": "Failed to create connection",
@@ -27,13 +27,14 @@
       "CONNECTION_NOT_FOUND": "Connection not found or unauthorized",
       "MISSING_ID": "Connection ID is required",
       "EXCHANGE_NOT_SUPPORTED": "This exchange is not supported",
-      "EXCHANGE_ERROR": "Error communicating with exchange",
+      "EXCHANGE_ERROR": "Exchange error occurred",
       "EXCHANGE_CONFIG_ERROR": "Exchange configuration error",
       "CONNECTION_ERROR": "Error connecting to exchange",
       "UNKNOWN_ERROR": "An unknown error occurred",
       "DUPLICATE_CONNECTION": "A connection with this name or credentials already exists",
       "MISSING_FIELD": "A required field is missing",
-      "DATABASE_ERROR": "Database error"
+      "DATABASE_ERROR": "Database error",
+      "NOT_FOUND": "Resource not found"
     },
     "status": {
       "connected": "Connected",
@@ -41,19 +42,19 @@
       "error": "Error"
     },
     "form": {
-      "title": "Add new connection",
+      "title": "Add Exchange Connection",
       "name": "Name",
       "exchange": "Exchange",
+      "selectExchange": "Select an exchange",
       "apiKey": "API Key",
       "apiSecret": "API Secret",
       "walletAddress": "Wallet Address",
       "apiWalletAddress": "API Wallet Address",
-      "apiWalletAddressHelp": "Optional. Required for trading operations.",
       "apiPrivateKey": "API Private Key",
-      "apiPrivateKeyHelp": "Optional. Required for trading operations.",
-      "submit": "Add",
+      "apiWalletAddressHelp": "Optional: Your API wallet address",
+      "apiPrivateKeyHelp": "Optional: Your API private key",
+      "submit": "Add Connection",
       "cancel": "Cancel",
-      "selectExchange": "Select an exchange",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
@@ -68,33 +69,28 @@
       "name": "Name",
       "exchange": "Exchange",
       "status": "Status",
-      "createdAt": "Created at",
-      "delete": "Delete",
+      "createdAt": "Created At",
       "active": "Active",
       "inactive": "Inactive",
-      "noConnections": "No connections found",
-      "showAssets": "Show assets",
-      "hideAssets": "Hide assets"
+      "delete": "Delete",
+      "showAssets": "Show Assets",
+      "hideAssets": "Hide Assets",
+      "noConnections": "No connections found"
     },
     "assets": {
-      "title": "Available assets",
+      "title": "Assets",
       "asset": "Asset",
       "total": "Total",
       "free": "Free",
       "used": "Used",
-      "noAssets": "No assets found for this connection",
-      "showZeroBalances": "Show zero balances",
-      "totalValue": "Total portfolio value",
-      "HYPE-STAKED": "HYPE (Staked)",
-      "HYPE-UNSTAKED": "HYPE (Unstaked)",
-      "HYPE-PENDING": "HYPE (Pending withdrawal)",
-      "usdValue": "USD Value"
+      "totalValue": "Total Value",
+      "noAssets": "No assets found"
     }
   },
   "bots": {
-    "title": "Bots",
+    "title": "Trading Bots",
     "noBots": "No bots found",
-    "addButton": "Add bot",
+    "addButton": "Add Bot",
     "cancelButton": "Cancel",
     "errors": {
       "fetchFailed": "Failed to fetch bots",
@@ -104,13 +100,15 @@
       "INTERNAL_ERROR": "An internal error occurred",
       "UNAUTHORIZED": "You are not authorized to perform this action",
       "USER_NOT_FOUND": "User not found",
-      "VALIDATION_ERROR": "Data validation error",
+      "VALIDATION_ERROR": "Invalid input data",
       "BOT_NOT_FOUND": "Bot not found or unauthorized",
       "MISSING_ID": "Bot ID is required",
       "UNKNOWN_ERROR": "An unknown error occurred",
       "DUPLICATE_BOT": "A bot with this name already exists",
       "MISSING_FIELD": "A required field is missing",
-      "DATABASE_ERROR": "Database error"
+      "DATABASE_ERROR": "Database error",
+      "NOT_FOUND": "Resource not found",
+      "BOT_ERROR": "Bot error occurred"
     },
     "status": {
       "running": "Running",
@@ -118,30 +116,36 @@
       "error": "Error"
     },
     "form": {
-      "title": "Add new bot",
+      "title": "Add Trading Bot",
       "name": "Name",
-      "type": "Bot type",
+      "type": "Type",
+      "selectType": "Select bot type",
       "connection": "Connection",
-      "submit": "Add",
-      "cancel": "Cancel",
-      "selectType": "Select a bot type",
       "selectConnection": "Select a connection",
+      "baseAsset": "Base Asset",
+      "selectBaseAsset": "Select base asset",
+      "quoteAsset": "Quote Asset",
+      "selectQuoteAsset": "Select quote asset",
+      "submit": "Add Bot",
+      "cancel": "Cancel",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
-        "typeRequired": "Bot type is required",
-        "connectionRequired": "Connection is required"
+        "typeRequired": "Type is required",
+        "connectionRequired": "Please select a connection",
+        "baseAssetRequired": "Please select a base asset",
+        "quoteAssetRequired": "Please select a quote asset",
+        "sameAsset": "Base and quote assets cannot be the same"
       }
     },
     "table": {
       "name": "Name",
       "type": "Type",
-      "connection": "Connection",
       "status": "Status",
-      "createdAt": "Created at",
-      "delete": "Delete",
+      "createdAt": "Created At",
       "start": "Start",
       "stop": "Stop",
+      "delete": "Delete",
       "noBots": "No bots found"
     }
   }

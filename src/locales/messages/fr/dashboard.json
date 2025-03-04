@@ -1,13 +1,13 @@
 {
   "title": "Tableau de bord",
-  "welcome": "Bienvenue, {name}",
-  "signout": "Déconnexion",
+  "welcome": "Bienvenue, {name} !",
+  "signout": "Se déconnecter",
   "content": {
     "title": "Contenu",
     "description": "Description"
   },
   "ccxt": {
-    "title": "Connexions",
+    "title": "Connexions d'exchange",
     "noConnections": "Aucune connexion aux exchanges trouvée",
     "addButton": "Ajouter une connexion",
     "cancelButton": "Annuler",
@@ -16,10 +16,10 @@
       "connectionFailed": "Échec de la connexion à l'exchange",
       "invalidCredentials": "Identifiants d'exchange invalides",
       "deleteFailed": "Échec de la suppression de la connexion",
-      "INTERNAL_ERROR": "Une erreur interne est survenue",
+      "INTERNAL_ERROR": "Une erreur interne s'est produite",
       "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action",
       "USER_NOT_FOUND": "Utilisateur non trouvé",
-      "VALIDATION_ERROR": "Erreur de validation des données",
+      "VALIDATION_ERROR": "Données d'entrée invalides",
       "INVALID_CREDENTIALS": "Les identifiants de l'exchange sont invalides",
       "INVALID_WALLET": "L'adresse du wallet est invalide ou inaccessible",
       "CREATE_FAILED": "Impossible de créer la connexion",
@@ -27,13 +27,14 @@
       "CONNECTION_NOT_FOUND": "Connexion introuvable ou non autorisée",
       "MISSING_ID": "L'identifiant de la connexion est requis",
       "EXCHANGE_NOT_SUPPORTED": "Cet exchange n'est pas supporté",
-      "EXCHANGE_ERROR": "Erreur lors de la communication avec l'exchange",
+      "EXCHANGE_ERROR": "Erreur d'exchange",
       "EXCHANGE_CONFIG_ERROR": "Erreur de configuration de l'exchange",
       "CONNECTION_ERROR": "Erreur de connexion à l'exchange",
       "UNKNOWN_ERROR": "Une erreur inconnue est survenue",
       "DUPLICATE_CONNECTION": "Une connexion avec ce nom ou ces identifiants existe déjà",
       "MISSING_FIELD": "Un champ requis est manquant",
-      "DATABASE_ERROR": "Erreur de base de données"
+      "DATABASE_ERROR": "Erreur de base de données",
+      "NOT_FOUND": "Ressource non trouvée"
     },
     "status": {
       "connected": "Connecté",
@@ -41,19 +42,19 @@
       "error": "Erreur"
     },
     "form": {
-      "title": "Ajouter une nouvelle connexion",
+      "title": "Ajouter une connexion d'exchange",
       "name": "Nom",
       "exchange": "Exchange",
+      "selectExchange": "Sélectionner un exchange",
       "apiKey": "Clé API",
       "apiSecret": "Secret API",
       "walletAddress": "Adresse du portefeuille",
       "apiWalletAddress": "Adresse du portefeuille API",
-      "apiWalletAddressHelp": "Optionnel. Requis pour les opérations de trading.",
       "apiPrivateKey": "Clé privée API",
-      "apiPrivateKeyHelp": "Optionnel. Requis pour les opérations de trading.",
-      "submit": "Ajouter",
+      "apiWalletAddressHelp": "Optionnel : Votre adresse de portefeuille API",
+      "apiPrivateKeyHelp": "Optionnel : Votre clé privée API",
+      "submit": "Ajouter la connexion",
       "cancel": "Annuler",
-      "selectExchange": "Sélectionner un exchange",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
@@ -69,30 +70,25 @@
       "exchange": "Exchange",
       "status": "Statut",
       "createdAt": "Créé le",
-      "delete": "Supprimer",
       "active": "Actif",
       "inactive": "Inactif",
-      "noConnections": "Aucune connexion trouvée",
-      "showAssets": "Voir les actifs",
-      "hideAssets": "Masquer les actifs"
+      "delete": "Supprimer",
+      "showAssets": "Afficher les actifs",
+      "hideAssets": "Masquer les actifs",
+      "noConnections": "Aucune connexion trouvée"
     },
     "assets": {
-      "title": "Actifs disponibles",
+      "title": "Actifs",
       "asset": "Actif",
       "total": "Total",
       "free": "Disponible",
       "used": "Utilisé",
-      "noAssets": "Aucun actif trouvé pour cette connexion",
-      "showZeroBalances": "Afficher les soldes nuls",
-      "totalValue": "Valeur totale du portefeuille",
-      "HYPE-STAKED": "HYPE (Staké)",
-      "HYPE-UNSTAKED": "HYPE (Non staké)",
-      "HYPE-PENDING": "HYPE (Retrait en attente)",
-      "usdValue": "Valeur en USD"
+      "totalValue": "Valeur totale",
+      "noAssets": "Aucun actif trouvé"
     }
   },
   "bots": {
-    "title": "Bots",
+    "title": "Bots de trading",
     "noBots": "Aucun bot trouvé",
     "addButton": "Ajouter un bot",
     "cancelButton": "Annuler",
@@ -101,16 +97,18 @@
       "createFailed": "Échec de la création du bot",
       "deleteFailed": "Échec de la suppression du bot",
       "updateFailed": "Échec de la mise à jour du bot",
-      "INTERNAL_ERROR": "Une erreur interne est survenue",
+      "INTERNAL_ERROR": "Une erreur interne s'est produite",
       "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action",
       "USER_NOT_FOUND": "Utilisateur non trouvé",
-      "VALIDATION_ERROR": "Erreur de validation des données",
+      "VALIDATION_ERROR": "Données d'entrée invalides",
       "BOT_NOT_FOUND": "Bot introuvable ou non autorisé",
       "MISSING_ID": "L'identifiant du bot est requis",
       "UNKNOWN_ERROR": "Une erreur inconnue est survenue",
       "DUPLICATE_BOT": "Un bot avec ce nom existe déjà",
       "MISSING_FIELD": "Un champ requis est manquant",
-      "DATABASE_ERROR": "Erreur de base de données"
+      "DATABASE_ERROR": "Erreur de base de données",
+      "NOT_FOUND": "Ressource non trouvée",
+      "BOT_ERROR": "Erreur du bot"
     },
     "status": {
       "running": "En cours",
@@ -118,30 +116,36 @@
       "error": "Erreur"
     },
     "form": {
-      "title": "Ajouter un nouveau bot",
+      "title": "Ajouter un bot de trading",
       "name": "Nom",
-      "type": "Type de bot",
+      "type": "Type",
+      "selectType": "Sélectionner le type de bot",
       "connection": "Connexion",
-      "submit": "Ajouter",
-      "cancel": "Annuler",
-      "selectType": "Sélectionner un type de bot",
       "selectConnection": "Sélectionner une connexion",
+      "baseAsset": "Actif de base",
+      "selectBaseAsset": "Sélectionner l'actif de base",
+      "quoteAsset": "Actif de cotation",
+      "selectQuoteAsset": "Sélectionner l'actif de cotation",
+      "submit": "Ajouter le bot",
+      "cancel": "Annuler",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
-        "typeRequired": "Le type de bot est requis",
-        "connectionRequired": "La connexion est requise"
+        "typeRequired": "Le type est requis",
+        "connectionRequired": "Veuillez sélectionner une connexion",
+        "baseAssetRequired": "Veuillez sélectionner un actif de base",
+        "quoteAssetRequired": "Veuillez sélectionner un actif de cotation",
+        "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques"
       }
     },
     "table": {
       "name": "Nom",
       "type": "Type",
-      "connection": "Connexion",
       "status": "Statut",
       "createdAt": "Créé le",
-      "delete": "Supprimer",
       "start": "Démarrer",
       "stop": "Arrêter",
+      "delete": "Supprimer",
       "noBots": "Aucun bot trouvé"
     }
   }
