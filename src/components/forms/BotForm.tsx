@@ -263,66 +263,73 @@ export default function BotForm({
         placeholder={t("bots.form.selectConnection")}
       />
       {selectedConnection && !botFormErrors.connection && (
-        <Select
-          id="baseAsset"
-          name="baseAsset"
-          label={t("bots.form.baseAsset")}
-          value={baseAsset}
-          onChange={handleBaseAssetChange}
-          options={validBaseAssets.map((asset) => ({
-            value: asset,
-            label: asset,
-          }))}
-          error={botFormErrors.baseAsset}
-          required
-          disabled={isLoadingAssets}
-          placeholder={t("bots.form.selectBaseAsset")}
-          isLoading={isLoadingAssets}
-        />
-      )}
-      {baseAsset && !botFormErrors.baseAsset && (
-        <Input
-          id="baseAssetQuantity"
-          name="baseAssetQuantity"
-          label={t("bots.form.baseAssetQuantity")}
-          type="number"
-          value={botFormData.baseAssetQuantity}
-          onChange={handleBotInputChange}
-          error={botFormErrors.baseAssetQuantity}
-          required
-          min={0}
-          step="any"
-        />
-      )}
-      {baseAsset && !botFormErrors.baseAsset && (
-        <Select
-          id="quoteAsset"
-          name="quoteAsset"
-          label={t("bots.form.quoteAsset")}
-          value={quoteAsset}
-          onChange={handleQuoteAssetChange}
-          options={validQuoteAssets.map((asset) => ({
-            value: asset,
-            label: asset,
-          }))}
-          error={botFormErrors.quoteAsset}
-          required
-          placeholder={t("bots.form.selectQuoteAsset")}
-        />
-      )}
-      {quoteAsset && !botFormErrors.quoteAsset && (
-        <Input
-          id="quoteAssetQuantity"
-          name="quoteAssetQuantity"
-          label={t("bots.form.quoteAssetQuantity")}
-          type="number"
-          value={botFormData.quoteAssetQuantity}
-          onChange={handleBotInputChange}
-          error={botFormErrors.quoteAssetQuantity}
-          required
-          min={0}
-          step="any"
-        />
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              id="baseAsset"
+              name="baseAsset"
+              label={t("bots.form.baseAsset")}
+              value={baseAsset}
+              onChange={handleBaseAssetChange}
+              options={validBaseAssets.map((asset) => ({
+                value: asset,
+                label: asset,
+              }))}
+              error={botFormErrors.baseAsset}
+              required
+              disabled={isLoadingAssets}
+              placeholder={t("bots.form.selectBaseAsset")}
+              isLoading={isLoadingAssets}
+            />
+            {baseAsset && !botFormErrors.baseAsset && (
+              <Select
+                id="quoteAsset"
+                name="quoteAsset"
+                label={t("bots.form.quoteAsset")}
+                value={quoteAsset}
+                onChange={handleQuoteAssetChange}
+                options={validQuoteAssets.map((asset) => ({
+                  value: asset,
+                  label: asset,
+                }))}
+                error={botFormErrors.quoteAsset}
+                required
+                placeholder={t("bots.form.selectQuoteAsset")}
+              />
+            )}
+          </div>
+          {baseAsset &&
+            !botFormErrors.baseAsset &&
+            quoteAsset &&
+            !botFormErrors.quoteAsset && (
+              <div className="grid grid-cols-2 gap-4">
+                <Input
+                  id="baseAssetQuantity"
+                  name="baseAssetQuantity"
+                  label={t("bots.form.baseAssetQuantity")}
+                  type="number"
+                  value={botFormData.baseAssetQuantity}
+                  onChange={handleBotInputChange}
+                  error={botFormErrors.baseAssetQuantity}
+                  required
+                  min={0}
+                  step={0.000001}
+                />
+                <Input
+                  id="quoteAssetQuantity"
+                  name="quoteAssetQuantity"
+                  label={t("bots.form.quoteAssetQuantity")}
+                  type="number"
+                  value={botFormData.quoteAssetQuantity}
+                  onChange={handleBotInputChange}
+                  error={botFormErrors.quoteAssetQuantity}
+                  required
+                  min={0}
+                  step={0.000001}
+                />
+              </div>
+            )}
+        </div>
       )}
       <div className="flex justify-end space-x-3">
         <Button type="button" onClick={onCancel} variant="outline">
