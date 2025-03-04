@@ -56,8 +56,8 @@ export default function BotForm({
   const t = useTranslations("dashboard");
   const [botFormData, setBotFormData] = useState<BotFormData>({
     name: "",
-    baseAssetQuantity: "",
-    quoteAssetQuantity: "",
+    baseAssetQuantity: "0",
+    quoteAssetQuantity: "0",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
   const [isBotFormValid, setIsBotFormValid] = useState(false);
