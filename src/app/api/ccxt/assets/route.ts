@@ -432,8 +432,32 @@ export async function GET(request: Request) {
           } as Asset;
         });
 
+      // Regrouper les HYPE-STAKED avec les HYPE
+      const groupedAssets = assets.reduce((acc, asset) => {
+        if (asset.asset === "HYPE-STAKED") {
+          const existingHype = acc.find((a) => a.asset === "HYPE");
+          if (existingHype) {
+            existingHype.total += asset.total;
+            existingHype.used += asset.used;
+            existingHype.free += asset.free;
+          } else {
+            acc.push({
+              asset: "HYPE",
+              total: asset.total,
+              free: asset.free,
+              used: asset.used,
+            });
+          }
+        } else if (asset.asset !== "HYPE") {
+          acc.push(asset);
+        }
+        return acc;
+      }, [] as Asset[]);
+
       // Récupérer les prix pour les assets non-USDC
-      const nonUsdcAssets = assets.filter((asset) => asset.asset !== "USDC");
+      const nonUsdcAssets = groupedAssets.filter(
+        (asset) => asset.asset !== "USDC"
+      );
       if (nonUsdcAssets.length > 0) {
         try {
           const symbols = nonUsdcAssets.map((asset) => asset.asset).join(",");
@@ -450,7 +474,7 @@ export async function GET(request: Request) {
             const { prices } = await priceResponse.json();
 
             // Ajouter les valeurs en dollar aux assets
-            assets.forEach((asset) => {
+            groupedAssets.forEach((asset) => {
               if (asset.asset === "USDC") {
                 asset.usdValue = asset.total;
               } else if (prices[asset.asset]) {
@@ -465,11 +489,11 @@ export async function GET(request: Request) {
 
       // Mettre à jour le cache
       balanceCache[connectionId] = {
-        balances: assets,
+        balances: groupedAssets,
         timestamp: Date.now(),
       };
 
-      return NextResponse.json(assets);
+      return NextResponse.json(groupedAssets);
     } catch (error) {
       console.error("Error fetching assets:", error);
 
