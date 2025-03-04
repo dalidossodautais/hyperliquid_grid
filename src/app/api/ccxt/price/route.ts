@@ -4,201 +4,153 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ccxt, { Exchange, Ticker } from "ccxt";
 
-// Cache pour stocker les prix
-interface PriceCache {
-  price: number;
-  timestamp: number;
+// Configuration
+const REQUEST_TIMEOUT = 30000; // 30 seconds timeout
+
+// Interface pour la configuration de l'exchange
+interface ExchangeConfig {
+  apiKey: string;
+  secret?: string;
+  walletAddress?: string;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
+  enableRateLimit?: boolean;
+  timeout?: number;
+  options?: {
+    defaultType?: string;
+    fetchMarkets?: string[];
+  };
 }
 
-// Cache pour stocker les instances d'exchange
-interface ExchangeCache {
-  instance: Exchange;
-  timestamp: number;
+// Interface pour la connexion étendue
+interface ExtendedConnection {
+  id: string;
+  userId: string;
+  name: string;
+  exchange: string;
+  key: string;
+  secret: string | null;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
-
-const priceCache: { [key: string]: PriceCache } = {};
-const exchangeCache: { [key: string]: ExchangeCache } = {};
-const CACHE_DURATION = 30 * 1000; // 30 seconds
-const REQUEST_TIMEOUT = 15000; // 15 seconds timeout for each request
-const MAX_RETRIES = 2; // Maximum number of retries for failed requests
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session?.user) {
+
+    if (!session?.user?.email) {
       return NextResponse.json(
-        { code: "UNAUTHORIZED", message: "Unauthorized" },
+        { code: "UNAUTHORIZED", redirect: "/signin" },
         { status: 401 }
       );
     }
 
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    const symbols = searchParams.get("symbols")?.split(",") || [];
+    const connectionId = searchParams.get("id");
+    const symbolsParam = searchParams.get("symbols");
 
-    if (!id || symbols.length === 0) {
+    if (!connectionId || !symbolsParam) {
+      return NextResponse.json({ code: "MISSING_PARAMS" }, { status: 400 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
       return NextResponse.json(
-        { code: "BAD_REQUEST", message: "Missing required parameters" },
-        { status: 400 }
+        { code: "USER_NOT_FOUND", redirect: "/signin" },
+        { status: 404 }
       );
     }
 
-    // Vérifier le cache des prix
-    const cachedPrices: { [key: string]: number } = {};
-    const uncachedSymbols: string[] = [];
-
-    symbols.forEach((symbol) => {
-      const cacheKey = `${id}-${symbol}`;
-      const cached = priceCache[cacheKey];
-      if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-        cachedPrices[symbol] = cached.price;
-      } else {
-        uncachedSymbols.push(symbol);
-      }
-    });
-
-    // Si tous les prix sont en cache, les retourner
-    if (uncachedSymbols.length === 0) {
-      return NextResponse.json({ prices: cachedPrices });
-    }
-
-    // Récupérer la connexion depuis la base de données
-    const connection = await prisma.exchangeConnection.findUnique({
-      where: { id },
-      select: {
-        exchange: true,
-        key: true,
-        secret: true,
-        apiWalletAddress: true,
-        apiPrivateKey: true,
+    const connection = await prisma.exchangeConnection.findFirst({
+      where: {
+        id: connectionId,
+        userId: user.id,
       },
     });
 
     if (!connection) {
       return NextResponse.json(
-        { code: "NOT_FOUND", message: "Connection not found" },
+        { code: "CONNECTION_NOT_FOUND" },
         { status: 404 }
       );
     }
 
-    // Vérifier le cache de l'instance d'exchange
-    const exchangeCacheKey = `${connection.exchange}-${connection.key}`;
-    let exchange: Exchange;
+    const exchangeId = connection.exchange.toLowerCase();
+    const exchangeClass = ccxt[exchangeId as keyof typeof ccxt];
 
-    const cachedExchange = exchangeCache[exchangeCacheKey];
-    if (
-      cachedExchange &&
-      Date.now() - cachedExchange.timestamp < CACHE_DURATION
-    ) {
-      exchange = cachedExchange.instance;
-    } else {
-      const exchangeName = connection.exchange.toLowerCase();
-      const ExchangeClass = ccxt[
-        exchangeName as keyof typeof ccxt
-      ] as new (config: {
-        apiKey: string;
-        secret?: string;
-        apiWalletAddress?: string;
-        apiPrivateKey?: string;
-      }) => Exchange;
+    if (!exchangeClass) {
+      return NextResponse.json(
+        { code: "EXCHANGE_NOT_SUPPORTED" },
+        { status: 400 }
+      );
+    }
 
-      if (!ExchangeClass) {
-        return NextResponse.json(
-          { code: "UNSUPPORTED_EXCHANGE", message: "Unsupported exchange" },
-          { status: 400 }
-        );
+    const config: ExchangeConfig = {
+      apiKey: connection.key,
+      enableRateLimit: true,
+      timeout: REQUEST_TIMEOUT,
+    };
+
+    if (connection.secret) {
+      config.secret = connection.secret;
+    }
+
+    if (exchangeId === "hyperliquid") {
+      config.walletAddress = connection.key;
+      const extConnection = connection as unknown as ExtendedConnection;
+      if (extConnection.apiWalletAddress) {
+        config.apiWalletAddress = extConnection.apiWalletAddress;
       }
-
-      exchange = new ExchangeClass({
-        apiKey: connection.key,
-        secret: connection.secret || undefined,
-        apiWalletAddress: connection.apiWalletAddress || undefined,
-        apiPrivateKey: connection.apiPrivateKey || undefined,
-      });
-
-      exchangeCache[exchangeCacheKey] = {
-        instance: exchange,
-        timestamp: Date.now(),
+      if (extConnection.apiPrivateKey) {
+        config.apiPrivateKey = extConnection.apiPrivateKey;
+      }
+      config.options = {
+        defaultType: "spot",
+        fetchMarkets: ["spot"],
       };
     }
 
-    // Récupérer les prix pour les symboles non cachés
-    const prices: { [key: string]: number } = { ...cachedPrices };
+    const exchange = new (exchangeClass as new (
+      config: ExchangeConfig
+    ) => Exchange)(config);
+    await exchange.loadMarkets();
 
-    if (uncachedSymbols.length > 0) {
-      try {
-        // Récupérer tous les prix en parallèle
-        const pricePromises = uncachedSymbols.map(async (symbol) => {
-          let retries = 0;
-          while (retries <= MAX_RETRIES) {
-            try {
-              // Pour Hyperliquid, utiliser le symbole de base
-              const baseSymbol = symbol.endsWith("-STAKED")
-                ? symbol.replace("-STAKED", "")
-                : symbol;
+    const symbols = symbolsParam.split(",");
+    const validSymbols = symbols.filter((symbol) => {
+      const tradingSymbol = `${symbol}/USDC`;
+      return exchange.markets[tradingSymbol] !== undefined;
+    });
 
-              // Construire le symbole de trading
-              const tradingSymbol = `${baseSymbol}/USDC`;
+    console.log(`Fetching prices for ${validSymbols.length} symbols`);
 
-              // Ajouter un timeout à la requête
-              const timeoutPromise = new Promise((_, reject) => {
-                setTimeout(
-                  () => reject(new Error("Request timeout")),
-                  REQUEST_TIMEOUT
-                );
-              });
+    // Récupérer tous les prix en une seule requête
+    const tickers = await exchange.fetchTickers(
+      validSymbols.map((symbol) => `${symbol}/USDC`)
+    );
 
-              const tickerPromise = exchange.fetchTicker(tradingSymbol);
-
-              const ticker = (await Promise.race([
-                tickerPromise,
-                timeoutPromise,
-              ])) as Ticker;
-              const price = ticker.last || ticker.close;
-
-              if (price) {
-                // Mettre en cache le prix
-                priceCache[`${id}-${symbol}`] = {
-                  price,
-                  timestamp: Date.now(),
-                };
-                return { symbol, price };
-              }
-            } catch (error) {
-              console.error(
-                `Error fetching price for ${symbol} (attempt ${retries + 1}/${
-                  MAX_RETRIES + 1
-                }):`,
-                error
-              );
-              retries++;
-              if (retries <= MAX_RETRIES) {
-                // Attendre un peu avant de réessayer
-                await new Promise((resolve) =>
-                  setTimeout(resolve, 1000 * retries)
-                );
-              }
-            }
-          }
-          return { symbol, price: 0 };
-        });
-
-        const results = await Promise.allSettled(pricePromises);
-        results.forEach((result) => {
-          if (result.status === "fulfilled" && result.value.price > 0) {
-            prices[result.value.symbol] = result.value.price;
-          }
-        });
-      } catch (error) {
-        console.error("Error fetching prices:", error);
+    // Extraire les prix
+    const prices: Record<string, number> = {};
+    validSymbols.forEach((symbol) => {
+      const ticker = tickers[`${symbol}/USDC`];
+      if (ticker && ticker.last) {
+        prices[symbol] = ticker.last;
       }
-    }
+    });
 
+    console.log(`Successfully fetched ${Object.keys(prices).length} prices`);
     return NextResponse.json({ prices });
   } catch (error) {
-    console.error("Error in price route:", error);
+    console.error("GET price error:", error);
     return NextResponse.json(
-      { code: "INTERNAL_ERROR", message: "Internal server error" },
+      {
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 }
     );
   }
