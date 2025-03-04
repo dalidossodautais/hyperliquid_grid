@@ -20,14 +20,7 @@ interface ExchangeConnection {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-}
-
-interface Asset {
-  asset: string;
-  total: number;
-  free: number;
-  used: number;
-  usdValue?: number;
+  availableSymbols?: string[];
 }
 
 interface BotFormProps {
@@ -40,7 +33,7 @@ interface BotFormProps {
   onCancel: () => void;
   connections: ExchangeConnection[];
   error: string | null;
-  onFetchAssets: (connectionId: string) => Promise<Asset[]>;
+  onFetchSymbols: (connectionId: string) => Promise<string[]>;
 }
 
 export default function BotForm({
@@ -48,7 +41,7 @@ export default function BotForm({
   onCancel,
   connections,
   error,
-  onFetchAssets,
+  onFetchSymbols,
 }: BotFormProps) {
   const t = useTranslations("dashboard");
   const [botFormData, setBotFormData] = useState<BotFormData>({
@@ -57,9 +50,15 @@ export default function BotForm({
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
   const [isBotFormValid, setIsBotFormValid] = useState(false);
   const [selectedConnection, setSelectedConnection] = useState<string>("");
-  const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
+  const [availableSymbols, setAvailableSymbols] = useState<string[]>([]);
   const [baseAsset, setBaseAsset] = useState<string>("");
   const [quoteAsset, setQuoteAsset] = useState<string>("");
+  const [validBaseAssets, setValidBaseAssets] = useState<string[]>([]);
+  const [validQuoteAssets, setValidQuoteAssets] = useState<string[]>([]);
+
+  const cleanSymbol = (symbol: string): string => {
+    return symbol.replace(/:USDC$/, "");
+  };
 
   const validateBotForm = useCallback(
     (data: BotFormData): boolean => {
@@ -87,17 +86,58 @@ export default function BotForm({
         errors.quoteAsset = t("bots.form.errors.sameAsset");
       }
 
+      const cleanedTradingPair = `${cleanSymbol(baseAsset)}/${cleanSymbol(
+        quoteAsset
+      )}`;
+      if (
+        baseAsset &&
+        quoteAsset &&
+        !availableSymbols.some(
+          (symbol) => cleanSymbol(symbol) === cleanedTradingPair
+        )
+      ) {
+        errors.quoteAsset = t("bots.form.errors.invalidTradingPair");
+      }
+
       setBotFormErrors(errors);
       const isValid = Object.keys(errors).length === 0;
       setIsBotFormValid(isValid);
       return isValid;
     },
-    [t, selectedConnection, baseAsset, quoteAsset]
+    [t, selectedConnection, baseAsset, quoteAsset, availableSymbols]
   );
 
   useEffect(() => {
     validateBotForm(botFormData);
   }, [botFormData, validateBotForm]);
+
+  useEffect(() => {
+    if (availableSymbols.length > 0) {
+      const baseAssets = new Set<string>();
+      availableSymbols.forEach((symbol) => {
+        const [base] = symbol.split("/");
+        baseAssets.add(cleanSymbol(base));
+      });
+      setValidBaseAssets(Array.from(baseAssets).sort());
+    } else {
+      setValidBaseAssets([]);
+    }
+  }, [availableSymbols]);
+
+  useEffect(() => {
+    if (baseAsset && availableSymbols.length > 0) {
+      const quoteAssets = new Set<string>();
+      availableSymbols.forEach((symbol) => {
+        const [base, quote] = symbol.split("/");
+        if (cleanSymbol(base) === baseAsset && quote) {
+          quoteAssets.add(cleanSymbol(quote));
+        }
+      });
+      setValidQuoteAssets(Array.from(quoteAssets).sort());
+    } else {
+      setValidQuoteAssets([]);
+    }
+  }, [baseAsset, availableSymbols]);
 
   const handleBotInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -113,12 +153,14 @@ export default function BotForm({
     setSelectedConnection(connectionId);
     setBaseAsset("");
     setQuoteAsset("");
+    setValidBaseAssets([]);
+    setValidQuoteAssets([]);
 
     if (connectionId) {
-      const assets = await onFetchAssets(connectionId);
-      setAvailableAssets(assets);
+      const symbols = await onFetchSymbols(connectionId);
+      setAvailableSymbols(symbols);
     } else {
-      setAvailableAssets([]);
+      setAvailableSymbols([]);
     }
   };
 
@@ -219,9 +261,9 @@ export default function BotForm({
             required
           >
             <option value="">{t("bots.form.selectBaseAsset")}</option>
-            {availableAssets.map((asset) => (
-              <option key={asset.asset} value={asset.asset}>
-                {asset.asset}
+            {validBaseAssets.map((asset) => (
+              <option key={asset} value={asset}>
+                {asset}
               </option>
             ))}
           </select>
@@ -249,13 +291,11 @@ export default function BotForm({
             required
           >
             <option value="">{t("bots.form.selectQuoteAsset")}</option>
-            {availableAssets
-              .filter((asset) => asset.asset !== baseAsset)
-              .map((asset) => (
-                <option key={asset.asset} value={asset.asset}>
-                  {asset.asset}
-                </option>
-              ))}
+            {validQuoteAssets.map((asset) => (
+              <option key={asset} value={asset}>
+                {asset}
+              </option>
+            ))}
           </select>
           {botFormErrors.quoteAsset && (
             <p className="mt-1 text-sm text-red-600">

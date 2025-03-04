@@ -135,7 +135,8 @@
         "connectionRequired": "Veuillez sélectionner une connexion",
         "baseAssetRequired": "Veuillez sélectionner un actif de base",
         "quoteAssetRequired": "Veuillez sélectionner un actif de cotation",
-        "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques"
+        "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
+        "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange"
       }
     },
     "table": {

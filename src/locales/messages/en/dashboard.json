@@ -135,7 +135,8 @@
         "connectionRequired": "Please select a connection",
         "baseAssetRequired": "Please select a base asset",
         "quoteAssetRequired": "Please select a quote asset",
-        "sameAsset": "Base and quote assets cannot be the same"
+        "sameAsset": "Base and quote assets cannot be the same",
+        "invalidTradingPair": "This trading pair is not available on the exchange"
       }
     },
     "table": {
