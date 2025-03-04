@@ -55,6 +55,7 @@ export default function BotForm({
   const [quoteAsset, setQuoteAsset] = useState<string>("");
   const [validBaseAssets, setValidBaseAssets] = useState<string[]>([]);
   const [validQuoteAssets, setValidQuoteAssets] = useState<string[]>([]);
+  const [isLoadingAssets, setIsLoadingAssets] = useState(false);
 
   const cleanSymbol = useCallback((symbol: string): string => {
     return symbol.replace(/:USDC$/, "");
@@ -164,8 +165,13 @@ export default function BotForm({
     setValidQuoteAssets([]);
 
     if (connectionId) {
-      const symbols = await onFetchSymbols(connectionId);
-      setAvailableSymbols(symbols);
+      setIsLoadingAssets(true);
+      try {
+        const symbols = await onFetchSymbols(connectionId);
+        setAvailableSymbols(symbols);
+      } finally {
+        setIsLoadingAssets(false);
+      }
     } else {
       setAvailableSymbols([]);
     }
@@ -259,21 +265,29 @@ export default function BotForm({
           >
             {t("bots.form.baseAsset")}
           </label>
-          <select
-            id="baseAsset"
-            name="baseAsset"
-            value={baseAsset}
-            onChange={handleBaseAssetChange}
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            required
-          >
-            <option value="">{t("bots.form.selectBaseAsset")}</option>
-            {validBaseAssets.map((asset) => (
-              <option key={asset} value={asset}>
-                {asset}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              id="baseAsset"
+              name="baseAsset"
+              value={baseAsset}
+              onChange={handleBaseAssetChange}
+              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+              required
+              disabled={isLoadingAssets}
+            >
+              <option value="">{t("bots.form.selectBaseAsset")}</option>
+              {validBaseAssets.map((asset) => (
+                <option key={asset} value={asset}>
+                  {asset}
+                </option>
+              ))}
+            </select>
+            {isLoadingAssets && (
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+              </div>
+            )}
+          </div>
           {botFormErrors.baseAsset && (
             <p className="mt-1 text-sm text-red-600">
               {botFormErrors.baseAsset}
