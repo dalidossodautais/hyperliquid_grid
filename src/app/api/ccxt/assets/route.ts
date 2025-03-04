@@ -4,11 +4,13 @@ import prisma from "@/lib/prisma";
 import ccxt, { Exchange } from "ccxt";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
-// Type for exchange configuration
+// Interface for exchange configuration
 interface ExchangeConfig {
   apiKey: string;
   secret?: string;
   walletAddress?: string;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
   enableRateLimit?: boolean;
   timeout?: number;
   options?: {
@@ -32,6 +34,28 @@ type WalletBalance = {
   total?: Record<string, number>;
   [key: string]: Record<string, number> | unknown;
 };
+
+// Interface for Hyperliquid staking data
+interface HyperliquidStakingData {
+  delegated: string;
+  undelegated: string;
+  totalPendingWithdrawal: string;
+  nPendingWithdrawals: number;
+}
+
+// Extended connection type to include optional API wallet fields
+interface ExtendedConnection {
+  id: string;
+  userId: string;
+  name: string;
+  exchange: string;
+  key: string;
+  secret: string | null;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 // Retrieve assets from a connection
 export async function GET(request: Request) {
@@ -120,6 +144,14 @@ export async function GET(request: Request) {
       // Specific configuration for Hyperliquid
       if (exchangeId === "hyperliquid") {
         config.walletAddress = connection.key;
+        // Cast connection to ExtendedConnection to access optional fields
+        const extConnection = connection as unknown as ExtendedConnection;
+        if (extConnection.apiWalletAddress) {
+          config.apiWalletAddress = extConnection.apiWalletAddress;
+        }
+        if (extConnection.apiPrivateKey) {
+          config.apiPrivateKey = extConnection.apiPrivateKey;
+        }
         config.options = {
           defaultType: "swap",
           fetchMarkets: ["swap"],
@@ -175,6 +207,76 @@ export async function GET(request: Request) {
             allBalances.total = { ...balance.total };
             allBalances.free = { ...(balance.free || {}) };
             allBalances.used = { ...(balance.used || {}) };
+          }
+
+          // Récupérer les actifs en staking pour Hyperliquid
+          try {
+            // Récupérer le résumé du staking
+            const stakingSummaryResponse = await fetch(
+              "https://api.hyperliquid.xyz/info",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  type: "delegatorSummary",
+                  user: connection.key,
+                }),
+              }
+            );
+
+            if (stakingSummaryResponse.ok) {
+              const stakingSummary: HyperliquidStakingData =
+                await stakingSummaryResponse.json();
+
+              // Ajouter les actifs en staking aux balances
+              if (
+                stakingSummary.delegated &&
+                parseFloat(stakingSummary.delegated) > 0
+              ) {
+                const delegatedAmount = parseFloat(stakingSummary.delegated);
+
+                // Ajouter HYPE-STAKED comme actif
+                allBalances.total["HYPE-STAKED"] = delegatedAmount;
+                allBalances.used["HYPE-STAKED"] = delegatedAmount;
+                allBalances.free["HYPE-STAKED"] = 0;
+              }
+
+              if (
+                stakingSummary.undelegated &&
+                parseFloat(stakingSummary.undelegated) > 0
+              ) {
+                const undelegatedAmount = parseFloat(
+                  stakingSummary.undelegated
+                );
+
+                // Ajouter HYPE-UNSTAKED comme actif
+                allBalances.total["HYPE-UNSTAKED"] = undelegatedAmount;
+                allBalances.free["HYPE-UNSTAKED"] = undelegatedAmount;
+                allBalances.used["HYPE-UNSTAKED"] = 0;
+              }
+
+              if (
+                stakingSummary.totalPendingWithdrawal &&
+                parseFloat(stakingSummary.totalPendingWithdrawal) > 0
+              ) {
+                const pendingAmount = parseFloat(
+                  stakingSummary.totalPendingWithdrawal
+                );
+
+                // Ajouter HYPE-PENDING comme actif
+                allBalances.total["HYPE-PENDING"] = pendingAmount;
+                allBalances.used["HYPE-PENDING"] = pendingAmount;
+                allBalances.free["HYPE-PENDING"] = 0;
+              }
+            }
+          } catch (stakingError) {
+            console.error(
+              "Error retrieving Hyperliquid staking data:",
+              stakingError
+            );
+            // Continue without staking data
           }
         } else {
           // For other exchanges, try all wallet types

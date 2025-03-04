@@ -201,39 +201,6 @@ export default function Dashboard() {
     }
   };
 
-  // Validation des champs
-  const validateForm = (data: ConnectionFormData): FormErrors => {
-    const errors: FormErrors = {};
-
-    if (!data.name.trim()) {
-      errors.name = t("ccxt.form.errors.nameRequired");
-    } else if (data.name.length < 3) {
-      errors.name = t("ccxt.form.errors.nameLength");
-    }
-
-    if (!data.exchange) {
-      errors.exchange = t("ccxt.form.errors.exchangeRequired");
-    }
-
-    if (!data.key.trim()) {
-      errors.key = t("ccxt.form.errors.apiKeyRequired");
-    }
-
-    if (!data.secret.trim()) {
-      errors.secret = t("ccxt.form.errors.apiSecretRequired");
-    }
-
-    if (!data.apiWalletAddress.trim()) {
-      errors.apiWalletAddress = t("ccxt.form.errors.apiWalletAddressRequired");
-    }
-
-    if (!data.apiPrivateKey.trim()) {
-      errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
-    }
-
-    return errors;
-  };
-
   // Vérifier si le formulaire est valide
   const isFormValid = () => {
     // Basic validation
@@ -652,9 +619,28 @@ export default function Dashboard() {
                         <tr key={`assets-${connection.id}`}>
                           <td colSpan={5} className="px-6 py-4">
                             <div className="bg-gray-50 p-4 rounded-lg">
-                              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                                {t("ccxt.assets.title")}
-                              </h3>
+                              <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-medium text-gray-900">
+                                  {t("ccxt.assets.title")}
+                                </h3>
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    id={`show-zero-${connection.id}`}
+                                    checked={showZeroBalances}
+                                    onChange={() =>
+                                      setShowZeroBalances(!showZeroBalances)
+                                    }
+                                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                  />
+                                  <label
+                                    htmlFor={`show-zero-${connection.id}`}
+                                    className="text-sm text-gray-700"
+                                  >
+                                    {t("ccxt.assets.showZeroBalances")}
+                                  </label>
+                                </div>
+                              </div>
                               {loadingAssets === connection.id ? (
                                 <div className="flex justify-center py-4">
                                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-900"></div>
@@ -662,25 +648,6 @@ export default function Dashboard() {
                               ) : connection.assets &&
                                 connection.assets.length > 0 ? (
                                 <div className="overflow-x-auto">
-                                  <div className="flex justify-between items-center mb-4">
-                                    <div className="flex items-center">
-                                      <input
-                                        type="checkbox"
-                                        id={`show-zero-${connection.id}`}
-                                        checked={showZeroBalances}
-                                        onChange={() =>
-                                          setShowZeroBalances(!showZeroBalances)
-                                        }
-                                        className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                      />
-                                      <label
-                                        htmlFor={`show-zero-${connection.id}`}
-                                        className="text-sm text-gray-700"
-                                      >
-                                        {t("ccxt.assets.showZeroBalances")}
-                                      </label>
-                                    </div>
-                                  </div>
                                   <table className="min-w-full divide-y divide-gray-200">
                                     <thead>
                                       <tr>
