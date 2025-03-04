@@ -52,9 +52,9 @@ interface ExtendedConnection {
 // Interface for asset
 interface Asset {
   asset: string;
-  total: number;
   free: number;
   used: number;
+  total: number;
   usdValue?: number;
 }
 
@@ -426,9 +426,9 @@ export async function GET(request: Request) {
 
           return {
             asset,
-            total,
             free,
             used,
+            total,
           } as Asset;
         });
 
@@ -443,9 +443,9 @@ export async function GET(request: Request) {
           } else {
             acc.push({
               asset: "HYPE",
-              total: asset.total,
               free: asset.free,
               used: asset.used,
+              total: asset.total,
             });
           }
         } else if (asset.asset !== "HYPE") {
