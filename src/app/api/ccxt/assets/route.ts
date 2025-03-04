@@ -439,7 +439,12 @@ export async function GET(request: Request) {
           const symbols = nonUsdcAssets.map((asset) => asset.asset).join(",");
           const requestUrl = new URL(request.url);
           const priceResponse = await fetch(
-            `${requestUrl.origin}/api/ccxt/price?id=${connectionId}&symbols=${symbols}`
+            `${requestUrl.origin}/api/ccxt/price?id=${connectionId}&symbols=${symbols}`,
+            {
+              headers: {
+                cookie: request.headers.get("cookie") || "",
+              },
+            }
           );
           if (priceResponse.ok) {
             const { prices } = await priceResponse.json();
