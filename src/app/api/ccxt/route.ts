@@ -83,9 +83,9 @@ async function testExchangeConnection(
           });
 
           // Test the connection with the wallet
-          const balance = await exchangeInstance.fetchBalance();
+          await exchangeInstance.fetchBalance();
           return { isValid: true };
-        } catch (error) {
+        } catch {
           return { isValid: false, error: "INVALID_WALLET" };
         }
       }
@@ -139,7 +139,7 @@ async function testExchangeConnection(
       }
       return { isValid: false, error: "UNKNOWN_ERROR" };
     }
-  } catch (error) {
+  } catch {
     return { isValid: false, error: "CONNECTION_ERROR" };
   }
 }

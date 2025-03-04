@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import ccxt, { Exchange, Ticker } from "ccxt";
+import ccxt, { Exchange } from "ccxt";
 
 // Configuration
 const REQUEST_TIMEOUT = 30000; // 30 seconds timeout
