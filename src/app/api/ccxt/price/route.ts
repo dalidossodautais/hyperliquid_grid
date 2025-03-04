@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import ccxt from "ccxt";
+import ccxt, { Exchange } from "ccxt";
 
 // Cache pour stocker les prix
 interface PriceCache {
@@ -53,7 +53,13 @@ export async function GET(request: Request) {
     }
 
     const exchangeName = connection.exchange.toLowerCase();
-    const ExchangeClass = ccxt[exchangeName as keyof typeof ccxt];
+    const ExchangeClass = ccxt[
+      exchangeName as keyof typeof ccxt
+    ] as new (config: {
+      apiKey: string;
+      secret?: string;
+      enableRateLimit?: boolean;
+    }) => Exchange;
 
     if (!ExchangeClass) {
       return NextResponse.json(
@@ -64,7 +70,7 @@ export async function GET(request: Request) {
 
     const exchangeInstance = new ExchangeClass({
       apiKey: connection.key,
-      secret: connection.secret,
+      secret: connection.secret || undefined,
       enableRateLimit: true,
     });
 
