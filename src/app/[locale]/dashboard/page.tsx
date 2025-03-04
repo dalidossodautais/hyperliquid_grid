@@ -221,11 +221,7 @@ export default function Dashboard() {
     }
 
     // Validation spécifique selon le type d'exchange
-    if (data.exchange.toLowerCase() !== "hyperliquid") {
-      if (!data.secret) {
-        errors.secret = t("ccxt.form.errors.apiSecretRequired");
-      }
-    } else if (data.exchange.toLowerCase() === "hyperliquid") {
+    if (data.exchange.toLowerCase() === "hyperliquid") {
       // Pour Hyperliquid, vérifier que les deux champs API sont soit tous deux remplis, soit tous deux vides
       if (data.apiWalletAddress && !data.apiPrivateKey) {
         errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
@@ -234,6 +230,8 @@ export default function Dashboard() {
           "ccxt.form.errors.apiWalletAddressRequired"
         );
       }
+    } else if (!data.secret) {
+      errors.secret = t("ccxt.form.errors.apiSecretRequired");
     }
 
     return errors;
