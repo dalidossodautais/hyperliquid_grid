@@ -133,7 +133,7 @@ export default function Dashboard() {
         throw new Error("Failed to fetch assets");
       }
       const data = await response.json();
-      return data;
+      return data.assets;
     } catch {
       return [];
     }
