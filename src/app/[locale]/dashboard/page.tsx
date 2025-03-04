@@ -133,8 +133,10 @@ export default function Dashboard() {
         throw new Error("Failed to fetch assets");
       }
       const data = await response.json();
+      console.log("API Response:", data);
       return data;
-    } catch {
+    } catch (error) {
+      console.error("Error fetching assets:", error);
       return [];
     }
   };
@@ -277,6 +279,7 @@ export default function Dashboard() {
     } else {
       newExpandedConnections.add(connectionId);
       const assets = await fetchAssets(connectionId);
+      console.log("Fetched assets:", assets);
       setConnections((prev) =>
         prev.map((conn) =>
           conn.id === connectionId ? { ...conn, assets } : conn

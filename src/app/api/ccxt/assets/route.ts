@@ -49,9 +49,18 @@ interface ExtendedConnection {
   updatedAt: Date;
 }
 
+// Interface for asset
+interface Asset {
+  asset: string;
+  total: number;
+  free: number;
+  used: number;
+  usdValue?: number;
+}
+
 // Cache pour stocker les balances
 interface BalanceCache {
-  balances: any;
+  balances: Asset[];
   timestamp: number;
 }
 
@@ -422,6 +431,31 @@ export async function GET(request: Request) {
           };
         }
       );
+
+      // Récupérer les prix pour les assets non-USDC
+      const nonUsdcAssets = assets.filter((asset) => asset.asset !== "USDC");
+      if (nonUsdcAssets.length > 0) {
+        try {
+          const symbols = nonUsdcAssets.map((asset) => asset.asset).join(",");
+          const priceResponse = await fetch(
+            `/api/ccxt/price?id=${connectionId}&symbols=${symbols}`
+          );
+          if (priceResponse.ok) {
+            const { prices } = await priceResponse.json();
+
+            // Ajouter les valeurs en dollar aux assets
+            assets.forEach((asset) => {
+              if (asset.asset === "USDC") {
+                asset.usdValue = asset.total;
+              } else if (prices[asset.asset]) {
+                asset.usdValue = asset.total * prices[asset.asset];
+              }
+            });
+          }
+        } catch (error) {
+          console.error("Error fetching prices:", error);
+        }
+      }
 
       // Mettre à jour le cache
       balanceCache[connectionId] = {
