@@ -87,7 +87,8 @@
       "totalValue": "Total Portfolio Value",
       "HYPE-STAKED": "HYPE (Staked)",
       "HYPE-UNSTAKED": "HYPE (Unstaked)",
-      "HYPE-PENDING": "HYPE (Pending Withdrawal)"
+      "HYPE-PENDING": "HYPE (Pending Withdrawal)",
+      "usdValue": "USD Value"
     }
   }
 }

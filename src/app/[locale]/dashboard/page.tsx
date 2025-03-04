@@ -21,6 +21,7 @@ interface Asset {
   total: number;
   free: number;
   used: number;
+  usdValue?: number;
 }
 
 interface ConnectionFormData {
@@ -274,9 +275,34 @@ export default function Dashboard() {
         throw new Error(t(`ccxt.errors.${data.code}`));
       }
 
+      // Récupérer les prix pour chaque asset
+      const assetsWithPrices = await Promise.all(
+        data.map(async (asset: Asset) => {
+          try {
+            const priceResponse = await fetch(
+              `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}/USDT`
+            );
+            const priceData = await priceResponse.json();
+
+            if (priceResponse.ok && priceData.price) {
+              return {
+                ...asset,
+                usdValue: asset.total * priceData.price,
+              };
+            }
+            return asset;
+          } catch (error) {
+            console.error(`Error fetching price for ${asset.asset}:`, error);
+            return asset;
+          }
+        })
+      );
+
       setConnections((prevConnections) =>
         prevConnections.map((conn) =>
-          conn.id === connectionId ? { ...conn, assets: data } : conn
+          conn.id === connectionId
+            ? { ...conn, assets: assetsWithPrices }
+            : conn
         )
       );
 
@@ -692,6 +718,9 @@ export default function Dashboard() {
                                         <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
                                           {t("ccxt.assets.used")}
                                         </th>
+                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
+                                          {t("ccxt.assets.usdValue")}
+                                        </th>
                                       </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
@@ -715,6 +744,13 @@ export default function Dashboard() {
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
                                               {formatAssetValue(asset.used)}
+                                            </td>
+                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
+                                              {asset.usdValue
+                                                ? `$${asset.usdValue.toFixed(
+                                                    2
+                                                  )}`
+                                                : "-"}
                                             </td>
                                           </tr>
                                         ))}

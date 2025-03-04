@@ -87,7 +87,8 @@
       "totalValue": "Valeur totale du portefeuille",
       "HYPE-STAKED": "HYPE (Staké)",
       "HYPE-UNSTAKED": "HYPE (Non staké)",
-      "HYPE-PENDING": "HYPE (Retrait en attente)"
+      "HYPE-PENDING": "HYPE (Retrait en attente)",
+      "usdValue": "Valeur en USD"
     }
   }
 }
