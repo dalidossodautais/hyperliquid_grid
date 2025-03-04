@@ -204,7 +204,7 @@ export async function GET(request: Request) {
             ...exchangeInstance.options,
             defaultType: "spot",
           };
-        } catch (error) {
+        } catch (_error) {
           // Ignore error silently
         }
       }
@@ -272,7 +272,7 @@ export async function GET(request: Request) {
                 );
               }
             }
-          } catch (stakingError) {
+          } catch (_stakingError) {
             // Ignore staking error silently
           }
 
@@ -412,8 +412,9 @@ export async function GET(request: Request) {
       }
 
       // Filter to include all assets, even those with zero balance
-      const assets = Object.entries(allBalances.total || {}).map(
-        ([asset, amount]) => {
+      const assets = Object.entries(allBalances.total || {})
+        .filter(([, amount]) => amount > 0) // Filter out assets with zero balance
+        .map(([asset, amount]) => {
           // Use raw values directly
           const total = amount as number;
           const free = allBalances.free?.[
@@ -428,9 +429,8 @@ export async function GET(request: Request) {
             total,
             free,
             used,
-          };
-        }
-      );
+          } as Asset;
+        });
 
       // Récupérer les prix pour les assets non-USDC
       const nonUsdcAssets = assets.filter((asset) => asset.asset !== "USDC");
