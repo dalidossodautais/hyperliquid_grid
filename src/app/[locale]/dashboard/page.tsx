@@ -9,6 +9,8 @@ import ConnectionForm from "@/components/forms/ConnectionForm";
 import ConnectionsTable from "@/components/tables/ConnectionsTable";
 import BotForm from "@/components/forms/BotForm";
 import BotsTable from "@/components/tables/BotsTable";
+import DashboardGrid from "@/components/ui/DashboardGrid";
+import { DashboardCard } from "@/components/ui/DashboardGrid";
 
 interface ExchangeConnection {
   id: string;
@@ -35,6 +37,12 @@ interface Bot {
   status: "running" | "stopped" | "error";
   createdAt: string;
   updatedAt: string;
+  config: {
+    baseAsset: string;
+    quoteAsset: string;
+    baseAssetQuantity: number;
+    quoteAssetQuantity: number;
+  } | null;
 }
 
 export default function Dashboard() {
@@ -418,20 +426,19 @@ export default function Dashboard() {
       </nav>
 
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {t("ccxt.title")}
-              </h2>
+        <DashboardGrid>
+          <DashboardCard
+            title={t("ccxt.title")}
+            actions={
               <button
                 onClick={() => setShowAddForm(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
               >
                 {t("ccxt.addButton")}
               </button>
-            </div>
-
+            }
+            className="col-span-full"
+          >
             <Modal
               isOpen={showAddForm}
               onClose={() => {
@@ -457,25 +464,20 @@ export default function Dashboard() {
               onFetchAssets={fetchAssets}
               onUpdateConnection={handleUpdateConnection}
             />
-          </div>
-        </div>
-      </main>
+          </DashboardCard>
 
-      <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
-        <div className="px-4 py-2 sm:px-0">
-          <div className="bg-white shadow rounded-lg p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {t("bots.title")}
-              </h2>
+          <DashboardCard
+            title={t("bots.title")}
+            actions={
               <button
                 onClick={() => setShowBotForm(true)}
                 className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
               >
                 {t("bots.addButton")}
               </button>
-            </div>
-
+            }
+            className="col-span-full"
+          >
             <Modal
               isOpen={showBotForm}
               onClose={() => {
@@ -492,14 +494,13 @@ export default function Dashboard() {
                 }}
                 connections={connections}
                 error={error}
-                onFetchAssets={fetchAssets}
                 onFetchSymbols={fetchSymbols}
               />
             </Modal>
 
             <BotsTable bots={bots} onDelete={handleBotDelete} />
-          </div>
-        </div>
+          </DashboardCard>
+        </DashboardGrid>
       </main>
     </div>
   );

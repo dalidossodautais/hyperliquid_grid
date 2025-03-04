@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import ActionButton from "@/components/ui/ActionButton";
+import Table from "@/components/ui/Table";
 
 interface Bot {
   id: string;
@@ -24,82 +25,70 @@ interface BotsTableProps {
 export default function BotsTable({ bots, onDelete }: BotsTableProps) {
   const t = useTranslations("dashboard");
 
+  const columns = [
+    {
+      key: "name",
+      header: t("bots.table.name"),
+      cell: (bot: Bot) => (
+        <span className="font-medium text-gray-900">{bot.name}</span>
+      ),
+    },
+    {
+      key: "type",
+      header: t("bots.table.type"),
+      cell: (bot: Bot) => <span className="text-gray-500">{bot.type}</span>,
+    },
+    {
+      key: "pair",
+      header: t("bots.table.pair"),
+      cell: (bot: Bot) => (
+        <span className="text-gray-500">
+          {bot.config?.baseAsset}/{bot.config?.quoteAsset}
+        </span>
+      ),
+    },
+    {
+      key: "status",
+      header: t("bots.table.status"),
+      cell: (bot: Bot) => (
+        <span
+          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+            bot.status === "running"
+              ? "bg-green-100 text-green-800"
+              : bot.status === "stopped"
+              ? "bg-gray-100 text-gray-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {t(`bots.status.${bot.status}`)}
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: t("bots.table.createdAt"),
+      cell: (bot: Bot) => (
+        <span className="text-gray-500">
+          {new Date(bot.createdAt).toLocaleString()}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: t("bots.table.actions"),
+      cell: (bot: Bot) => (
+        <ActionButton onClick={() => onDelete(bot.id)} variant="danger">
+          {t("delete")}
+        </ActionButton>
+      ),
+    },
+  ];
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.name")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.type")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.pair")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.status")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.createdAt")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-              {t("bots.table.actions")}
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {bots.length === 0 ? (
-            <tr>
-              <td
-                colSpan={6}
-                className="px-6 py-4 text-center text-sm text-gray-500"
-              >
-                {t("bots.table.noBots")}
-              </td>
-            </tr>
-          ) : (
-            bots.map((bot) => (
-              <tr key={bot.id}>
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                  {bot.name}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {bot.type}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {bot.config?.baseAsset}/{bot.config?.quoteAsset}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <span
-                    className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      bot.status === "running"
-                        ? "bg-green-100 text-green-800"
-                        : bot.status === "stopped"
-                        ? "bg-gray-100 text-gray-800"
-                        : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {t(`bots.status.${bot.status}`)}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(bot.createdAt).toLocaleString()}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <ActionButton
-                    onClick={() => onDelete(bot.id)}
-                    variant="danger"
-                  >
-                    {t("delete")}
-                  </ActionButton>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <Table
+      columns={columns}
+      data={bots}
+      emptyMessage={t("bots.table.noBots")}
+    />
   );
 }
