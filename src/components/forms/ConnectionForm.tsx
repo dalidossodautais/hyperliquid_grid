@@ -47,6 +47,7 @@ export default function ConnectionForm({
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
   const [isFormValid, setIsFormValid] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = useCallback(
     (data: ConnectionFormData): FormErrors => {
@@ -98,7 +99,13 @@ export default function ConnectionForm({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isFormValid) return;
-    await onSubmit(formData);
+
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -139,6 +146,7 @@ export default function ConnectionForm({
         onChange={handleInputChange}
         error={formErrors.key}
         required
+        disabled={isSubmitting}
       />
       {formData.exchange.toLowerCase() !== "hyperliquid" && (
         <Input
@@ -150,6 +158,7 @@ export default function ConnectionForm({
           onChange={handleInputChange}
           error={formErrors.secret}
           required
+          disabled={isSubmitting}
         />
       )}
       {formData.exchange.toLowerCase() === "hyperliquid" && (
@@ -162,6 +171,7 @@ export default function ConnectionForm({
             onChange={handleInputChange}
             error={formErrors.apiWalletAddress}
             placeholder={t("ccxt.form.apiWalletAddressHelp")}
+            disabled={isSubmitting}
           />
           <Input
             id="apiPrivateKey"
@@ -172,14 +182,24 @@ export default function ConnectionForm({
             onChange={handleInputChange}
             error={formErrors.apiPrivateKey}
             placeholder={t("ccxt.form.apiPrivateKeyHelp")}
+            disabled={isSubmitting}
           />
         </>
       )}
       <div className="flex justify-end space-x-3">
-        <Button type="button" onClick={onCancel} variant="outline">
+        <Button
+          type="button"
+          onClick={onCancel}
+          variant="outline"
+          disabled={isSubmitting}
+        >
           {t("cancel")}
         </Button>
-        <Button type="submit" disabled={!isFormValid}>
+        <Button
+          type="submit"
+          disabled={!isFormValid || isSubmitting}
+          isLoading={isSubmitting}
+        >
           {t("create")}
         </Button>
       </div>

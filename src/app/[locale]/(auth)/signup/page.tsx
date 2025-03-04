@@ -49,12 +49,14 @@ const validateEmail = (email: string): boolean => {
 
 export default function SignUp() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [emailError, setEmailError] = useState<string | undefined>(undefined);
+  const [passwordError, setPasswordError] = useState<string | undefined>(
+    undefined
+  );
   const [confirmPasswordError, setConfirmPasswordError] = useState<
-    string | null
-  >(null);
+    string | undefined
+  >(undefined);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -74,46 +76,40 @@ export default function SignUp() {
       if (value && !validateEmail(value)) {
         setEmailError(t("signup.email.invalid"));
       } else {
-        setEmailError(null);
+        setEmailError(undefined);
       }
     }
 
     if (name === "password") {
-      if (value) {
-        const passwordValidation = validatePassword(value);
-        if (!passwordValidation.isValid) {
-          setPasswordError(t(`signup.password.${passwordValidation.message}`));
-        } else {
-          setPasswordError(null);
-        }
-
-        // Vérifier également la correspondance avec le mot de passe de confirmation
-        if (formData.confirmPassword && value !== formData.confirmPassword) {
-          setConfirmPasswordError(t("signup.password.mismatch"));
-        } else if (formData.confirmPassword) {
-          setConfirmPasswordError(null);
-        }
+      if (value && value.length < 8) {
+        setPasswordError(t("signup.password.length"));
+      } else {
+        setPasswordError(undefined);
       }
     }
 
     if (name === "confirmPassword") {
-      if (value && formData.password && value !== formData.password) {
+      if (value && value !== formData.password) {
         setConfirmPasswordError(t("signup.password.mismatch"));
       } else {
-        setConfirmPasswordError(null);
+        setConfirmPasswordError(undefined);
       }
+    }
+
+    if (error) {
+      setError(undefined);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
+    setError(undefined);
 
     // Réinitialiser les erreurs
-    setEmailError(null);
-    setPasswordError(null);
-    setConfirmPasswordError(null);
+    setEmailError(undefined);
+    setPasswordError(undefined);
+    setConfirmPasswordError(undefined);
 
     const { name, email, password, confirmPassword } = formData;
 
@@ -253,8 +249,13 @@ export default function SignUp() {
               {error && <Alert type="error">{error}</Alert>}
 
               <div>
-                <Button type="submit" disabled={loading} fullWidth>
-                  {loading ? t("signup.loading") : t("signup.button")}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  fullWidth
+                  isLoading={loading}
+                >
+                  {t("signup.button")}
                 </Button>
               </div>
 

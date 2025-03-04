@@ -47,11 +47,13 @@ export default function ResetPassword() {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("resetPassword");
-  const [error, setError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [passwordError, setPasswordError] = useState<string | undefined>(
+    undefined
+  );
   const [confirmPasswordError, setConfirmPasswordError] = useState<
-    string | null
-  >(null);
+    string | undefined
+  >(undefined);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [password, setPassword] = useState("");
@@ -119,7 +121,7 @@ export default function ResetPassword() {
       if (!passwordValidation.isValid) {
         setPasswordError(t(passwordValidation.message as string));
       } else {
-        setPasswordError(null);
+        setPasswordError(undefined);
       }
 
       // Vérifier également la correspondance avec le mot de passe de confirmation
@@ -128,7 +130,7 @@ export default function ResetPassword() {
           t("password.mismatch", { defaultValue: "Passwords do not match" })
         );
       } else if (confirmPassword) {
-        setConfirmPasswordError(null);
+        setConfirmPasswordError(undefined);
       }
     }
   };
@@ -144,16 +146,16 @@ export default function ResetPassword() {
         t("password.mismatch", { defaultValue: "Passwords do not match" })
       );
     } else {
-      setConfirmPasswordError(null);
+      setConfirmPasswordError(undefined);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setPasswordError(null);
-    setConfirmPasswordError(null);
+    setError(undefined);
+    setPasswordError(undefined);
+    setConfirmPasswordError(undefined);
 
     // Vérifier la complexité du mot de passe
     const passwordValidation = validatePassword(password);
@@ -387,10 +389,13 @@ export default function ResetPassword() {
                 {error && <Alert type="error">{error}</Alert>}
 
                 <div>
-                  <Button type="submit" disabled={loading} fullWidth>
-                    {loading
-                      ? t("loading", { defaultValue: "Resetting..." })
-                      : t("submitButton", { defaultValue: "Reset Password" })}
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    fullWidth
+                    isLoading={loading}
+                  >
+                    {t("submitButton", { defaultValue: "Reset Password" })}
                   </Button>
                 </div>
 

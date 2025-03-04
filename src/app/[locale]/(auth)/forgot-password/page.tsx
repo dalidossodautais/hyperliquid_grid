@@ -16,12 +16,12 @@ const validateEmail = (email: string): boolean => {
 
 export default function ForgotPassword() {
   const locale = useLocale();
+  const t = useTranslations("auth");
   const [email, setEmail] = useState("");
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | undefined>(undefined);
+  const [error, setError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const t = useTranslations("auth");
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -30,19 +30,19 @@ export default function ForgotPassword() {
     if (value && !validateEmail(value)) {
       setEmailError(t("forgotPassword.error.invalidEmail"));
     } else {
-      setEmailError(null);
+      setEmailError(undefined);
     }
 
     if (error) {
-      setError(null);
+      setError(undefined);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setEmailError(null);
+    setError(undefined);
+    setEmailError(undefined);
 
     // Valider l'email
     if (!validateEmail(email)) {
@@ -152,12 +152,13 @@ export default function ForgotPassword() {
                 {error && <Alert type="error">{error}</Alert>}
 
                 <div>
-                  <Button type="submit" disabled={loading} fullWidth>
-                    {loading
-                      ? t("forgotPassword.loading", {
-                          defaultValue: "Sending...",
-                        })
-                      : t("forgotPassword.submitButton")}
+                  <Button
+                    type="submit"
+                    disabled={loading}
+                    fullWidth
+                    isLoading={loading}
+                  >
+                    {t("forgotPassword.submitButton")}
                   </Button>
                 </div>
 

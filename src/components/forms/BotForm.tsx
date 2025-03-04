@@ -68,6 +68,7 @@ export default function BotForm({
   const [validBaseAssets, setValidBaseAssets] = useState<string[]>([]);
   const [validQuoteAssets, setValidQuoteAssets] = useState<string[]>([]);
   const [isLoadingAssets, setIsLoadingAssets] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const cleanSymbol = useCallback((symbol: string): string => {
     return symbol.replace(/:USDC$/, "");
@@ -226,14 +227,19 @@ export default function BotForm({
       return;
     }
 
-    await onSubmit({
-      name: botFormData.name,
-      connectionId: selectedConnection,
-      baseAsset,
-      quoteAsset,
-      baseAssetQuantity: parseFloat(botFormData.baseAssetQuantity),
-      quoteAssetQuantity: parseFloat(botFormData.quoteAssetQuantity),
-    });
+    setIsSubmitting(true);
+    try {
+      await onSubmit({
+        name: botFormData.name,
+        connectionId: selectedConnection,
+        baseAsset,
+        quoteAsset,
+        baseAssetQuantity: parseFloat(botFormData.baseAssetQuantity),
+        quoteAssetQuantity: parseFloat(botFormData.quoteAssetQuantity),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -254,13 +260,14 @@ export default function BotForm({
         label={t("bots.form.connection")}
         value={selectedConnection}
         onChange={handleConnectionChange}
+        error={botFormErrors.connection}
+        required
         options={connections.map((connection) => ({
           value: connection.id,
           label: `${connection.name} (${connection.exchange})`,
         }))}
-        error={botFormErrors.connection}
-        required
         placeholder={t("bots.form.selectConnection")}
+        isLoading={isLoadingAssets}
       />
       {selectedConnection && !botFormErrors.connection && (
         <div className="space-y-4">
@@ -271,15 +278,14 @@ export default function BotForm({
               label={t("bots.form.baseAsset")}
               value={baseAsset}
               onChange={handleBaseAssetChange}
+              error={botFormErrors.baseAsset}
+              required
               options={validBaseAssets.map((asset) => ({
                 value: asset,
                 label: asset,
               }))}
-              error={botFormErrors.baseAsset}
-              required
-              disabled={isLoadingAssets}
               placeholder={t("bots.form.selectBaseAsset")}
-              isLoading={isLoadingAssets}
+              disabled={isLoadingAssets}
             />
             {baseAsset && !botFormErrors.baseAsset && (
               <Select
@@ -288,13 +294,14 @@ export default function BotForm({
                 label={t("bots.form.quoteAsset")}
                 value={quoteAsset}
                 onChange={handleQuoteAssetChange}
+                error={botFormErrors.quoteAsset}
+                required
                 options={validQuoteAssets.map((asset) => ({
                   value: asset,
                   label: asset,
                 }))}
-                error={botFormErrors.quoteAsset}
-                required
                 placeholder={t("bots.form.selectQuoteAsset")}
+                disabled={isLoadingAssets}
               />
             )}
           </div>
@@ -313,8 +320,9 @@ export default function BotForm({
                   error={botFormErrors.baseAssetQuantity}
                   required
                   min={0}
-                  step={0.000001}
+                  step={0.00000001}
                   unit={baseAsset}
+                  disabled={isLoadingAssets}
                 />
                 <Input
                   id="quoteAssetQuantity"
@@ -326,18 +334,28 @@ export default function BotForm({
                   error={botFormErrors.quoteAssetQuantity}
                   required
                   min={0}
-                  step={0.000001}
+                  step={0.00000001}
                   unit={quoteAsset}
+                  disabled={isLoadingAssets}
                 />
               </div>
             )}
         </div>
       )}
       <div className="flex justify-end space-x-3">
-        <Button type="button" onClick={onCancel} variant="outline">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onCancel}
+          disabled={isSubmitting}
+        >
           {t("cancel")}
         </Button>
-        <Button type="submit" disabled={!isBotFormValid}>
+        <Button
+          type="submit"
+          disabled={!isBotFormValid || isSubmitting}
+          isLoading={isSubmitting}
+        >
           {t("create")}
         </Button>
       </div>

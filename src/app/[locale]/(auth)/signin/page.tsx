@@ -11,8 +11,8 @@ import Alert from "@/components/ui/Alert";
 
 export default function SignIn() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-  const [emailError, setEmailError] = useState<string | null>(null);
+  const [error, setError] = useState<string | undefined>(undefined);
+  const [emailError, setEmailError] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -28,12 +28,12 @@ export default function SignIn() {
       if (value && !validateEmail(value)) {
         setEmailError(t("signin.email.invalid"));
       } else {
-        setEmailError(null);
+        setEmailError(undefined);
       }
     }
 
     if (error) {
-      setError(null);
+      setError(undefined);
     }
   };
 
@@ -45,8 +45,8 @@ export default function SignIn() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
-    setError(null);
-    setEmailError(null);
+    setError(undefined);
+    setEmailError(undefined);
 
     const { email, password } = formData;
 
@@ -125,8 +125,13 @@ export default function SignIn() {
               {error && <Alert type="error">{error}</Alert>}
 
               <div>
-                <Button type="submit" disabled={loading} fullWidth>
-                  {loading ? t("signin.loading") : t("signin.button")}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  fullWidth
+                  isLoading={loading}
+                >
+                  {t("signin.button")}
                 </Button>
               </div>
 
