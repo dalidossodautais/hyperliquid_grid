@@ -270,20 +270,23 @@ export default function Dashboard() {
         throw new Error(t(`ccxt.errors.${data.code}`));
       }
 
-      // Récupérer les prix pour chaque asset
+      // Récupérer les prix pour chaque asset en batch
       const assetsWithPrices = await Promise.all(
         data.map(async (asset: Asset) => {
           try {
-            const priceResponse = await fetch(
-              `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}`
-            );
-            const priceData = await priceResponse.json();
+            // Ne récupérer le prix que si l'asset n'est pas USDC et a un total > 0
+            if (asset.asset !== "USDC" && asset.total > 0) {
+              const priceResponse = await fetch(
+                `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}`
+              );
+              const priceData = await priceResponse.json();
 
-            if (priceResponse.ok && priceData.price) {
-              return {
-                ...asset,
-                usdValue: asset.total * priceData.price,
-              };
+              if (priceResponse.ok && priceData.price) {
+                return {
+                  ...asset,
+                  usdValue: asset.total * priceData.price,
+                };
+              }
             }
             return asset;
           } catch (error) {

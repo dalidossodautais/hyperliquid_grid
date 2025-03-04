@@ -49,6 +49,24 @@ interface ExtendedConnection {
   updatedAt: Date;
 }
 
+// Cache pour stocker les balances
+interface BalanceCache {
+  balances: any;
+  timestamp: number;
+}
+
+const balanceCache: Record<string, BalanceCache> = {};
+const CACHE_DURATION = 60 * 1000; // 1 minute en millisecondes
+
+// Configuration des types de wallet par exchange
+const WALLET_TYPES: Record<string, string[]> = {
+  hyperliquid: ["spot"],
+  binance: ["spot", "margin"],
+  coinbase: ["spot"],
+  kraken: ["spot", "margin"],
+  default: ["spot"],
+};
+
 // Retrieve assets from a connection
 export async function GET(request: Request) {
   try {
@@ -81,6 +99,15 @@ export async function GET(request: Request) {
 
     if (!connectionId) {
       return NextResponse.json({ code: "MISSING_ID" }, { status: 400 });
+    }
+
+    // Vérifier le cache
+    const cachedBalances = balanceCache[connectionId];
+    if (
+      cachedBalances &&
+      Date.now() - cachedBalances.timestamp < CACHE_DURATION
+    ) {
+      return NextResponse.json(cachedBalances.balances);
     }
 
     const user = await prisma.user.findUnique({
@@ -254,15 +281,10 @@ export async function GET(request: Request) {
             });
           }
         } else {
-          // For other exchanges, try all wallet types
-          for (const type of [
-            "spot",
-            "margin",
-            "future",
-            "futures",
-            "swap",
-            "funding",
-          ]) {
+          // Pour les autres exchanges, utiliser uniquement les types de wallet configurés
+          const walletTypes = WALLET_TYPES[exchangeId] || WALLET_TYPES.default;
+
+          for (const type of walletTypes) {
             try {
               const typeBalance = (await exchangeInstance.fetchBalance({
                 type,
@@ -400,6 +422,12 @@ export async function GET(request: Request) {
           };
         }
       );
+
+      // Mettre à jour le cache
+      balanceCache[connectionId] = {
+        balances: assets,
+        timestamp: Date.now(),
+      };
 
       return NextResponse.json(assets);
     } catch (error) {
