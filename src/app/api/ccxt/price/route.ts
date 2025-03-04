@@ -4,6 +4,15 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import ccxt from "ccxt";
 
+// Cache pour stocker les prix
+interface PriceCache {
+  price: number;
+  timestamp: number;
+}
+
+const priceCache: Record<string, PriceCache> = {};
+const CACHE_DURATION = 60 * 1000; // 1 minute en millisecondes
+
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -17,6 +26,16 @@ export async function GET(request: Request) {
 
     if (!id || !symbol) {
       return NextResponse.json({ code: "MISSING_PARAMETERS" }, { status: 400 });
+    }
+
+    // Extraire le symbole de base pour les tokens spéciaux (ex: HYPE-STAKED -> HYPE)
+    const baseSymbol = symbol.split("-")[0];
+
+    // Vérifier le cache
+    const cacheKey = `${id}-${baseSymbol}`;
+    const cachedPrice = priceCache[cacheKey];
+    if (cachedPrice && Date.now() - cachedPrice.timestamp < CACHE_DURATION) {
+      return NextResponse.json({ price: cachedPrice.price });
     }
 
     const connection = await prisma.exchangeConnection.findFirst({
@@ -50,12 +69,43 @@ export async function GET(request: Request) {
     });
 
     try {
-      const ticker = await exchangeInstance.fetchTicker(symbol);
-      return NextResponse.json({ price: ticker.last });
+      // Ajouter la paire de trading pour Hyperliquid
+      const tradingSymbol =
+        exchangeName === "hyperliquid" ? `${baseSymbol}/USDC` : baseSymbol;
+      const ticker = await exchangeInstance.fetchTicker(tradingSymbol);
+
+      if (!ticker || !ticker.last) {
+        return NextResponse.json(
+          { code: "INVALID_TICKER_DATA" },
+          { status: 500 }
+        );
+      }
+
+      const price = ticker.last;
+
+      // Mettre à jour le cache
+      priceCache[cacheKey] = {
+        price,
+        timestamp: Date.now(),
+      };
+
+      return NextResponse.json({ price });
     } catch (error) {
-      return NextResponse.json({ code: "PRICE_FETCH_ERROR" }, { status: 500 });
+      return NextResponse.json(
+        {
+          code: "PRICE_FETCH_ERROR",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
+      );
     }
   } catch (error) {
-    return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
+    return NextResponse.json(
+      {
+        code: "INTERNAL_ERROR",
+        message: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
   }
 }
