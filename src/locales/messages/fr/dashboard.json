@@ -7,7 +7,7 @@
     "description": "Description"
   },
   "ccxt": {
-    "title": "Connexions CCXT",
+    "title": "Connexions",
     "noConnections": "Aucune connexion aux exchanges trouvée",
     "addButton": "Ajouter une connexion",
     "cancelButton": "Annuler",
