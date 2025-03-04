@@ -57,7 +57,7 @@ export default function Dashboard() {
   const t = useTranslations("dashboard");
   const [connections, setConnections] = useState<ExchangeConnection[]>([]);
   const [exchanges, setExchanges] = useState<string[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -69,10 +69,9 @@ export default function Dashboard() {
     apiWalletAddress: "",
     apiPrivateKey: "",
   });
-  const [expandedConnection, setExpandedConnection] = useState<string | null>(
-    null
+  const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
+    new Set()
   );
-  const [loadingAssets, setLoadingAssets] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -110,41 +109,6 @@ export default function Dashboard() {
         }
 
         setConnections(data);
-
-        // Précharger les caches pour chaque connexion
-        await Promise.all(
-          data.map(async (connection: ExchangeConnection) => {
-            try {
-              // Précharger les assets pour chaque connexion
-              const assetsResponse = await fetch(
-                `/api/ccxt/assets?id=${connection.id}`
-              );
-              const assetsData = await assetsResponse.json();
-
-              if (assetsResponse.ok && assetsData) {
-                // Précharger les prix pour chaque asset
-                await Promise.all(
-                  assetsData
-                    .filter(
-                      (asset: Asset) =>
-                        asset.total > 0 && asset.asset !== "USDC"
-                    )
-                    .map(async (asset: Asset) => {
-                      try {
-                        await fetch(
-                          `/api/ccxt/price?id=${connection.id}&symbol=${asset.asset}`
-                        );
-                      } catch {
-                        // Ignorer les erreurs de préchargement des prix
-                      }
-                    })
-                );
-              }
-            } catch {
-              // Ignorer les erreurs de préchargement des assets
-            }
-          })
-        );
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
@@ -152,7 +116,7 @@ export default function Dashboard() {
           setError(t("ccxt.errors.INTERNAL_ERROR"));
         }
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
@@ -160,6 +124,20 @@ export default function Dashboard() {
       fetchConnections();
     }
   }, [session, t]);
+
+  // Fonction pour charger les assets d'une connexion
+  const fetchAssets = async (connectionId: string) => {
+    try {
+      const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch assets");
+      }
+      const data = await response.json();
+      return data;
+    } catch {
+      return [];
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -292,68 +270,23 @@ export default function Dashboard() {
     setFormErrors(errors);
   };
 
-  const fetchAssets = async (connectionId: string) => {
-    try {
-      setLoadingAssets(connectionId);
-      const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(t(`ccxt.errors.${data.code}`));
-      }
-
-      // Récupérer les prix pour chaque asset en batch
-      const assetsWithPrices = await Promise.all(
-        data.map(async (asset: Asset) => {
-          try {
-            // Ne récupérer le prix que si l'asset n'est pas USDC et a un total > 0
-            if (asset.asset !== "USDC" && asset.total > 0) {
-              const priceResponse = await fetch(
-                `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}`
-              );
-              const priceData = await priceResponse.json();
-
-              if (priceResponse.ok && priceData.price) {
-                return {
-                  ...asset,
-                  usdValue: asset.total * priceData.price,
-                };
-              }
-            }
-            return asset;
-          } catch (error) {
-            return asset;
-          }
-        })
-      );
-
-      setConnections((prevConnections) =>
-        prevConnections.map((conn) =>
-          conn.id === connectionId
-            ? { ...conn, assets: assetsWithPrices }
-            : conn
+  const toggleConnectionExpand = async (connectionId: string) => {
+    const newExpandedConnections = new Set(expandedConnections);
+    if (newExpandedConnections.has(connectionId)) {
+      newExpandedConnections.delete(connectionId);
+    } else {
+      newExpandedConnections.add(connectionId);
+      const assets = await fetchAssets(connectionId);
+      setConnections((prev) =>
+        prev.map((conn) =>
+          conn.id === connectionId ? { ...conn, assets } : conn
         )
       );
-    } catch (error) {
-      console.error("Error fetching assets:", error);
-    } finally {
-      setLoadingAssets(null);
     }
+    setExpandedConnections(newExpandedConnections);
   };
 
-  const toggleConnectionExpand = (connectionId: string) => {
-    if (expandedConnection === connectionId) {
-      setExpandedConnection(null);
-    } else {
-      setExpandedConnection(connectionId);
-      const connection = connections.find((conn) => conn.id === connectionId);
-      if (connection && !connection.assets) {
-        fetchAssets(connectionId);
-      }
-    }
-  };
-
-  if (status === "loading" || isLoading) {
+  if (status === "loading" || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-gray-900"></div>
@@ -668,7 +601,7 @@ export default function Dashboard() {
                             }
                             className="text-blue-600 hover:text-blue-900 cursor-pointer"
                           >
-                            {expandedConnection === connection.id
+                            {expandedConnections.has(connection.id)
                               ? t("ccxt.table.hideAssets")
                               : t("ccxt.table.showAssets")}
                           </button>
@@ -695,7 +628,7 @@ export default function Dashboard() {
 
                   {connections.map(
                     (connection) =>
-                      expandedConnection === connection.id && (
+                      expandedConnections.has(connection.id) && (
                         <tr key={`assets-${connection.id}`}>
                           <td colSpan={5} className="px-6 py-4">
                             <div className="bg-gray-50 p-4 rounded-lg">
@@ -720,12 +653,8 @@ export default function Dashboard() {
                                       .toFixed(2)}
                                   </div>
                                 )}
-                              {loadingAssets === connection.id ? (
-                                <div className="flex justify-center py-4">
-                                  <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-900"></div>
-                                </div>
-                              ) : connection.assets &&
-                                connection.assets.length > 0 ? (
+                              {connection.assets &&
+                              connection.assets.length > 0 ? (
                                 <div className="overflow-x-auto">
                                   <table className="min-w-full divide-y divide-gray-200">
                                     <thead>
