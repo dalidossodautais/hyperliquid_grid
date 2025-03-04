@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import ActionButton from "@/components/ui/ActionButton";
 
 interface Bot {
   id: string;
@@ -94,12 +95,12 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
                   {new Date(bot.createdAt).toLocaleString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  <button
+                  <ActionButton
                     onClick={() => onDelete(bot.id)}
-                    className="text-red-600 hover:text-red-900"
+                    variant="danger"
                   >
                     {t("delete")}
-                  </button>
+                  </ActionButton>
                 </td>
               </tr>
             ))

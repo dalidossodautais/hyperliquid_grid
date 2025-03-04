@@ -1,5 +1,6 @@
 import { useTranslations } from "next-intl";
 import { useState, useCallback } from "react";
+import ActionButton from "@/components/ui/ActionButton";
 
 interface Asset {
   asset: string;
@@ -126,20 +127,20 @@ export default function ConnectionsTable({
               </td>
               <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div className="flex justify-end space-x-4">
-                  <button
+                  <ActionButton
                     onClick={() => toggleConnectionExpand(connection.id)}
-                    className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                    variant="primary"
                   >
                     {expandedConnections.has(connection.id)
                       ? t("ccxt.table.hideAssets")
                       : t("ccxt.table.showAssets")}
-                  </button>
-                  <button
+                  </ActionButton>
+                  <ActionButton
                     onClick={() => onDelete(connection.id)}
-                    className="text-red-600 hover:text-red-900 cursor-pointer"
+                    variant="danger"
                   >
                     {t("delete")}
-                  </button>
+                  </ActionButton>
                 </div>
               </td>
             </tr>
