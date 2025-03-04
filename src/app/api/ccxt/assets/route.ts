@@ -182,9 +182,63 @@ export async function GET(request: Request) {
       };
 
       try {
-        // For Hyperliquid, use spot balance
+        // For Hyperliquid, use spot balance and get staking info
         if (exchangeId === "hyperliquid") {
           balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
+
+          // Fetch staking data from Hyperliquid
+          try {
+            const stakingResponse = await fetch(
+              "https://api.hyperliquid.xyz/info",
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  user: connection.key,
+                  type: "delegatorSummary",
+                }),
+              }
+            );
+
+            if (stakingResponse.ok) {
+              const stakingData = await stakingResponse.json();
+
+              // Add staking assets to the balance
+              if (stakingData.delegated) {
+                allBalances.total["HYPE-STAKED"] = parseFloat(
+                  stakingData.delegated
+                );
+                allBalances.free["HYPE-STAKED"] = 0;
+                allBalances.used["HYPE-STAKED"] = parseFloat(
+                  stakingData.delegated
+                );
+              }
+
+              if (stakingData.undelegated) {
+                allBalances.total["HYPE-UNSTAKED"] = parseFloat(
+                  stakingData.undelegated
+                );
+                allBalances.free["HYPE-UNSTAKED"] = parseFloat(
+                  stakingData.undelegated
+                );
+                allBalances.used["HYPE-UNSTAKED"] = 0;
+              }
+
+              if (stakingData.totalPendingWithdrawal) {
+                allBalances.total["HYPE-PENDING"] = parseFloat(
+                  stakingData.totalPendingWithdrawal
+                );
+                allBalances.free["HYPE-PENDING"] = 0;
+                allBalances.used["HYPE-PENDING"] = parseFloat(
+                  stakingData.totalPendingWithdrawal
+                );
+              }
+            }
+          } catch (stakingError) {
+            console.warn("Error fetching staking data:", stakingError);
+          }
 
           if (balance.total) {
             // Use raw values directly without conversion

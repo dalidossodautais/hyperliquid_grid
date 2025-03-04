@@ -84,7 +84,10 @@
       "used": "Used",
       "noAssets": "No assets found for this connection",
       "showZeroBalances": "Show zero balances",
-      "totalValue": "Total Portfolio Value"
+      "totalValue": "Total Portfolio Value",
+      "HYPE-STAKED": "HYPE (Staked)",
+      "HYPE-UNSTAKED": "HYPE (Unstaked)",
+      "HYPE-PENDING": "HYPE (Pending Withdrawal)"
     }
   }
 }

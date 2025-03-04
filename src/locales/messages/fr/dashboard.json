@@ -84,7 +84,10 @@
       "used": "Utilisé",
       "noAssets": "Aucun actif trouvé pour cette connexion",
       "showZeroBalances": "Afficher les soldes nuls",
-      "totalValue": "Valeur totale du portefeuille"
+      "totalValue": "Valeur totale du portefeuille",
+      "HYPE-STAKED": "HYPE (Staké)",
+      "HYPE-UNSTAKED": "HYPE (Non staké)",
+      "HYPE-PENDING": "HYPE (Retrait en attente)"
     }
   }
 }
