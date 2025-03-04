@@ -201,36 +201,65 @@ export default function Dashboard() {
     }
   };
 
+  // Fonction de validation du formulaire qui retourne les erreurs
+  const validateForm = (data: ConnectionFormData): FormErrors => {
+    const errors: FormErrors = {};
+
+    // Validation des champs requis
+    if (!data.name) {
+      errors.name = t("ccxt.form.errors.nameRequired");
+    } else if (data.name.length < 3) {
+      errors.name = t("ccxt.form.errors.nameLength");
+    }
+
+    if (!data.exchange) {
+      errors.exchange = t("ccxt.form.errors.exchangeRequired");
+    }
+
+    if (!data.key) {
+      errors.key = t("ccxt.form.errors.apiKeyRequired");
+    }
+
+    // Validation spécifique selon le type d'exchange
+    if (data.exchange.toLowerCase() !== "hyperliquid") {
+      if (!data.secret) {
+        errors.secret = t("ccxt.form.errors.apiSecretRequired");
+      }
+    } else if (data.exchange.toLowerCase() === "hyperliquid") {
+      // Pour Hyperliquid, vérifier que les deux champs API sont soit tous deux remplis, soit tous deux vides
+      if (data.apiWalletAddress && !data.apiPrivateKey) {
+        errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
+      } else if (!data.apiWalletAddress && data.apiPrivateKey) {
+        errors.apiWalletAddress = t(
+          "ccxt.form.errors.apiWalletAddressRequired"
+        );
+      }
+    }
+
+    return errors;
+  };
+
   // Vérifier si le formulaire est valide
   const isFormValid = () => {
-    // Basic validation
-    if (!formData.name || !formData.exchange || !formData.key) {
-      return false;
-    }
-
-    // For exchanges other than Hyperliquid, require secret
-    if (formData.exchange.toLowerCase() !== "hyperliquid" && !formData.secret) {
-      return false;
-    }
-
-    // For Hyperliquid, require API wallet address and private key if provided
-    if (
-      formData.exchange.toLowerCase() === "hyperliquid" &&
-      ((formData.apiWalletAddress && !formData.apiPrivateKey) ||
-        (!formData.apiWalletAddress && formData.apiPrivateKey))
-    ) {
-      return false;
-    }
-
-    return true;
+    const errors = validateForm(formData);
+    return Object.keys(errors).length === 0;
   };
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // Mettre à jour les données du formulaire
+    const updatedFormData = { ...formData, [name]: value };
+    setFormData(updatedFormData);
+
+    // Réinitialiser toutes les erreurs
+    setFormErrors({});
+
+    // Valider le formulaire et mettre à jour les erreurs
+    const errors = validateForm(updatedFormData);
+    setFormErrors(errors);
   };
 
   const fetchAssets = async (connectionId: string) => {

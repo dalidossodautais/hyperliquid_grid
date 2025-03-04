@@ -12,6 +12,10 @@
     "addButton": "Ajouter une connexion",
     "cancelButton": "Annuler",
     "errors": {
+      "fetchFailed": "Échec de la récupération des connexions aux exchanges",
+      "connectionFailed": "Échec de la connexion à l'exchange",
+      "invalidCredentials": "Identifiants d'exchange invalides",
+      "deleteFailed": "Échec de la suppression de la connexion",
       "INTERNAL_ERROR": "Une erreur interne est survenue",
       "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action",
       "USER_NOT_FOUND": "Utilisateur non trouvé",

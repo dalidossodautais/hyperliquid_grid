@@ -15,7 +15,6 @@
       "fetchFailed": "Failed to fetch exchange connections",
       "connectionFailed": "Failed to connect to exchange",
       "invalidCredentials": "Invalid exchange credentials",
-      "createFailed": "Failed to create connection",
       "deleteFailed": "Failed to delete connection",
       "UNAUTHORIZED": "You are not authorized to perform this action",
       "MISSING_ID": "Connection ID is missing",
@@ -26,6 +25,7 @@
       "VALIDATION_ERROR": "Data validation error",
       "INVALID_CREDENTIALS": "Invalid exchange credentials",
       "INVALID_WALLET": "Wallet address is invalid or inaccessible",
+      "CREATE_FAILED": "Failed to create connection",
       "EXCHANGE_NOT_SUPPORTED": "This exchange is not supported",
       "EXCHANGE_ERROR": "Error communicating with the exchange",
       "EXCHANGE_CONFIG_ERROR": "Exchange configuration error",
@@ -56,6 +56,7 @@
       "cancel": "Cancel",
       "errors": {
         "nameRequired": "Connection name is required",
+        "nameLength": "Connection name must be at least 3 characters",
         "exchangeRequired": "Exchange is required",
         "apiKeyRequired": "API key is required",
         "apiSecretRequired": "API secret is required",

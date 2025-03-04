@@ -7,7 +7,10 @@ import { authOptions } from "../auth/[...nextauth]/route";
 
 // Validation schema for connection creation
 const createConnectionSchema = z.object({
-  name: z.string().min(1, "Name is required"),
+  name: z
+    .string()
+    .min(1, "Name is required")
+    .min(3, "Connection name must be at least 3 characters"),
   exchange: z.string().min(1, "Exchange is required"),
   key: z.string().min(1, "Key is required"),
   secret: z.string().optional(),
