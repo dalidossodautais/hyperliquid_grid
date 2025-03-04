@@ -47,9 +47,16 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, type } = body;
 
-    if (!name || !type) {
+    if (!name) {
       return NextResponse.json(
-        { code: "INVALID_INPUT", message: "Name and type are required" },
+        { code: "INVALID_INPUT", message: "Name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (type && type !== "dca") {
+      return NextResponse.json(
+        { code: "INVALID_INPUT", message: "Only DCA bot type is supported" },
         { status: 400 }
       );
     }
@@ -57,7 +64,7 @@ export async function POST(request: Request) {
     const bot = await prisma.bot.create({
       data: {
         name,
-        type,
+        type: "dca",
         status: "stopped",
         userId: session.user.id,
       },
