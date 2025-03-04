@@ -52,7 +52,11 @@ export default function Input({
             error ? "border-red-300" : "border-gray-300"
           } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black] ${
             disabled ? "opacity-50 cursor-not-allowed" : ""
-          } ${unit ? "pr-12" : ""}`}
+          } ${unit ? "pr-14" : ""} ${
+            type === "number"
+              ? "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              : ""
+          }`}
         />
         {unit && (
           <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
