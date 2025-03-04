@@ -958,8 +958,8 @@ export default function Dashboard() {
         </div>
       </main>
 
-      <main className="max-w-7xl mx-auto py-2 sm:px-6 lg:px-8">
-        <div className="px-4 py-6 sm:px-0">
+      <main className="max-w-7xl mx-auto py-1 sm:px-6 lg:px-8">
+        <div className="px-4 py-2 sm:px-0">
           <div className="bg-white shadow rounded-lg p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-800">
