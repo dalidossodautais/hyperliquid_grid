@@ -73,7 +73,6 @@ export default function Dashboard() {
     null
   );
   const [loadingAssets, setLoadingAssets] = useState<string | null>(null);
-  const [showZeroBalances, setShowZeroBalances] = useState(false);
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -263,15 +262,11 @@ export default function Dashboard() {
 
   const fetchAssets = async (connectionId: string) => {
     try {
-      console.log("Fetching assets for connection:", connectionId);
       setLoadingAssets(connectionId);
       const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
       const data = await response.json();
 
-      console.log("Assets response:", data);
-
       if (!response.ok) {
-        console.error("Error response:", data);
         throw new Error(t(`ccxt.errors.${data.code}`));
       }
 
@@ -280,7 +275,7 @@ export default function Dashboard() {
         data.map(async (asset: Asset) => {
           try {
             const priceResponse = await fetch(
-              `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}/USDT`
+              `/api/ccxt/price?id=${connectionId}&symbol=${asset.asset}`
             );
             const priceData = await priceResponse.json();
 
@@ -292,7 +287,6 @@ export default function Dashboard() {
             }
             return asset;
           } catch (error) {
-            console.error(`Error fetching price for ${asset.asset}:`, error);
             return asset;
           }
         })
@@ -305,8 +299,6 @@ export default function Dashboard() {
             : conn
         )
       );
-
-      console.log("Updated connections:", connections);
     } catch (error) {
       console.error("Error fetching assets:", error);
     } finally {
@@ -678,24 +670,21 @@ export default function Dashboard() {
                                     {t("ccxt.assets.title")}
                                   </h3>
                                 </div>
-                                <div className="flex items-center">
-                                  <input
-                                    type="checkbox"
-                                    id={`show-zero-${connection.id}`}
-                                    checked={showZeroBalances}
-                                    onChange={() =>
-                                      setShowZeroBalances(!showZeroBalances)
-                                    }
-                                    className="mr-2 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                  />
-                                  <label
-                                    htmlFor={`show-zero-${connection.id}`}
-                                    className="text-sm text-gray-700"
-                                  >
-                                    {t("ccxt.assets.showZeroBalances")}
-                                  </label>
-                                </div>
                               </div>
+                              {connection.assets &&
+                                connection.assets.length > 0 && (
+                                  <div className="mb-4 text-right text-sm font-medium text-gray-900">
+                                    {t("ccxt.assets.totalValue")}: $
+                                    {connection.assets
+                                      .reduce((sum, asset) => {
+                                        if (asset.asset === "USDC") {
+                                          return sum + asset.total;
+                                        }
+                                        return sum + (asset.usdValue || 0);
+                                      }, 0)
+                                      .toFixed(2)}
+                                  </div>
+                                )}
                               {loadingAssets === connection.id ? (
                                 <div className="flex justify-center py-4">
                                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-900"></div>
@@ -718,17 +707,11 @@ export default function Dashboard() {
                                         <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
                                           {t("ccxt.assets.used")}
                                         </th>
-                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
-                                          {t("ccxt.assets.usdValue")}
-                                        </th>
                                       </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
                                       {connection.assets
-                                        .filter(
-                                          (asset) =>
-                                            showZeroBalances || asset.total > 0
-                                        )
+                                        .filter((asset) => asset.total > 0)
                                         .map((asset, index) => (
                                           <tr
                                             key={`${connection.id}-${asset.asset}-${index}`}
@@ -738,19 +721,29 @@ export default function Dashboard() {
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
                                               {formatAssetValue(asset.total)}
+                                              {asset.usdValue &&
+                                                asset.total > 0 &&
+                                                ` ($${asset.usdValue.toFixed(
+                                                  2
+                                                )})`}
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
                                               {formatAssetValue(asset.free)}
+                                              {asset.usdValue &&
+                                                asset.free > 0 &&
+                                                ` ($${(
+                                                  asset.free *
+                                                  (asset.usdValue / asset.total)
+                                                ).toFixed(2)})`}
                                             </td>
                                             <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
                                               {formatAssetValue(asset.used)}
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                              {asset.usdValue
-                                                ? `$${asset.usdValue.toFixed(
-                                                    2
-                                                  )}`
-                                                : "-"}
+                                              {asset.usdValue &&
+                                                asset.used > 0 &&
+                                                ` ($${(
+                                                  asset.used *
+                                                  (asset.usdValue / asset.total)
+                                                ).toFixed(2)})`}
                                             </td>
                                           </tr>
                                         ))}

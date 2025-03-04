@@ -84,13 +84,8 @@ async function testExchangeConnection(
 
           // Test the connection with the wallet
           const balance = await exchangeInstance.fetchBalance();
-          console.log(
-            "Balance fetched successfully:",
-            Object.keys(balance).length > 0
-          );
           return { isValid: true };
         } catch (error) {
-          console.error("Hyperliquid error:", error);
           return { isValid: false, error: "INVALID_WALLET" };
         }
       }
@@ -112,8 +107,6 @@ async function testExchangeConnection(
       }
       return { isValid: true };
     } catch (error) {
-      console.error("Exchange API error:", error);
-
       if (error instanceof Error) {
         const errorMessage = error.message.toLowerCase();
 
@@ -147,7 +140,6 @@ async function testExchangeConnection(
       return { isValid: false, error: "UNKNOWN_ERROR" };
     }
   } catch (error) {
-    console.error("Critical error:", error);
     return { isValid: false, error: "CONNECTION_ERROR" };
   }
 }
@@ -199,7 +191,6 @@ export async function GET() {
 
       return NextResponse.json(connections);
     } catch (dbError) {
-      console.error("Database error in GET:", dbError);
       return NextResponse.json(
         {
           code: "DATABASE_ERROR",
@@ -212,7 +203,6 @@ export async function GET() {
       );
     }
   } catch (error) {
-    console.error("GET error:", error);
     return NextResponse.json(
       {
         code: "INTERNAL_ERROR",

@@ -53,11 +53,9 @@ export async function GET(request: Request) {
       const ticker = await exchangeInstance.fetchTicker(symbol);
       return NextResponse.json({ price: ticker.last });
     } catch (error) {
-      console.error("Error fetching price:", error);
       return NextResponse.json({ code: "PRICE_FETCH_ERROR" }, { status: 500 });
     }
   } catch (error) {
-    console.error("Error in price route:", error);
     return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

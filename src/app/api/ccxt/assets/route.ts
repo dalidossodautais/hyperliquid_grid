@@ -169,7 +169,7 @@ export async function GET(request: Request) {
             defaultType: "spot",
           };
         } catch (error) {
-          console.warn("Unable to set defaultType:", error);
+          // Ignore error silently
         }
       }
 
@@ -237,7 +237,7 @@ export async function GET(request: Request) {
               }
             }
           } catch (stakingError) {
-            console.warn("Error fetching staking data:", stakingError);
+            // Ignore staking error silently
           }
 
           if (balance.total) {
