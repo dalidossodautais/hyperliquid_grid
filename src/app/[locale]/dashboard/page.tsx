@@ -1096,9 +1096,7 @@ export default function Dashboard() {
                     required
                   >
                     <option value="">{t("bots.form.selectType")}</option>
-                    <option value="grid">Grid</option>
-                    <option value="market_maker">Market Maker</option>
-                    <option value="arbitrage">Arbitrage</option>
+                    <option value="dca">DCA</option>
                   </select>
                   {botFormErrors.type && (
                     <p className="mt-1 text-sm text-red-600">
