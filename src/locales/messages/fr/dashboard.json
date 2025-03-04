@@ -90,5 +90,59 @@
       "HYPE-PENDING": "HYPE (Retrait en attente)",
       "usdValue": "Valeur en USD"
     }
+  },
+  "bots": {
+    "title": "Bots",
+    "noBots": "Aucun bot trouvé",
+    "addButton": "Ajouter un bot",
+    "cancelButton": "Annuler",
+    "errors": {
+      "fetchFailed": "Échec de la récupération des bots",
+      "createFailed": "Échec de la création du bot",
+      "deleteFailed": "Échec de la suppression du bot",
+      "updateFailed": "Échec de la mise à jour du bot",
+      "INTERNAL_ERROR": "Une erreur interne est survenue",
+      "UNAUTHORIZED": "Vous n'êtes pas autorisé à effectuer cette action",
+      "USER_NOT_FOUND": "Utilisateur non trouvé",
+      "VALIDATION_ERROR": "Erreur de validation des données",
+      "BOT_NOT_FOUND": "Bot introuvable ou non autorisé",
+      "MISSING_ID": "L'identifiant du bot est requis",
+      "UNKNOWN_ERROR": "Une erreur inconnue est survenue",
+      "DUPLICATE_BOT": "Un bot avec ce nom existe déjà",
+      "MISSING_FIELD": "Un champ requis est manquant",
+      "DATABASE_ERROR": "Erreur de base de données"
+    },
+    "status": {
+      "running": "En cours",
+      "stopped": "Arrêté",
+      "error": "Erreur"
+    },
+    "form": {
+      "title": "Ajouter un nouveau bot",
+      "name": "Nom",
+      "type": "Type de bot",
+      "connection": "Connexion",
+      "submit": "Ajouter",
+      "cancel": "Annuler",
+      "selectType": "Sélectionner un type de bot",
+      "selectConnection": "Sélectionner une connexion",
+      "errors": {
+        "nameRequired": "Le nom est requis",
+        "nameLength": "Le nom doit contenir au moins 3 caractères",
+        "typeRequired": "Le type de bot est requis",
+        "connectionRequired": "La connexion est requise"
+      }
+    },
+    "table": {
+      "name": "Nom",
+      "type": "Type",
+      "connection": "Connexion",
+      "status": "Statut",
+      "createdAt": "Créé le",
+      "delete": "Supprimer",
+      "start": "Démarrer",
+      "stop": "Arrêter",
+      "noBots": "Aucun bot trouvé"
+    }
   }
 }

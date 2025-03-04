@@ -1,35 +1,35 @@
 {
   "title": "Dashboard",
-  "welcome": "Welcome",
-  "signout": "Sign Out",
+  "welcome": "Welcome, {name}",
+  "signout": "Sign out",
   "content": {
     "title": "Content",
     "description": "Description"
   },
   "ccxt": {
-    "title": "Exchange Connections",
+    "title": "Connections",
     "noConnections": "No exchange connections found",
-    "addButton": "Add Connection",
+    "addButton": "Add connection",
     "cancelButton": "Cancel",
     "errors": {
       "fetchFailed": "Failed to fetch exchange connections",
       "connectionFailed": "Failed to connect to exchange",
       "invalidCredentials": "Invalid exchange credentials",
       "deleteFailed": "Failed to delete connection",
-      "UNAUTHORIZED": "You are not authorized to perform this action",
-      "MISSING_ID": "Connection ID is missing",
-      "CONNECTION_NOT_FOUND": "Connection not found",
-      "DELETE_FAILED": "Failed to delete connection",
       "INTERNAL_ERROR": "An internal error occurred",
+      "UNAUTHORIZED": "You are not authorized to perform this action",
       "USER_NOT_FOUND": "User not found",
       "VALIDATION_ERROR": "Data validation error",
       "INVALID_CREDENTIALS": "Invalid exchange credentials",
-      "INVALID_WALLET": "Wallet address is invalid or inaccessible",
+      "INVALID_WALLET": "Invalid or inaccessible wallet address",
       "CREATE_FAILED": "Failed to create connection",
+      "DELETE_FAILED": "Failed to delete connection",
+      "CONNECTION_NOT_FOUND": "Connection not found or unauthorized",
+      "MISSING_ID": "Connection ID is required",
       "EXCHANGE_NOT_SUPPORTED": "This exchange is not supported",
-      "EXCHANGE_ERROR": "Error communicating with the exchange",
+      "EXCHANGE_ERROR": "Error communicating with exchange",
       "EXCHANGE_CONFIG_ERROR": "Exchange configuration error",
-      "CONNECTION_ERROR": "Error connecting to the exchange",
+      "CONNECTION_ERROR": "Error connecting to exchange",
       "UNKNOWN_ERROR": "An unknown error occurred",
       "DUPLICATE_CONNECTION": "A connection with this name or credentials already exists",
       "MISSING_FIELD": "A required field is missing",
@@ -41,8 +41,8 @@
       "error": "Error"
     },
     "form": {
-      "title": "Add Exchange Connection",
-      "name": "Connection Name",
+      "title": "Add new connection",
+      "name": "Name",
       "exchange": "Exchange",
       "apiKey": "API Key",
       "apiSecret": "API Secret",
@@ -51,44 +51,98 @@
       "apiWalletAddressHelp": "Optional. Required for trading operations.",
       "apiPrivateKey": "API Private Key",
       "apiPrivateKeyHelp": "Optional. Required for trading operations.",
-      "selectExchange": "Select an exchange",
-      "submit": "Add Connection",
+      "submit": "Add",
       "cancel": "Cancel",
+      "selectExchange": "Select an exchange",
       "errors": {
-        "nameRequired": "Connection name is required",
-        "nameLength": "Connection name must be at least 3 characters",
+        "nameRequired": "Name is required",
+        "nameLength": "Name must be at least 3 characters",
         "exchangeRequired": "Exchange is required",
-        "apiKeyRequired": "API key is required",
-        "apiSecretRequired": "API secret is required",
-        "apiWalletAddressRequired": "API wallet address is required",
-        "apiPrivateKeyRequired": "API private key is required"
+        "apiKeyRequired": "API Key is required",
+        "apiSecretRequired": "API Secret is required",
+        "apiWalletAddressRequired": "API Wallet Address is required",
+        "apiPrivateKeyRequired": "API Private Key is required"
       }
     },
     "table": {
       "name": "Name",
       "exchange": "Exchange",
       "status": "Status",
-      "createdAt": "Created At",
+      "createdAt": "Created at",
+      "delete": "Delete",
       "active": "Active",
       "inactive": "Inactive",
-      "delete": "Delete",
-      "noConnections": "No exchange connections found",
-      "showAssets": "Show Assets",
-      "hideAssets": "Hide Assets"
+      "noConnections": "No connections found",
+      "showAssets": "Show assets",
+      "hideAssets": "Hide assets"
     },
     "assets": {
-      "title": "Available Assets",
+      "title": "Available assets",
       "asset": "Asset",
       "total": "Total",
-      "free": "Available",
+      "free": "Free",
       "used": "Used",
       "noAssets": "No assets found for this connection",
       "showZeroBalances": "Show zero balances",
-      "totalValue": "Total Portfolio Value",
+      "totalValue": "Total portfolio value",
       "HYPE-STAKED": "HYPE (Staked)",
       "HYPE-UNSTAKED": "HYPE (Unstaked)",
-      "HYPE-PENDING": "HYPE (Pending Withdrawal)",
+      "HYPE-PENDING": "HYPE (Pending withdrawal)",
       "usdValue": "USD Value"
+    }
+  },
+  "bots": {
+    "title": "Bots",
+    "noBots": "No bots found",
+    "addButton": "Add bot",
+    "cancelButton": "Cancel",
+    "errors": {
+      "fetchFailed": "Failed to fetch bots",
+      "createFailed": "Failed to create bot",
+      "deleteFailed": "Failed to delete bot",
+      "updateFailed": "Failed to update bot",
+      "INTERNAL_ERROR": "An internal error occurred",
+      "UNAUTHORIZED": "You are not authorized to perform this action",
+      "USER_NOT_FOUND": "User not found",
+      "VALIDATION_ERROR": "Data validation error",
+      "BOT_NOT_FOUND": "Bot not found or unauthorized",
+      "MISSING_ID": "Bot ID is required",
+      "UNKNOWN_ERROR": "An unknown error occurred",
+      "DUPLICATE_BOT": "A bot with this name already exists",
+      "MISSING_FIELD": "A required field is missing",
+      "DATABASE_ERROR": "Database error"
+    },
+    "status": {
+      "running": "Running",
+      "stopped": "Stopped",
+      "error": "Error"
+    },
+    "form": {
+      "title": "Add new bot",
+      "name": "Name",
+      "type": "Bot type",
+      "connection": "Connection",
+      "submit": "Add",
+      "cancel": "Cancel",
+      "selectType": "Select a bot type",
+      "selectConnection": "Select a connection",
+      "errors": {
+        "nameRequired": "Name is required",
+        "nameLength": "Name must be at least 3 characters",
+        "typeRequired": "Bot type is required",
+        "connectionRequired": "Connection is required"
+      }
+    },
+    "table": {
+      "name": "Name",
+      "type": "Type",
+      "connection": "Connection",
+      "status": "Status",
+      "createdAt": "Created at",
+      "delete": "Delete",
+      "start": "Start",
+      "stop": "Stop",
+      "noBots": "No bots found"
     }
   }
 }
