@@ -125,6 +125,12 @@ export default function Dashboard() {
         }
 
         const response = await fetch("/api/ccxt");
+        const contentType = response.headers.get("content-type");
+
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server returned non-JSON response");
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
@@ -156,11 +162,16 @@ export default function Dashboard() {
   const fetchAssets = async (connectionId: string) => {
     try {
       const response = await fetch(`/api/ccxt/assets?id=${connectionId}`);
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Server returned non-JSON response");
+      }
+
       if (!response.ok) {
         throw new Error("Failed to fetch assets");
       }
       const data = await response.json();
-      console.log("API Response:", data);
       return data;
     } catch (error) {
       console.error("Error fetching assets:", error);
@@ -325,6 +336,12 @@ export default function Dashboard() {
         }
 
         const response = await fetch("/api/bots");
+        const contentType = response.headers.get("content-type");
+
+        if (!contentType || !contentType.includes("application/json")) {
+          throw new Error("Server returned non-JSON response");
+        }
+
         const data = await response.json();
 
         if (!response.ok) {
