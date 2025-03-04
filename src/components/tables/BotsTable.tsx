@@ -39,9 +39,6 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
               {t("bots.table.pair")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              {t("bots.table.quantities")}
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               {t("bots.table.status")}
             </th>
             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -56,7 +53,7 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
           {bots.length === 0 ? (
             <tr>
               <td
-                colSpan={7}
+                colSpan={6}
                 className="px-6 py-4 text-center text-sm text-gray-500"
               >
                 {t("bots.table.noBots")}
@@ -73,10 +70,6 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {bot.config?.baseAsset}/{bot.config?.quoteAsset}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {bot.config?.baseAssetQuantity} {bot.config?.baseAsset} /{" "}
-                  {bot.config?.quoteAssetQuantity} {bot.config?.quoteAsset}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span
