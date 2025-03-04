@@ -68,7 +68,7 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
                     onClick={() => onDelete(bot.id)}
                     className="text-red-600 hover:text-red-900 cursor-pointer"
                   >
-                    {t("bots.table.delete")}
+                    {t("delete")}
                   </button>
                 </div>
               </td>

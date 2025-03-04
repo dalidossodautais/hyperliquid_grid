@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import ccxt, { Exchange } from "ccxt";
+import * as ccxt from "ccxt";
 
 // Configuration
 const REQUEST_TIMEOUT = 30000; // 30 seconds timeout
@@ -117,7 +117,7 @@ export async function GET(request: Request) {
 
     const exchange = new (exchangeClass as new (
       config: ExchangeConfig
-    ) => Exchange)(config);
+    ) => ccxt.Exchange)(config);
     await exchange.loadMarkets();
 
     const symbols = symbolsParam.split(",");
@@ -129,15 +129,15 @@ export async function GET(request: Request) {
     console.log(`Fetching prices for ${validSymbols.length} symbols`);
 
     // Récupérer tous les prix en une seule requête
-    const tickers = await exchange.fetchTickers(
+    const tickers = (await exchange.fetchTickers(
       validSymbols.map((symbol) => `${symbol}/USDC`)
-    );
+    )) as Record<string, ccxt.Ticker>;
 
     // Extraire les prix
     const prices: Record<string, number> = {};
     validSymbols.forEach((symbol) => {
       const ticker = tickers[`${symbol}/USDC`];
-      if (ticker && ticker.last) {
+      if (ticker && typeof ticker.last === "number") {
         prices[symbol] = ticker.last;
       }
     });

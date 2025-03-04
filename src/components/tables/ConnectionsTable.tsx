@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface Asset {
   asset: string;
@@ -47,17 +47,37 @@ export default function ConnectionsTable({
     new Set()
   );
 
-  const toggleConnectionExpand = async (connectionId: string) => {
-    const newExpandedConnections = new Set(expandedConnections);
-    if (newExpandedConnections.has(connectionId)) {
-      newExpandedConnections.delete(connectionId);
-    } else {
-      newExpandedConnections.add(connectionId);
-      const assets = await onFetchAssets(connectionId);
-      onUpdateConnection(connectionId, assets);
-    }
-    setExpandedConnections(newExpandedConnections);
-  };
+  const toggleConnectionExpand = useCallback(
+    async (connectionId: string) => {
+      const newExpandedConnections = new Set(expandedConnections);
+      if (newExpandedConnections.has(connectionId)) {
+        newExpandedConnections.delete(connectionId);
+      } else {
+        newExpandedConnections.add(connectionId);
+        const assets = await onFetchAssets(connectionId);
+        onUpdateConnection(connectionId, assets);
+      }
+      setExpandedConnections(newExpandedConnections);
+    },
+    [expandedConnections, onFetchAssets, onUpdateConnection]
+  );
+
+  const calculateTotalValue = useCallback((assets: Asset[]): number => {
+    return assets.reduce((sum, asset) => {
+      if (asset.asset === "USDC") {
+        return sum + asset.total;
+      }
+      return sum + (asset.usdValue || 0);
+    }, 0);
+  }, []);
+
+  const calculateAssetValue = useCallback(
+    (asset: Asset, value: number): number => {
+      if (!asset.usdValue || asset.total === 0) return 0;
+      return value * (asset.usdValue / asset.total);
+    },
+    []
+  );
 
   return (
     <div className="overflow-x-auto">
@@ -118,7 +138,7 @@ export default function ConnectionsTable({
                     onClick={() => onDelete(connection.id)}
                     className="text-red-600 hover:text-red-900 cursor-pointer"
                   >
-                    {t("ccxt.table.delete")}
+                    {t("delete")}
                   </button>
                 </div>
               </td>
@@ -151,14 +171,7 @@ export default function ConnectionsTable({
                       {connection.assets && connection.assets.length > 0 && (
                         <div className="mb-4 text-right text-sm font-medium text-gray-900">
                           {t("ccxt.assets.totalValue")}: $
-                          {connection.assets
-                            .reduce((sum, asset) => {
-                              if (asset.asset === "USDC") {
-                                return sum + asset.total;
-                              }
-                              return sum + (asset.usdValue || 0);
-                            }, 0)
-                            .toFixed(2)}
+                          {calculateTotalValue(connection.assets).toFixed(2)}
                         </div>
                       )}
                       {connection.assets && connection.assets.length > 0 ? (
@@ -200,18 +213,18 @@ export default function ConnectionsTable({
                                       {formatAssetValue(asset.free)}
                                       {asset.usdValue &&
                                         asset.free > 0 &&
-                                        ` ($${(
-                                          asset.free *
-                                          (asset.usdValue / asset.total)
+                                        ` ($${calculateAssetValue(
+                                          asset,
+                                          asset.free
                                         ).toFixed(2)})`}
                                     </td>
                                     <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
                                       {formatAssetValue(asset.used)}
                                       {asset.usdValue &&
                                         asset.used > 0 &&
-                                        ` ($${(
-                                          asset.used *
-                                          (asset.usdValue / asset.total)
+                                        ` ($${calculateAssetValue(
+                                          asset,
+                                          asset.used
                                         ).toFixed(2)})`}
                                     </td>
                                   </tr>

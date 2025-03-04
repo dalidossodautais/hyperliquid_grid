@@ -56,9 +56,9 @@ export default function BotForm({
   const [validBaseAssets, setValidBaseAssets] = useState<string[]>([]);
   const [validQuoteAssets, setValidQuoteAssets] = useState<string[]>([]);
 
-  const cleanSymbol = (symbol: string): string => {
+  const cleanSymbol = useCallback((symbol: string): string => {
     return symbol.replace(/:USDC$/, "");
-  };
+  }, []);
 
   const validateBotForm = useCallback(
     (data: BotFormData): boolean => {
@@ -104,7 +104,14 @@ export default function BotForm({
       setIsBotFormValid(isValid);
       return isValid;
     },
-    [t, selectedConnection, baseAsset, quoteAsset, availableSymbols]
+    [
+      t,
+      selectedConnection,
+      baseAsset,
+      quoteAsset,
+      availableSymbols,
+      cleanSymbol,
+    ]
   );
 
   useEffect(() => {
@@ -122,7 +129,7 @@ export default function BotForm({
     } else {
       setValidBaseAssets([]);
     }
-  }, [availableSymbols]);
+  }, [availableSymbols, cleanSymbol]);
 
   useEffect(() => {
     if (baseAsset && availableSymbols.length > 0) {
@@ -137,7 +144,7 @@ export default function BotForm({
     } else {
       setValidQuoteAssets([]);
     }
-  }, [baseAsset, availableSymbols]);
+  }, [baseAsset, availableSymbols, cleanSymbol]);
 
   const handleBotInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -304,24 +311,20 @@ export default function BotForm({
           )}
         </div>
       )}
-      <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
+      <div className="flex justify-end space-x-3">
         <button
           type="button"
           onClick={onCancel}
-          className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
         >
-          {t("bots.form.cancel")}
+          {t("cancel")}
         </button>
         <button
           type="submit"
           disabled={!isBotFormValid}
-          className={`w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            !isBotFormValid
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-blue-700 cursor-pointer"
-          }`}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
-          {t("bots.form.submit")}
+          {t("create")}
         </button>
       </div>
     </form>

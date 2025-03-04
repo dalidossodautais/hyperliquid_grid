@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import prisma from "@/lib/prisma";
 import { z } from "zod";
-import ccxt, { Exchange } from "ccxt";
+import * as ccxt from "ccxt";
 import { authOptions } from "../auth/[...nextauth]/route";
 
 // Validation schema for connection creation
@@ -44,7 +44,6 @@ async function testExchangeConnection(
   try {
     // Check if the exchange is supported by CCXT
     const exchangeId = exchange.toLowerCase();
-
     const exchangeClass = ccxt[exchangeId as keyof typeof ccxt];
 
     if (!exchangeClass) {
@@ -54,7 +53,7 @@ async function testExchangeConnection(
     // Create an exchange instance with more configuration options
     const exchangeInstance = new (exchangeClass as new (
       config: ExchangeConfig
-    ) => Exchange)({
+    ) => ccxt.Exchange)({
       apiKey: key,
       secret,
       enableRateLimit: true,
@@ -67,9 +66,9 @@ async function testExchangeConnection(
       if (exchange.toLowerCase() === "hyperliquid") {
         try {
           // Create a specific instance for Hyperliquid
-          const exchangeInstance = new (exchangeClass as new (
+          const hyperliquidInstance = new (exchangeClass as new (
             config: ExchangeConfig
-          ) => Exchange)({
+          ) => ccxt.Exchange)({
             apiKey: key,
             walletAddress: key, // Use the address as walletAddress
             apiWalletAddress: apiWalletAddress,
@@ -83,9 +82,10 @@ async function testExchangeConnection(
           });
 
           // Test the connection with the wallet
-          await exchangeInstance.fetchBalance();
+          await hyperliquidInstance.fetchBalance();
           return { isValid: true };
-        } catch {
+        } catch (error) {
+          console.error("Hyperliquid connection error:", error);
           return { isValid: false, error: "INVALID_WALLET" };
         }
       }
@@ -139,7 +139,8 @@ async function testExchangeConnection(
       }
       return { isValid: false, error: "UNKNOWN_ERROR" };
     }
-  } catch {
+  } catch (error) {
+    console.error("Exchange connection error:", error);
     return { isValid: false, error: "CONNECTION_ERROR" };
   }
 }

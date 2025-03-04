@@ -1,7 +1,10 @@
 {
   "title": "Tableau de bord",
-  "welcome": "Bienvenue, {name} !",
+  "welcome": "Bienvenue, {name}!",
   "signout": "Se déconnecter",
+  "delete": "Supprimer",
+  "cancel": "Annuler",
+  "create": "Créer",
   "content": {
     "title": "Contenu",
     "description": "Description"
@@ -10,7 +13,6 @@
     "title": "Connexions d'exchange",
     "noConnections": "Aucune connexion aux exchanges trouvée",
     "addButton": "Ajouter une connexion",
-    "cancelButton": "Annuler",
     "errors": {
       "fetchFailed": "Échec de la récupération des connexions aux exchanges",
       "connectionFailed": "Échec de la connexion à l'exchange",
@@ -53,8 +55,6 @@
       "apiPrivateKey": "Clé privée API",
       "apiWalletAddressHelp": "Optionnel : Votre adresse de portefeuille API",
       "apiPrivateKeyHelp": "Optionnel : Votre clé privée API",
-      "submit": "Ajouter la connexion",
-      "cancel": "Annuler",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
@@ -72,7 +72,6 @@
       "createdAt": "Créé le",
       "active": "Actif",
       "inactive": "Inactif",
-      "delete": "Supprimer",
       "showAssets": "Afficher les actifs",
       "hideAssets": "Masquer les actifs",
       "noConnections": "Aucune connexion trouvée"
@@ -91,7 +90,6 @@
     "title": "Bots de trading",
     "noBots": "Aucun bot trouvé",
     "addButton": "Ajouter un bot",
-    "cancelButton": "Annuler",
     "errors": {
       "fetchFailed": "Échec de la récupération des bots",
       "createFailed": "Échec de la création du bot",
@@ -126,8 +124,6 @@
       "selectBaseAsset": "Sélectionner l'actif de base",
       "quoteAsset": "Actif de cotation",
       "selectQuoteAsset": "Sélectionner l'actif de cotation",
-      "submit": "Ajouter le bot",
-      "cancel": "Annuler",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
@@ -146,7 +142,6 @@
       "createdAt": "Créé le",
       "start": "Démarrer",
       "stop": "Arrêter",
-      "delete": "Supprimer",
       "noBots": "Aucun bot trouvé"
     }
   }

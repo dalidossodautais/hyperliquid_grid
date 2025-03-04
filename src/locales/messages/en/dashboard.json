@@ -2,6 +2,9 @@
   "title": "Dashboard",
   "welcome": "Welcome, {name}!",
   "signout": "Sign Out",
+  "delete": "Delete",
+  "cancel": "Cancel",
+  "create": "Create",
   "content": {
     "title": "Content",
     "description": "Description"
@@ -10,7 +13,6 @@
     "title": "Exchange Connections",
     "noConnections": "No exchange connections found",
     "addButton": "Add Connection",
-    "cancelButton": "Cancel",
     "errors": {
       "fetchFailed": "Failed to fetch exchange connections",
       "connectionFailed": "Failed to connect to exchange",
@@ -53,8 +55,6 @@
       "apiPrivateKey": "API Private Key",
       "apiWalletAddressHelp": "Optional: Your API wallet address",
       "apiPrivateKeyHelp": "Optional: Your API private key",
-      "submit": "Add Connection",
-      "cancel": "Cancel",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
@@ -72,7 +72,6 @@
       "createdAt": "Created At",
       "active": "Active",
       "inactive": "Inactive",
-      "delete": "Delete",
       "showAssets": "Show Assets",
       "hideAssets": "Hide Assets",
       "noConnections": "No connections found"
@@ -91,7 +90,6 @@
     "title": "Trading Bots",
     "noBots": "No bots found",
     "addButton": "Add Bot",
-    "cancelButton": "Cancel",
     "errors": {
       "fetchFailed": "Failed to fetch bots",
       "createFailed": "Failed to create bot",
@@ -126,8 +124,6 @@
       "selectBaseAsset": "Select base asset",
       "quoteAsset": "Quote Asset",
       "selectQuoteAsset": "Select quote asset",
-      "submit": "Add Bot",
-      "cancel": "Cancel",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
@@ -146,7 +142,6 @@
       "createdAt": "Created At",
       "start": "Start",
       "stop": "Stop",
-      "delete": "Delete",
       "noBots": "No bots found"
     }
   }

@@ -1,5 +1,5 @@
 import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 
 interface ConnectionFormData {
   name: string;
@@ -42,43 +42,42 @@ export default function ConnectionForm({
     apiPrivateKey: "",
   });
   const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [isFormValid, setIsFormValid] = useState(false);
 
-  const validateForm = (data: ConnectionFormData): FormErrors => {
-    const errors: FormErrors = {};
+  const validateForm = useCallback(
+    (data: ConnectionFormData): FormErrors => {
+      const errors: FormErrors = {};
 
-    if (!data.name) {
-      errors.name = t("ccxt.form.errors.nameRequired");
-    } else if (data.name.length < 3) {
-      errors.name = t("ccxt.form.errors.nameLength");
-    }
-
-    if (!data.exchange) {
-      errors.exchange = t("ccxt.form.errors.exchangeRequired");
-    }
-
-    if (!data.key) {
-      errors.key = t("ccxt.form.errors.apiKeyRequired");
-    }
-
-    if (data.exchange.toLowerCase() === "hyperliquid") {
-      if (data.apiWalletAddress && !data.apiPrivateKey) {
-        errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
-      } else if (!data.apiWalletAddress && data.apiPrivateKey) {
-        errors.apiWalletAddress = t(
-          "ccxt.form.errors.apiWalletAddressRequired"
-        );
+      if (!data.name) {
+        errors.name = t("ccxt.form.errors.nameRequired");
+      } else if (data.name.length < 3) {
+        errors.name = t("ccxt.form.errors.nameLength");
       }
-    } else if (!data.secret) {
-      errors.secret = t("ccxt.form.errors.apiSecretRequired");
-    }
 
-    return errors;
-  };
+      if (!data.exchange) {
+        errors.exchange = t("ccxt.form.errors.exchangeRequired");
+      }
 
-  const isFormValid = () => {
-    const errors = validateForm(formData);
-    return Object.keys(errors).length === 0;
-  };
+      if (!data.key) {
+        errors.key = t("ccxt.form.errors.apiKeyRequired");
+      }
+
+      if (data.exchange.toLowerCase() === "hyperliquid") {
+        if (data.apiWalletAddress && !data.apiPrivateKey) {
+          errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
+        } else if (!data.apiWalletAddress && data.apiPrivateKey) {
+          errors.apiWalletAddress = t(
+            "ccxt.form.errors.apiWalletAddressRequired"
+          );
+        }
+      } else if (!data.secret) {
+        errors.secret = t("ccxt.form.errors.apiSecretRequired");
+      }
+
+      return errors;
+    },
+    [t]
+  );
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -89,10 +88,12 @@ export default function ConnectionForm({
     setFormErrors({});
     const errors = validateForm(updatedFormData);
     setFormErrors(errors);
+    setIsFormValid(Object.keys(errors).length === 0);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isFormValid) return;
     await onSubmit(formData);
   };
 
@@ -245,24 +246,20 @@ export default function ConnectionForm({
           </div>
         </>
       )}
-      <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
+      <div className="flex justify-end space-x-3">
         <button
           type="button"
           onClick={onCancel}
-          className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
         >
-          {t("ccxt.form.cancel")}
+          {t("cancel")}
         </button>
         <button
           type="submit"
-          disabled={!isFormValid()}
-          className={`w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-            !isFormValid()
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:bg-blue-700 cursor-pointer"
-          }`}
+          disabled={!isFormValid}
+          className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
-          {t("ccxt.form.submit")}
+          {t("create")}
         </button>
       </div>
     </form>
