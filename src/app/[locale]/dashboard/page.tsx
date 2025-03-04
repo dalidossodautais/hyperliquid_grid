@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import LanguageSelector from "@/components/LanguageSelector";
 import Modal from "@/components/Modal";
+import ConnectionForm from "@/components/forms/ConnectionForm";
+import ConnectionsTable from "@/components/tables/ConnectionsTable";
+import BotForm from "@/components/forms/BotForm";
+import BotsTable from "@/components/tables/BotsTable";
 
 interface ExchangeConnection {
   id: string;
@@ -24,15 +28,6 @@ interface Asset {
   usdValue?: number;
 }
 
-interface ConnectionFormData {
-  name: string;
-  exchange: string;
-  key: string;
-  secret: string;
-  apiWalletAddress: string;
-  apiPrivateKey: string;
-}
-
 interface Bot {
   id: string;
   name: string;
@@ -42,37 +37,6 @@ interface Bot {
   updatedAt: string;
 }
 
-interface BotFormData {
-  name: string;
-}
-
-interface BotFormErrors {
-  name?: string;
-  connection?: string;
-  baseAsset?: string;
-  quoteAsset?: string;
-  submit?: string;
-}
-
-interface FormErrors {
-  name?: string;
-  exchange?: string;
-  key?: string;
-  secret?: string;
-  apiWalletAddress?: string;
-  apiPrivateKey?: string;
-}
-
-const formatAssetValue = (value: number): string => {
-  if (value === 0) return "0";
-  if (value < 0.00000001) return "<0.00000001";
-  if (value < 0.0001) return value.toFixed(8);
-  if (value < 0.01) return value.toFixed(6);
-  if (value < 1) return value.toFixed(4);
-  if (value < 1000) return value.toFixed(2);
-  return value.toFixed(2);
-};
-
 export default function Dashboard() {
   const { data: session, status } = useSession();
   const t = useTranslations("dashboard");
@@ -81,33 +45,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [formErrors, setFormErrors] = useState<FormErrors>({});
-  const [formData, setFormData] = useState<ConnectionFormData>({
-    name: "",
-    exchange: "",
-    key: "",
-    secret: "",
-    apiWalletAddress: "",
-    apiPrivateKey: "",
-  });
-  const [expandedConnections, setExpandedConnections] = useState<Set<string>>(
-    new Set()
-  );
-
   const [bots, setBots] = useState<Bot[]>([]);
   const [showBotForm, setShowBotForm] = useState(false);
-  const [botFormData, setBotFormData] = useState<BotFormData>({
-    name: "",
-  });
-  const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
-  const [isBotFormValid, setIsBotFormValid] = useState(false);
-
-  const [selectedConnection, setSelectedConnection] = useState<string>("");
-  const [availableAssets, setAvailableAssets] = useState<
-    Array<{ asset: string; total: number }>
-  >([]);
-  const [baseAsset, setBaseAsset] = useState<string>("");
-  const [quoteAsset, setQuoteAsset] = useState<string>("");
 
   useEffect(() => {
     const fetchExchanges = async () => {
@@ -136,21 +75,11 @@ export default function Dashboard() {
         const response = await fetch("/api/ccxt");
         const contentType = response.headers.get("content-type");
 
-        // Log the response details for debugging
-        console.log("Response status:", response.status);
-        console.log("Content-Type:", contentType);
-        console.log(
-          "Response headers:",
-          Object.fromEntries(response.headers.entries())
-        );
-
-        // Check if the response is a redirect
         if (response.redirected) {
           window.location.href = response.url;
           return;
         }
 
-        // If the response is not JSON, try to get the text content for debugging
         if (!contentType || !contentType.includes("application/json")) {
           const textContent = await response.text();
           console.error("Non-JSON response received:", textContent);
@@ -187,191 +116,6 @@ export default function Dashboard() {
     }
   }, [session, t]);
 
-  const fetchAssets = async (connectionId: string) => {
-    try {
-      const response = await fetch(
-        `/api/ccxt/assets?id=${connectionId}&all=true`
-      );
-      const contentType = response.headers.get("content-type");
-
-      // Log response details for debugging
-      console.log("Assets Response status:", response.status);
-      console.log("Assets Content-Type:", contentType);
-
-      // Check if the response is a redirect
-      if (response.redirected) {
-        window.location.href = response.url;
-        return [];
-      }
-
-      // If the response is not JSON, try to get the text content for debugging
-      if (!contentType || !contentType.includes("application/json")) {
-        const textContent = await response.text();
-        console.error("Non-JSON response received for assets:", textContent);
-        throw new Error(
-          "Server returned non-JSON response for assets. Please check your authentication."
-        );
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch assets");
-      }
-      const data = await response.json();
-      return data;
-    } catch (error) {
-      console.error("Error fetching assets:", error);
-      return [];
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    try {
-      const response = await fetch("/api/ccxt", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
-        }
-        if (data.message) {
-          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
-        } else {
-          throw new Error(t(`ccxt.errors.${data.code}`));
-        }
-      }
-
-      setConnections((prev) => [...prev, data]);
-      setShowAddForm(false);
-      setFormData({
-        name: "",
-        exchange: "",
-        key: "",
-        secret: "",
-        apiWalletAddress: "",
-        apiPrivateKey: "",
-      });
-    } catch (error) {
-      console.error("Detailed error:", error);
-      setError(
-        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
-      );
-    }
-  };
-
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(`/api/ccxt?id=${id}`, {
-        method: "DELETE",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
-        }
-        if (data.message) {
-          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
-        } else {
-          throw new Error(t(`ccxt.errors.${data.code}`));
-        }
-      }
-
-      setConnections((prev) => prev.filter((conn) => conn.id !== id));
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
-      );
-      console.error("Delete error:", error);
-    }
-  };
-
-  // Fonction de validation du formulaire qui retourne les erreurs
-  const validateForm = (data: ConnectionFormData): FormErrors => {
-    const errors: FormErrors = {};
-
-    // Validation des champs requis
-    if (!data.name) {
-      errors.name = t("ccxt.form.errors.nameRequired");
-    } else if (data.name.length < 3) {
-      errors.name = t("ccxt.form.errors.nameLength");
-    }
-
-    if (!data.exchange) {
-      errors.exchange = t("ccxt.form.errors.exchangeRequired");
-    }
-
-    if (!data.key) {
-      errors.key = t("ccxt.form.errors.apiKeyRequired");
-    }
-
-    // Validation spécifique selon le type d'exchange
-    if (data.exchange.toLowerCase() === "hyperliquid") {
-      // Pour Hyperliquid, vérifier que les deux champs API sont soit tous deux remplis, soit tous deux vides
-      if (data.apiWalletAddress && !data.apiPrivateKey) {
-        errors.apiPrivateKey = t("ccxt.form.errors.apiPrivateKeyRequired");
-      } else if (!data.apiWalletAddress && data.apiPrivateKey) {
-        errors.apiWalletAddress = t(
-          "ccxt.form.errors.apiWalletAddressRequired"
-        );
-      }
-    } else if (!data.secret) {
-      errors.secret = t("ccxt.form.errors.apiSecretRequired");
-    }
-
-    return errors;
-  };
-
-  // Vérifier si le formulaire est valide
-  const isFormValid = () => {
-    const errors = validateForm(formData);
-    return Object.keys(errors).length === 0;
-  };
-
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-
-    // Mettre à jour les données du formulaire
-    const updatedFormData = { ...formData, [name]: value };
-    setFormData(updatedFormData);
-
-    // Réinitialiser toutes les erreurs
-    setFormErrors({});
-
-    // Valider le formulaire et mettre à jour les erreurs
-    const errors = validateForm(updatedFormData);
-    setFormErrors(errors);
-  };
-
-  const toggleConnectionExpand = async (connectionId: string) => {
-    const newExpandedConnections = new Set(expandedConnections);
-    if (newExpandedConnections.has(connectionId)) {
-      newExpandedConnections.delete(connectionId);
-    } else {
-      newExpandedConnections.add(connectionId);
-      const assets = await fetchAssets(connectionId);
-      console.log("Fetched assets:", assets);
-      setConnections((prev) =>
-        prev.map((conn) =>
-          conn.id === connectionId ? { ...conn, assets } : conn
-        )
-      );
-    }
-    setExpandedConnections(newExpandedConnections);
-  };
-
   useEffect(() => {
     const fetchBots = async () => {
       try {
@@ -382,17 +126,11 @@ export default function Dashboard() {
         const response = await fetch("/api/bots");
         const contentType = response.headers.get("content-type");
 
-        // Log response details for debugging
-        console.log("Bots Response status:", response.status);
-        console.log("Bots Content-Type:", contentType);
-
-        // Check if the response is a redirect
         if (response.redirected) {
           window.location.href = response.url;
           return;
         }
 
-        // If the response is not JSON, try to get the text content for debugging
         if (!contentType || !contentType.includes("application/json")) {
           const textContent = await response.text();
           console.error("Non-JSON response received for bots:", textContent);
@@ -427,50 +165,112 @@ export default function Dashboard() {
     }
   }, [session, t]);
 
-  const validateBotForm = (data: BotFormData): boolean => {
-    const errors: BotFormErrors = {};
+  const fetchAssets = async (connectionId: string) => {
+    try {
+      const response = await fetch(
+        `/api/ccxt/assets?id=${connectionId}&all=true`
+      );
+      const contentType = response.headers.get("content-type");
 
-    if (!data.name) {
-      errors.name = t("bots.form.errors.nameRequired");
-    } else if (data.name.length < 3) {
-      errors.name = t("bots.form.errors.nameLength");
+      if (response.redirected) {
+        window.location.href = response.url;
+        return [];
+      }
+
+      if (!contentType || !contentType.includes("application/json")) {
+        const textContent = await response.text();
+        console.error("Non-JSON response received for assets:", textContent);
+        throw new Error(
+          "Server returned non-JSON response for assets. Please check your authentication."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch assets");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching assets:", error);
+      return [];
     }
-
-    if (!selectedConnection) {
-      errors.connection = t("bots.form.errors.connectionRequired");
-    }
-
-    if (!baseAsset) {
-      errors.baseAsset = t("bots.form.errors.baseAssetRequired");
-    }
-
-    if (!quoteAsset) {
-      errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
-    }
-
-    if (baseAsset === quoteAsset) {
-      errors.quoteAsset = t("bots.form.errors.sameAsset");
-    }
-
-    setBotFormErrors(errors);
-    const isValid = Object.keys(errors).length === 0;
-    setIsBotFormValid(isValid);
-    return isValid;
   };
 
-  // Update validation when form data changes
-  useEffect(() => {
-    validateBotForm(botFormData);
-  }, [botFormData, selectedConnection, baseAsset, quoteAsset]);
+  const handleConnectionSubmit = async (formData: {
+    name: string;
+    exchange: string;
+    key: string;
+    secret: string;
+    apiWalletAddress: string;
+    apiPrivateKey: string;
+  }) => {
+    try {
+      const response = await fetch("/api/ccxt", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
-  const handleBotSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setBotFormErrors({});
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        if (data.message) {
+          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
+        } else {
+          throw new Error(t(`ccxt.errors.${data.code}`));
+        }
+      }
 
-    if (!validateBotForm(botFormData)) {
-      return;
+      setConnections((prev) => [...prev, data]);
+      setShowAddForm(false);
+      setError(null);
+    } catch (error) {
+      console.error("Detailed error:", error);
+      setError(
+        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
+      );
     }
+  };
 
+  const handleConnectionDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/ccxt?id=${id}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.redirect) {
+          window.location.href = data.redirect;
+          return;
+        }
+        if (data.message) {
+          throw new Error(`${t(`ccxt.errors.${data.code}`)}: ${data.message}`);
+        } else {
+          throw new Error(t(`ccxt.errors.${data.code}`));
+        }
+      }
+
+      setConnections((prev) => prev.filter((conn) => conn.id !== id));
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : t("ccxt.errors.INTERNAL_ERROR")
+      );
+      console.error("Delete error:", error);
+    }
+  };
+
+  const handleBotSubmit = async (data: {
+    name: string;
+    connectionId: string;
+    baseAsset: string;
+    quoteAsset: string;
+  }) => {
     try {
       const response = await fetch("/api/bots", {
         method: "POST",
@@ -478,12 +278,12 @@ export default function Dashboard() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: botFormData.name,
+          name: data.name,
           type: "dca",
-          connectionId: selectedConnection,
+          connectionId: data.connectionId,
           config: {
-            baseAsset,
-            quoteAsset,
+            baseAsset: data.baseAsset,
+            quoteAsset: data.quoteAsset,
           },
         }),
       });
@@ -496,20 +296,15 @@ export default function Dashboard() {
       const newBot = await response.json();
       setBots((prev) => [...prev, newBot]);
       setShowBotForm(false);
-      setBotFormData({ name: "" });
-      setSelectedConnection("");
-      setBaseAsset("");
-      setQuoteAsset("");
-      setAvailableAssets([]);
+      setError(null);
     } catch (error) {
       console.error("Error creating bot:", error);
-      setBotFormErrors({
-        submit: error instanceof Error ? error.message : "Failed to create bot",
-      });
+      setError(
+        error instanceof Error ? error.message : t("bots.errors.INTERNAL_ERROR")
+      );
     }
   };
 
-  // Fonction pour supprimer un bot
   const handleBotDelete = async (id: string) => {
     try {
       const response = await fetch(`/api/bots?id=${id}`, {
@@ -538,98 +333,12 @@ export default function Dashboard() {
     }
   };
 
-  // Fonction pour démarrer un bot
-  const handleBotStart = async (id: string) => {
-    try {
-      const response = await fetch(`/api/bots/${id}/start`, {
-        method: "POST",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
-        }
-        if (data.message) {
-          throw new Error(`${t(`bots.errors.${data.code}`)}: ${data.message}`);
-        } else {
-          throw new Error(t(`bots.errors.${data.code}`));
-        }
-      }
-
-      setBots((prev) =>
-        prev.map((bot) => (bot.id === id ? { ...bot, status: "running" } : bot))
-      );
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : t("bots.errors.INTERNAL_ERROR")
-      );
-      console.error("Start error:", error);
-    }
-  };
-
-  // Fonction pour arrêter un bot
-  const handleBotStop = async (id: string) => {
-    try {
-      const response = await fetch(`/api/bots/${id}/stop`, {
-        method: "POST",
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        if (data.redirect) {
-          window.location.href = data.redirect;
-          return;
-        }
-        if (data.message) {
-          throw new Error(`${t(`bots.errors.${data.code}`)}: ${data.message}`);
-        } else {
-          throw new Error(t(`bots.errors.${data.code}`));
-        }
-      }
-
-      setBots((prev) =>
-        prev.map((bot) => (bot.id === id ? { ...bot, status: "stopped" } : bot))
-      );
-    } catch (error) {
-      setError(
-        error instanceof Error ? error.message : t("bots.errors.INTERNAL_ERROR")
-      );
-      console.error("Stop error:", error);
-    }
-  };
-
-  const handleBotInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setBotFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleConnectionChange = async (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const connectionId = e.target.value;
-    setSelectedConnection(connectionId);
-    setBaseAsset("");
-    setQuoteAsset("");
-
-    if (connectionId) {
-      const assets = await fetchAssets(connectionId);
-      setAvailableAssets(assets);
-    } else {
-      setAvailableAssets([]);
-    }
-  };
-
-  const handleBaseAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setBaseAsset(e.target.value);
-    setQuoteAsset("");
-  };
-
-  const handleQuoteAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setQuoteAsset(e.target.value);
+  const handleUpdateConnection = (connectionId: string, assets: Asset[]) => {
+    setConnections((prev) =>
+      prev.map((conn) =>
+        conn.id === connectionId ? { ...conn, assets } : conn
+      )
+    );
   };
 
   if (status === "loading" || loading) {
@@ -691,388 +400,27 @@ export default function Dashboard() {
               isOpen={showAddForm}
               onClose={() => {
                 setShowAddForm(false);
-                setFormData({
-                  name: "",
-                  exchange: "",
-                  key: "",
-                  secret: "",
-                  apiWalletAddress: "",
-                  apiPrivateKey: "",
-                });
-                setFormErrors({});
                 setError(null);
               }}
               title={t("ccxt.form.title")}
             >
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {error && (
-                  <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                    {error}
-                  </div>
-                )}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("ccxt.form.name")}
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  />
-                  {formErrors.name && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formErrors.name}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="exchange"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("ccxt.form.exchange")}
-                  </label>
-                  <select
-                    id="exchange"
-                    name="exchange"
-                    value={formData.exchange}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  >
-                    <option value="">{t("ccxt.form.selectExchange")}</option>
-                    {exchanges.map((exchange) => (
-                      <option key={exchange} value={exchange}>
-                        {exchange.charAt(0).toUpperCase() + exchange.slice(1)}
-                      </option>
-                    ))}
-                  </select>
-                  {formErrors.exchange && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formErrors.exchange}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="key"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {formData.exchange.toLowerCase() === "hyperliquid"
-                      ? t("ccxt.form.walletAddress")
-                      : t("ccxt.form.apiKey")}
-                  </label>
-                  <input
-                    type="text"
-                    id="key"
-                    name="key"
-                    value={formData.key}
-                    onChange={handleInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  />
-                  {formErrors.key && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {formErrors.key}
-                    </p>
-                  )}
-                </div>
-                {formData.exchange.toLowerCase() !== "hyperliquid" && (
-                  <div>
-                    <label
-                      htmlFor="secret"
-                      className="block text-sm font-medium text-gray-800"
-                    >
-                      {t("ccxt.form.apiSecret")}
-                    </label>
-                    <input
-                      type="password"
-                      id="secret"
-                      name="secret"
-                      value={formData.secret}
-                      onChange={handleInputChange}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      required
-                    />
-                    {formErrors.secret && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {formErrors.secret}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {formData.exchange.toLowerCase() === "hyperliquid" && (
-                  <>
-                    <div>
-                      <label
-                        htmlFor="apiWalletAddress"
-                        className="block text-sm font-medium text-gray-800"
-                      >
-                        {t("ccxt.form.apiWalletAddress")}
-                      </label>
-                      <input
-                        type="text"
-                        id="apiWalletAddress"
-                        name="apiWalletAddress"
-                        value={formData.apiWalletAddress}
-                        onChange={handleInputChange}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        {t("ccxt.form.apiWalletAddressHelp")}
-                      </p>
-                      {formErrors.apiWalletAddress && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {formErrors.apiWalletAddress}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="apiPrivateKey"
-                        className="block text-sm font-medium text-gray-800"
-                      >
-                        {t("ccxt.form.apiPrivateKey")}
-                      </label>
-                      <input
-                        type="password"
-                        id="apiPrivateKey"
-                        name="apiPrivateKey"
-                        value={formData.apiPrivateKey}
-                        onChange={handleInputChange}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      />
-                      <p className="mt-1 text-xs text-gray-500">
-                        {t("ccxt.form.apiPrivateKeyHelp")}
-                      </p>
-                      {formErrors.apiPrivateKey && (
-                        <p className="mt-1 text-sm text-red-600">
-                          {formErrors.apiPrivateKey}
-                        </p>
-                      )}
-                    </div>
-                  </>
-                )}
-                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowAddForm(false);
-                      setFormData({
-                        name: "",
-                        exchange: "",
-                        key: "",
-                        secret: "",
-                        apiWalletAddress: "",
-                        apiPrivateKey: "",
-                      });
-                      setFormErrors({});
-                      setError(null);
-                    }}
-                    className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
-                  >
-                    {t("ccxt.form.cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!isFormValid()}
-                    className={`w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                      !isFormValid()
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-blue-700 cursor-pointer"
-                    }`}
-                  >
-                    {t("ccxt.form.submit")}
-                  </button>
-                </div>
-              </form>
+              <ConnectionForm
+                onSubmit={handleConnectionSubmit}
+                onCancel={() => {
+                  setShowAddForm(false);
+                  setError(null);
+                }}
+                exchanges={exchanges}
+                error={error}
+              />
             </Modal>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("ccxt.table.name")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("ccxt.table.exchange")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("ccxt.table.status")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("ccxt.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50"></th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {connections.map((connection) => (
-                    <tr key={connection.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {connection.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {connection.exchange}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            connection.isActive
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {connection.isActive
-                            ? t("ccxt.table.active")
-                            : t("ccxt.table.inactive")}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(connection.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-4">
-                          <button
-                            onClick={() =>
-                              toggleConnectionExpand(connection.id)
-                            }
-                            className="text-blue-600 hover:text-blue-900 cursor-pointer"
-                          >
-                            {expandedConnections.has(connection.id)
-                              ? t("ccxt.table.hideAssets")
-                              : t("ccxt.table.showAssets")}
-                          </button>
-                          <button
-                            onClick={() => handleDelete(connection.id)}
-                            className="text-red-600 hover:text-red-900 cursor-pointer"
-                          >
-                            {t("ccxt.table.delete")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {connections.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-4 text-center text-sm text-black"
-                      >
-                        {t("ccxt.table.noConnections")}
-                      </td>
-                    </tr>
-                  )}
-
-                  {connections.map(
-                    (connection) =>
-                      expandedConnections.has(connection.id) && (
-                        <tr key={`assets-${connection.id}`}>
-                          <td colSpan={5} className="px-6 py-4">
-                            <div className="bg-gray-50 p-4 rounded-lg">
-                              <div className="flex justify-between items-center mb-4">
-                                <div>
-                                  <h3 className="text-lg font-medium text-gray-900">
-                                    {t("ccxt.assets.title")}
-                                  </h3>
-                                </div>
-                              </div>
-                              {connection.assets &&
-                                connection.assets.length > 0 && (
-                                  <div className="mb-4 text-right text-sm font-medium text-gray-900">
-                                    {t("ccxt.assets.totalValue")}: $
-                                    {connection.assets
-                                      .reduce((sum, asset) => {
-                                        if (asset.asset === "USDC") {
-                                          return sum + asset.total;
-                                        }
-                                        return sum + (asset.usdValue || 0);
-                                      }, 0)
-                                      .toFixed(2)}
-                                  </div>
-                                )}
-                              {connection.assets &&
-                              connection.assets.length > 0 ? (
-                                <div className="overflow-x-auto">
-                                  <table className="min-w-full divide-y divide-gray-200">
-                                    <thead>
-                                      <tr>
-                                        <th className="px-4 py-2 bg-gray-100 text-left text-xs font-medium text-black uppercase tracking-wider">
-                                          {t("ccxt.assets.asset")}
-                                        </th>
-                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
-                                          {t("ccxt.assets.total")}
-                                        </th>
-                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
-                                          {t("ccxt.assets.free")}
-                                        </th>
-                                        <th className="px-4 py-2 bg-gray-100 text-right text-xs font-medium text-black uppercase tracking-wider">
-                                          {t("ccxt.assets.used")}
-                                        </th>
-                                      </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                      {connection.assets
-                                        .filter((asset) => asset.total > 0)
-                                        .map((asset, index) => (
-                                          <tr
-                                            key={`${connection.id}-${asset.asset}-${index}`}
-                                          >
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-black">
-                                              {asset.asset}
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                              {formatAssetValue(asset.total)}
-                                              {asset.usdValue &&
-                                                asset.total > 0 &&
-                                                ` ($${asset.usdValue.toFixed(
-                                                  2
-                                                )})`}
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                              {formatAssetValue(asset.free)}
-                                              {asset.usdValue &&
-                                                asset.free > 0 &&
-                                                ` ($${(
-                                                  asset.free *
-                                                  (asset.usdValue / asset.total)
-                                                ).toFixed(2)})`}
-                                            </td>
-                                            <td className="px-4 py-2 whitespace-nowrap text-sm text-right text-black">
-                                              {formatAssetValue(asset.used)}
-                                              {asset.usdValue &&
-                                                asset.used > 0 &&
-                                                ` ($${(
-                                                  asset.used *
-                                                  (asset.usdValue / asset.total)
-                                                ).toFixed(2)})`}
-                                            </td>
-                                          </tr>
-                                        ))}
-                                    </tbody>
-                                  </table>
-                                </div>
-                              ) : (
-                                <p className="text-center text-gray-500">
-                                  {t("ccxt.assets.noAssets")}
-                                </p>
-                              )}
-                            </div>
-                          </td>
-                        </tr>
-                      )
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <ConnectionsTable
+              connections={connections}
+              onDelete={handleConnectionDelete}
+              onFetchAssets={fetchAssets}
+              onUpdateConnection={handleUpdateConnection}
+            />
           </div>
         </div>
       </main>
@@ -1096,233 +444,23 @@ export default function Dashboard() {
               isOpen={showBotForm}
               onClose={() => {
                 setShowBotForm(false);
-                setBotFormData({
-                  name: "",
-                });
-                setBotFormErrors({});
                 setError(null);
               }}
               title={t("bots.form.title")}
             >
-              <form onSubmit={handleBotSubmit} className="space-y-4">
-                {error && (
-                  <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-                    {error}
-                  </div>
-                )}
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("bots.form.name")}
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={botFormData.name}
-                    onChange={handleBotInputChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  />
-                  {botFormErrors.name && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {botFormErrors.name}
-                    </p>
-                  )}
-                </div>
-                <div className="mb-4">
-                  <label
-                    htmlFor="connection"
-                    className="block text-sm font-medium text-gray-800"
-                  >
-                    {t("bots.form.connection")}
-                  </label>
-                  <select
-                    id="connection"
-                    name="connection"
-                    value={selectedConnection}
-                    onChange={handleConnectionChange}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                    required
-                  >
-                    <option value="">{t("bots.form.selectConnection")}</option>
-                    {connections.map((connection) => (
-                      <option key={connection.id} value={connection.id}>
-                        {connection.name} ({connection.exchange})
-                      </option>
-                    ))}
-                  </select>
-                  {botFormErrors.connection && (
-                    <p className="mt-1 text-sm text-red-600">
-                      {botFormErrors.connection}
-                    </p>
-                  )}
-                </div>
-                {selectedConnection && !botFormErrors.connection && (
-                  <div className="mb-4">
-                    <label
-                      htmlFor="baseAsset"
-                      className="block text-sm font-medium text-gray-800"
-                    >
-                      {t("bots.form.baseAsset")}
-                    </label>
-                    <select
-                      id="baseAsset"
-                      name="baseAsset"
-                      value={baseAsset}
-                      onChange={handleBaseAssetChange}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      required
-                    >
-                      <option value="">{t("bots.form.selectBaseAsset")}</option>
-                      {availableAssets.map((asset) => (
-                        <option key={asset.asset} value={asset.asset}>
-                          {asset.asset}
-                        </option>
-                      ))}
-                    </select>
-                    {botFormErrors.baseAsset && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {botFormErrors.baseAsset}
-                      </p>
-                    )}
-                  </div>
-                )}
-                {baseAsset && !botFormErrors.baseAsset && (
-                  <div className="mb-4">
-                    <label
-                      htmlFor="quoteAsset"
-                      className="block text-sm font-medium text-gray-800"
-                    >
-                      {t("bots.form.quoteAsset")}
-                    </label>
-                    <select
-                      id="quoteAsset"
-                      name="quoteAsset"
-                      value={quoteAsset}
-                      onChange={handleQuoteAssetChange}
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      required
-                    >
-                      <option value="">
-                        {t("bots.form.selectQuoteAsset")}
-                      </option>
-                      {availableAssets
-                        .filter((asset) => asset.asset !== baseAsset)
-                        .map((asset) => (
-                          <option key={asset.asset} value={asset.asset}>
-                            {asset.asset}
-                          </option>
-                        ))}
-                    </select>
-                    {botFormErrors.quoteAsset && (
-                      <p className="mt-1 text-sm text-red-600">
-                        {botFormErrors.quoteAsset}
-                      </p>
-                    )}
-                  </div>
-                )}
-                <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowBotForm(false);
-                      setBotFormData({
-                        name: "",
-                      });
-                      setBotFormErrors({});
-                      setError(null);
-                    }}
-                    className="w-full bg-gray-100 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 cursor-pointer"
-                  >
-                    {t("bots.form.cancel")}
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={!isBotFormValid}
-                    className={`w-full bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                      !isBotFormValid
-                        ? "opacity-50 cursor-not-allowed"
-                        : "hover:bg-blue-700 cursor-pointer"
-                    }`}
-                  >
-                    {t("bots.form.submit")}
-                  </button>
-                </div>
-              </form>
+              <BotForm
+                onSubmit={handleBotSubmit}
+                onCancel={() => {
+                  setShowBotForm(false);
+                  setError(null);
+                }}
+                connections={connections}
+                error={error}
+                onFetchAssets={fetchAssets}
+              />
             </Modal>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead>
-                  <tr>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("bots.table.name")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("bots.table.type")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("bots.table.status")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-black uppercase tracking-wider">
-                      {t("bots.table.createdAt")}
-                    </th>
-                    <th className="px-6 py-3 bg-gray-50"></th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {bots.map((bot) => (
-                    <tr key={bot.id}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {bot.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {bot.type}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            bot.status === "running"
-                              ? "bg-green-100 text-green-800"
-                              : bot.status === "stopped"
-                              ? "bg-gray-100 text-gray-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {t(`bots.status.${bot.status}`)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-black">
-                        {new Date(bot.createdAt).toLocaleDateString()}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-4">
-                          <button
-                            onClick={() => handleBotDelete(bot.id)}
-                            className="text-red-600 hover:text-red-900 cursor-pointer"
-                          >
-                            {t("bots.table.delete")}
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {bots.length === 0 && (
-                    <tr>
-                      <td
-                        colSpan={5}
-                        className="px-6 py-4 text-center text-sm text-black"
-                      >
-                        {t("bots.table.noBots")}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+            <BotsTable bots={bots} onDelete={handleBotDelete} />
           </div>
         </div>
       </main>
