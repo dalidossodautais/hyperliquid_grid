@@ -180,9 +180,6 @@ export async function GET(request: Request) {
           // Pour les autres exchanges, essayer tous les types de portefeuilles
           for (const type of walletTypes) {
             try {
-              console.log(
-                `Tentative de récupération des balances pour le portefeuille ${type}...`
-              );
               const typeBalance = (await exchangeInstance.fetchBalance({
                 type,
               })) as WalletBalance;
@@ -247,8 +244,6 @@ export async function GET(request: Request) {
                   }
                 });
               }
-
-              console.log(`Balances récupérées pour le portefeuille ${type}`);
             } catch (typeError: unknown) {
               const errorMessage =
                 typeError instanceof Error
@@ -264,9 +259,6 @@ export async function GET(request: Request) {
 
         // Si aucune balance n'a été récupérée, essayer sans paramètres
         if (Object.keys(allBalances.total).length === 0) {
-          console.log(
-            "Tentative de récupération des balances sans spécifier de type..."
-          );
           balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
 
           if (balance.total) {
@@ -304,8 +296,6 @@ export async function GET(request: Request) {
         throw error;
       }
 
-      console.log("Balances brutes:", JSON.stringify(allBalances, null, 2));
-
       // Filtrer pour inclure tous les assets, même ceux avec un solde nul
       const assets = Object.entries(allBalances.total || {}).map(
         ([asset, amount]) => ({
@@ -315,8 +305,6 @@ export async function GET(request: Request) {
           used: allBalances.used?.[asset as keyof typeof allBalances.used] || 0,
         })
       );
-
-      console.log("Assets filtrés:", JSON.stringify(assets, null, 2));
 
       return NextResponse.json(assets);
     } catch (error) {
