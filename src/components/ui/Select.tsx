@@ -79,13 +79,18 @@ export default function Select({
           onClick={() => !disabled && setIsOpen(!isOpen)}
         >
           <div className="flex justify-between items-center">
-            <span className={!value && placeholder ? "text-gray-400" : ""}>
+            <span
+              className={cn(
+                "truncate",
+                !value && placeholder ? "text-gray-400" : ""
+              )}
+            >
               {displayValue}
             </span>
             {!isLoading && (
               <svg
                 className={cn(
-                  "h-4 w-4 text-gray-400 transition-transform duration-200",
+                  "h-4 w-4 text-gray-400 transition-transform duration-200 flex-shrink-0",
                   isOpen && "transform rotate-180"
                 )}
                 xmlns="http://www.w3.org/2000/svg"
@@ -117,7 +122,9 @@ export default function Select({
                 )}
                 onClick={() => handleSelect(option.value)}
               >
-                {option.label}
+                <div className="flex items-center">
+                  <span className="truncate flex-1">{option.label}</span>
+                </div>
               </div>
             ))}
           </div>
