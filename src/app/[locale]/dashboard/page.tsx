@@ -196,6 +196,35 @@ export default function Dashboard() {
     }
   };
 
+  const fetchSymbols = async (connectionId: string) => {
+    try {
+      const response = await fetch(`/api/ccxt/symbols?id=${connectionId}`);
+      const contentType = response.headers.get("content-type");
+
+      if (response.redirected) {
+        window.location.href = response.url;
+        return [];
+      }
+
+      if (!contentType || !contentType.includes("application/json")) {
+        const textContent = await response.text();
+        console.error("Non-JSON response received for symbols:", textContent);
+        throw new Error(
+          "Server returned non-JSON response for symbols. Please check your authentication."
+        );
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch symbols");
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error("Error fetching symbols:", error);
+      return [];
+    }
+  };
+
   const handleConnectionSubmit = async (formData: {
     name: string;
     exchange: string;
@@ -457,6 +486,7 @@ export default function Dashboard() {
                 connections={connections}
                 error={error}
                 onFetchAssets={fetchAssets}
+                onFetchSymbols={fetchSymbols}
               />
             </Modal>
 

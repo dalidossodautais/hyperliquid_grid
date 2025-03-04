@@ -1,8 +1,8 @@
-import ccxt, { Exchange } from "ccxt";
+import * as ccxt from "ccxt";
 import { ExchangeConfig, ExtendedConnection } from "../types";
 
 export class ExchangeService {
-  static createExchangeInstance(connection: ExtendedConnection): Exchange {
+  static createExchangeInstance(connection: ExtendedConnection): ccxt.Exchange {
     const exchangeId = connection.exchange.toLowerCase();
     const exchangeClass = ccxt[exchangeId as keyof typeof ccxt];
 
@@ -41,7 +41,7 @@ export class ExchangeService {
 
     const exchangeInstance = new (exchangeClass as new (
       config: ExchangeConfig
-    ) => Exchange)(config);
+    ) => ccxt.Exchange)(config);
 
     if (exchangeInstance.has["fetchBalance"]) {
       try {
@@ -97,4 +97,42 @@ export class ExchangeService {
       status: 500,
     };
   }
+}
+
+interface ExchangeConnection {
+  id: string;
+  name: string;
+  exchange: string;
+  key: string;
+  secret: string;
+  apiWalletAddress?: string;
+  apiPrivateKey?: string;
+}
+
+export function getExchangeInstance(
+  connection: ExchangeConnection
+): ccxt.Exchange {
+  const exchangeId = connection.exchange.toLowerCase();
+  const exchangeClass = ccxt[
+    exchangeId as keyof typeof ccxt
+  ] as typeof ccxt.Exchange;
+
+  if (!exchangeClass) {
+    throw new Error(`Exchange ${exchangeId} not supported`);
+  }
+
+  const config = {
+    apiKey: connection.key,
+    secret: connection.secret,
+    enableRateLimit: true,
+  } as const;
+
+  if (exchangeId === "hyperliquid") {
+    Object.assign(config, {
+      walletAddress: connection.apiWalletAddress,
+      privateKey: connection.apiPrivateKey,
+    });
+  }
+
+  return new exchangeClass(config);
 }
