@@ -647,9 +647,11 @@ export default function Dashboard() {
                           <td colSpan={5} className="px-6 py-4">
                             <div className="bg-gray-50 p-4 rounded-lg">
                               <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900">
-                                  {t("ccxt.assets.title")}
-                                </h3>
+                                <div>
+                                  <h3 className="text-lg font-medium text-gray-900">
+                                    {t("ccxt.assets.title")}
+                                  </h3>
+                                </div>
                                 <div className="flex items-center">
                                   <input
                                     type="checkbox"

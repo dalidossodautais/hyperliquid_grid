@@ -83,7 +83,8 @@
       "free": "Disponible",
       "used": "Utilisé",
       "noAssets": "Aucun actif trouvé pour cette connexion",
-      "showZeroBalances": "Afficher les soldes nuls"
+      "showZeroBalances": "Afficher les soldes nuls",
+      "totalValue": "Valeur totale du portefeuille"
     }
   }
 }

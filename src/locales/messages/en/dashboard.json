@@ -83,7 +83,8 @@
       "free": "Available",
       "used": "Used",
       "noAssets": "No assets found for this connection",
-      "showZeroBalances": "Show zero balances"
+      "showZeroBalances": "Show zero balances",
+      "totalValue": "Total Portfolio Value"
     }
   }
 }
