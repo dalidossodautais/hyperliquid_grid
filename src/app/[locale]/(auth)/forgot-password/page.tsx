@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Link } from "@/navigation";
 import { useTranslations, useLocale } from "next-intl";
 import LanguageSelector from "@/components/LanguageSelector";
+import Input from "@/components/ui/Input";
 
 // Fonction pour valider un email
 const validateEmail = (email: string): boolean => {
@@ -133,27 +134,17 @@ export default function ForgotPassword() {
                   <p className="text-sm text-gray-600 mb-4">
                     {t("forgotPassword.description")}
                   </p>
-                  <label
-                    htmlFor="email"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    {t("forgotPassword.emailLabel")}
-                  </label>
-                  <div className="mt-1">
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      required
-                      className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-                      placeholder={t("forgotPassword.emailPlaceholder")}
-                      value={email}
-                      onChange={handleEmailChange}
-                    />
-                  </div>
-                  {emailError && (
-                    <p className="mt-2 text-xs text-red-600">{emailError}</p>
-                  )}
+                  <Input
+                    id="email"
+                    name="email"
+                    label={t("forgotPassword.emailLabel")}
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    error={emailError}
+                    required
+                    placeholder={t("forgotPassword.emailPlaceholder")}
+                  />
                 </div>
 
                 {error && (

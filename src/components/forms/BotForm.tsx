@@ -1,5 +1,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useEffect, useCallback } from "react";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
 
 interface BotFormData {
   name: string;
@@ -239,173 +241,90 @@ export default function BotForm({
           {error}
         </div>
       )}
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-800"
-        >
-          {t("bots.form.name")}
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={botFormData.name}
-          onChange={handleBotInputChange}
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-          required
-        />
-        {botFormErrors.name && (
-          <p className="mt-1 text-sm text-red-600">{botFormErrors.name}</p>
-        )}
-      </div>
-      <div className="mb-4">
-        <label
-          htmlFor="connection"
-          className="block text-sm font-medium text-gray-800"
-        >
-          {t("bots.form.connection")}
-        </label>
-        <select
-          id="connection"
-          name="connection"
-          value={selectedConnection}
-          onChange={handleConnectionChange}
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-          required
-        >
-          <option value="">{t("bots.form.selectConnection")}</option>
-          {connections.map((connection) => (
-            <option key={connection.id} value={connection.id}>
-              {connection.name} ({connection.exchange})
-            </option>
-          ))}
-        </select>
-        {botFormErrors.connection && (
-          <p className="mt-1 text-sm text-red-600">
-            {botFormErrors.connection}
-          </p>
-        )}
-      </div>
+      <Input
+        id="name"
+        name="name"
+        label={t("bots.form.name")}
+        value={botFormData.name}
+        onChange={handleBotInputChange}
+        error={botFormErrors.name}
+        required
+      />
+      <Select
+        id="connection"
+        name="connection"
+        label={t("bots.form.connection")}
+        value={selectedConnection}
+        onChange={handleConnectionChange}
+        options={connections.map((connection) => ({
+          value: connection.id,
+          label: `${connection.name} (${connection.exchange})`,
+        }))}
+        error={botFormErrors.connection}
+        required
+        placeholder={t("bots.form.selectConnection")}
+      />
       {selectedConnection && !botFormErrors.connection && (
-        <div className="mb-4">
-          <label
-            htmlFor="baseAsset"
-            className="block text-sm font-medium text-gray-800"
-          >
-            {t("bots.form.baseAsset")}
-          </label>
-          <div className="relative">
-            <select
-              id="baseAsset"
-              name="baseAsset"
-              value={baseAsset}
-              onChange={handleBaseAssetChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-              required
-              disabled={isLoadingAssets}
-            >
-              <option value="">{t("bots.form.selectBaseAsset")}</option>
-              {validBaseAssets.map((asset) => (
-                <option key={asset} value={asset}>
-                  {asset}
-                </option>
-              ))}
-            </select>
-            {isLoadingAssets && (
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
-              </div>
-            )}
-          </div>
-          {botFormErrors.baseAsset && (
-            <p className="mt-1 text-sm text-red-600">
-              {botFormErrors.baseAsset}
-            </p>
-          )}
-        </div>
+        <Select
+          id="baseAsset"
+          name="baseAsset"
+          label={t("bots.form.baseAsset")}
+          value={baseAsset}
+          onChange={handleBaseAssetChange}
+          options={validBaseAssets.map((asset) => ({
+            value: asset,
+            label: asset,
+          }))}
+          error={botFormErrors.baseAsset}
+          required
+          disabled={isLoadingAssets}
+          placeholder={t("bots.form.selectBaseAsset")}
+          isLoading={isLoadingAssets}
+        />
       )}
       {baseAsset && !botFormErrors.baseAsset && (
-        <div className="mb-4">
-          <label
-            htmlFor="baseAssetQuantity"
-            className="block text-sm font-medium text-gray-800"
-          >
-            {t("bots.form.baseAssetQuantity")}
-          </label>
-          <input
-            type="number"
-            id="baseAssetQuantity"
-            name="baseAssetQuantity"
-            value={botFormData.baseAssetQuantity}
-            onChange={handleBotInputChange}
-            min="0"
-            step="any"
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            required
-          />
-          {botFormErrors.baseAssetQuantity && (
-            <p className="mt-1 text-sm text-red-600">
-              {botFormErrors.baseAssetQuantity}
-            </p>
-          )}
-        </div>
+        <Input
+          id="baseAssetQuantity"
+          name="baseAssetQuantity"
+          label={t("bots.form.baseAssetQuantity")}
+          type="number"
+          value={botFormData.baseAssetQuantity}
+          onChange={handleBotInputChange}
+          error={botFormErrors.baseAssetQuantity}
+          required
+          min={0}
+          step="any"
+        />
       )}
       {baseAsset && !botFormErrors.baseAsset && (
-        <div className="mb-4">
-          <label
-            htmlFor="quoteAsset"
-            className="block text-sm font-medium text-gray-800"
-          >
-            {t("bots.form.quoteAsset")}
-          </label>
-          <select
-            id="quoteAsset"
-            name="quoteAsset"
-            value={quoteAsset}
-            onChange={handleQuoteAssetChange}
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            required
-          >
-            <option value="">{t("bots.form.selectQuoteAsset")}</option>
-            {validQuoteAssets.map((asset) => (
-              <option key={asset} value={asset}>
-                {asset}
-              </option>
-            ))}
-          </select>
-          {botFormErrors.quoteAsset && (
-            <p className="mt-1 text-sm text-red-600">
-              {botFormErrors.quoteAsset}
-            </p>
-          )}
-        </div>
+        <Select
+          id="quoteAsset"
+          name="quoteAsset"
+          label={t("bots.form.quoteAsset")}
+          value={quoteAsset}
+          onChange={handleQuoteAssetChange}
+          options={validQuoteAssets.map((asset) => ({
+            value: asset,
+            label: asset,
+          }))}
+          error={botFormErrors.quoteAsset}
+          required
+          placeholder={t("bots.form.selectQuoteAsset")}
+        />
       )}
       {quoteAsset && !botFormErrors.quoteAsset && (
-        <div className="mb-4">
-          <label
-            htmlFor="quoteAssetQuantity"
-            className="block text-sm font-medium text-gray-800"
-          >
-            {t("bots.form.quoteAssetQuantity")}
-          </label>
-          <input
-            type="number"
-            id="quoteAssetQuantity"
-            name="quoteAssetQuantity"
-            value={botFormData.quoteAssetQuantity}
-            onChange={handleBotInputChange}
-            min="0"
-            step="any"
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            required
-          />
-          {botFormErrors.quoteAssetQuantity && (
-            <p className="mt-1 text-sm text-red-600">
-              {botFormErrors.quoteAssetQuantity}
-            </p>
-          )}
-        </div>
+        <Input
+          id="quoteAssetQuantity"
+          name="quoteAssetQuantity"
+          label={t("bots.form.quoteAssetQuantity")}
+          type="number"
+          value={botFormData.quoteAssetQuantity}
+          onChange={handleBotInputChange}
+          error={botFormErrors.quoteAssetQuantity}
+          required
+          min={0}
+          step="any"
+        />
       )}
       <div className="flex justify-end space-x-3">
         <button

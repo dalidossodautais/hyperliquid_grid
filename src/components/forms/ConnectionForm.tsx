@@ -1,5 +1,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useCallback } from "react";
+import Input from "@/components/ui/Input";
+import Select from "@/components/ui/Select";
 
 interface ConnectionFormData {
   name: string;
@@ -104,146 +106,75 @@ export default function ConnectionForm({
           {error}
         </div>
       )}
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-800"
-        >
-          {t("ccxt.form.name")}
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-          required
-        />
-        {formErrors.name && (
-          <p className="mt-1 text-sm text-red-600">{formErrors.name}</p>
-        )}
-      </div>
-      <div>
-        <label
-          htmlFor="exchange"
-          className="block text-sm font-medium text-gray-800"
-        >
-          {t("ccxt.form.exchange")}
-        </label>
-        <select
-          id="exchange"
-          name="exchange"
-          value={formData.exchange}
-          onChange={handleInputChange}
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-          required
-        >
-          <option value="">{t("ccxt.form.selectExchange")}</option>
-          {exchanges.map((exchange) => (
-            <option key={exchange} value={exchange}>
-              {exchange.charAt(0).toUpperCase() + exchange.slice(1)}
-            </option>
-          ))}
-        </select>
-        {formErrors.exchange && (
-          <p className="mt-1 text-sm text-red-600">{formErrors.exchange}</p>
-        )}
-      </div>
-      <div>
-        <label
-          htmlFor="key"
-          className="block text-sm font-medium text-gray-800"
-        >
-          {formData.exchange.toLowerCase() === "hyperliquid"
+      <Input
+        id="name"
+        name="name"
+        label={t("ccxt.form.name")}
+        value={formData.name}
+        onChange={handleInputChange}
+        error={formErrors.name}
+        required
+      />
+      <Select
+        id="exchange"
+        name="exchange"
+        label={t("ccxt.form.exchange")}
+        value={formData.exchange}
+        onChange={handleInputChange}
+        options={exchanges.map((exchange) => ({
+          value: exchange,
+          label: exchange.charAt(0).toUpperCase() + exchange.slice(1),
+        }))}
+        error={formErrors.exchange}
+        required
+        placeholder={t("ccxt.form.selectExchange")}
+      />
+      <Input
+        id="key"
+        name="key"
+        label={
+          formData.exchange.toLowerCase() === "hyperliquid"
             ? t("ccxt.form.walletAddress")
-            : t("ccxt.form.apiKey")}
-        </label>
-        <input
-          type="text"
-          id="key"
-          name="key"
-          value={formData.key}
+            : t("ccxt.form.apiKey")
+        }
+        value={formData.key}
+        onChange={handleInputChange}
+        error={formErrors.key}
+        required
+      />
+      {formData.exchange.toLowerCase() !== "hyperliquid" && (
+        <Input
+          id="secret"
+          name="secret"
+          label={t("ccxt.form.apiSecret")}
+          type="password"
+          value={formData.secret}
           onChange={handleInputChange}
-          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+          error={formErrors.secret}
           required
         />
-        {formErrors.key && (
-          <p className="mt-1 text-sm text-red-600">{formErrors.key}</p>
-        )}
-      </div>
-      {formData.exchange.toLowerCase() !== "hyperliquid" && (
-        <div>
-          <label
-            htmlFor="secret"
-            className="block text-sm font-medium text-gray-800"
-          >
-            {t("ccxt.form.apiSecret")}
-          </label>
-          <input
-            type="password"
-            id="secret"
-            name="secret"
-            value={formData.secret}
-            onChange={handleInputChange}
-            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            required
-          />
-          {formErrors.secret && (
-            <p className="mt-1 text-sm text-red-600">{formErrors.secret}</p>
-          )}
-        </div>
       )}
       {formData.exchange.toLowerCase() === "hyperliquid" && (
         <>
-          <div>
-            <label
-              htmlFor="apiWalletAddress"
-              className="block text-sm font-medium text-gray-800"
-            >
-              {t("ccxt.form.apiWalletAddress")}
-            </label>
-            <input
-              type="text"
-              id="apiWalletAddress"
-              name="apiWalletAddress"
-              value={formData.apiWalletAddress}
-              onChange={handleInputChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              {t("ccxt.form.apiWalletAddressHelp")}
-            </p>
-            {formErrors.apiWalletAddress && (
-              <p className="mt-1 text-sm text-red-600">
-                {formErrors.apiWalletAddress}
-              </p>
-            )}
-          </div>
-          <div>
-            <label
-              htmlFor="apiPrivateKey"
-              className="block text-sm font-medium text-gray-800"
-            >
-              {t("ccxt.form.apiPrivateKey")}
-            </label>
-            <input
-              type="password"
-              id="apiPrivateKey"
-              name="apiPrivateKey"
-              value={formData.apiPrivateKey}
-              onChange={handleInputChange}
-              className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
-            />
-            <p className="mt-1 text-xs text-gray-500">
-              {t("ccxt.form.apiPrivateKeyHelp")}
-            </p>
-            {formErrors.apiPrivateKey && (
-              <p className="mt-1 text-sm text-red-600">
-                {formErrors.apiPrivateKey}
-              </p>
-            )}
-          </div>
+          <Input
+            id="apiWalletAddress"
+            name="apiWalletAddress"
+            label={t("ccxt.form.apiWalletAddress")}
+            value={formData.apiWalletAddress}
+            onChange={handleInputChange}
+            error={formErrors.apiWalletAddress}
+            placeholder={t("ccxt.form.apiWalletAddressHelp")}
+          />
+          <Input
+            id="apiPrivateKey"
+            name="apiPrivateKey"
+            label={t("ccxt.form.apiPrivateKey")}
+            type="password"
+            value={formData.apiPrivateKey}
+            onChange={handleInputChange}
+            error={formErrors.apiPrivateKey}
+            placeholder={t("ccxt.form.apiPrivateKeyHelp")}
+          />
         </>
       )}
       <div className="flex justify-end space-x-3">
