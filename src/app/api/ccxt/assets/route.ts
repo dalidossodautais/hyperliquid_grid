@@ -35,14 +35,6 @@ type WalletBalance = {
   [key: string]: Record<string, number> | unknown;
 };
 
-// Interface for Hyperliquid staking data
-interface HyperliquidStakingData {
-  delegated: string;
-  undelegated: string;
-  totalPendingWithdrawal: string;
-  nPendingWithdrawals: number;
-}
-
 // Extended connection type to include optional API wallet fields
 interface ExtendedConnection {
   id: string;
@@ -153,8 +145,8 @@ export async function GET(request: Request) {
           config.apiPrivateKey = extConnection.apiPrivateKey;
         }
         config.options = {
-          defaultType: "swap",
-          fetchMarkets: ["swap"],
+          defaultType: "spot",
+          fetchMarkets: ["spot"],
         };
       } else {
         // For other exchanges, configure to use spot by default
@@ -174,7 +166,7 @@ export async function GET(request: Request) {
           // Some exchanges require explicitly specifying the account type
           exchangeInstance.options = {
             ...exchangeInstance.options,
-            defaultType: exchangeId === "hyperliquid" ? "swap" : "spot",
+            defaultType: "spot",
           };
         } catch (error) {
           console.warn("Unable to set defaultType:", error);
@@ -190,97 +182,33 @@ export async function GET(request: Request) {
       };
 
       try {
-        // Try to retrieve balances from all wallet types
-        const walletTypes = [
-          "spot",
-          "margin",
-          "future",
-          "futures",
-          "swap",
-          "funding",
-        ];
-
-        // For Hyperliquid, only use swap
+        // For Hyperliquid, use spot balance
         if (exchangeId === "hyperliquid") {
           balance = (await exchangeInstance.fetchBalance()) as WalletBalance;
+
           if (balance.total) {
-            allBalances.total = { ...balance.total };
-            allBalances.free = { ...(balance.free || {}) };
-            allBalances.used = { ...(balance.used || {}) };
-          }
+            // Use raw values directly without conversion
+            Object.keys(balance.total).forEach((asset) => {
+              const totalAmount = balance.total?.[asset];
+              const freeAmount = balance.free?.[asset];
+              const usedAmount = balance.used?.[asset];
 
-          // Récupérer les actifs en staking pour Hyperliquid
-          try {
-            // Récupérer le résumé du staking
-            const stakingSummaryResponse = await fetch(
-              "https://api.hyperliquid.xyz/info",
-              {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  type: "delegatorSummary",
-                  user: connection.key,
-                }),
-              }
-            );
-
-            if (stakingSummaryResponse.ok) {
-              const stakingSummary: HyperliquidStakingData =
-                await stakingSummaryResponse.json();
-
-              // Ajouter les actifs en staking aux balances
-              if (
-                stakingSummary.delegated &&
-                parseFloat(stakingSummary.delegated) > 0
-              ) {
-                const delegatedAmount = parseFloat(stakingSummary.delegated);
-
-                // Ajouter HYPE-STAKED comme actif
-                allBalances.total["HYPE-STAKED"] = delegatedAmount;
-                allBalances.used["HYPE-STAKED"] = delegatedAmount;
-                allBalances.free["HYPE-STAKED"] = 0;
-              }
-
-              if (
-                stakingSummary.undelegated &&
-                parseFloat(stakingSummary.undelegated) > 0
-              ) {
-                const undelegatedAmount = parseFloat(
-                  stakingSummary.undelegated
-                );
-
-                // Ajouter HYPE-UNSTAKED comme actif
-                allBalances.total["HYPE-UNSTAKED"] = undelegatedAmount;
-                allBalances.free["HYPE-UNSTAKED"] = undelegatedAmount;
-                allBalances.used["HYPE-UNSTAKED"] = 0;
-              }
-
-              if (
-                stakingSummary.totalPendingWithdrawal &&
-                parseFloat(stakingSummary.totalPendingWithdrawal) > 0
-              ) {
-                const pendingAmount = parseFloat(
-                  stakingSummary.totalPendingWithdrawal
-                );
-
-                // Ajouter HYPE-PENDING comme actif
-                allBalances.total["HYPE-PENDING"] = pendingAmount;
-                allBalances.used["HYPE-PENDING"] = pendingAmount;
-                allBalances.free["HYPE-PENDING"] = 0;
-              }
-            }
-          } catch (stakingError) {
-            console.error(
-              "Error retrieving Hyperliquid staking data:",
-              stakingError
-            );
-            // Continue without staking data
+              // Store raw values directly
+              allBalances.total[asset] = totalAmount as number;
+              allBalances.free[asset] = freeAmount as number;
+              allBalances.used[asset] = usedAmount as number;
+            });
           }
         } else {
           // For other exchanges, try all wallet types
-          for (const type of walletTypes) {
+          for (const type of [
+            "spot",
+            "margin",
+            "future",
+            "futures",
+            "swap",
+            "funding",
+          ]) {
             try {
               const typeBalance = (await exchangeInstance.fetchBalance({
                 type,
@@ -400,12 +328,23 @@ export async function GET(request: Request) {
 
       // Filter to include all assets, even those with zero balance
       const assets = Object.entries(allBalances.total || {}).map(
-        ([asset, amount]) => ({
-          asset,
-          total: amount || 0,
-          free: allBalances.free?.[asset as keyof typeof allBalances.free] || 0,
-          used: allBalances.used?.[asset as keyof typeof allBalances.used] || 0,
-        })
+        ([asset, amount]) => {
+          // Use raw values directly
+          const total = amount as number;
+          const free = allBalances.free?.[
+            asset as keyof typeof allBalances.free
+          ] as number;
+          const used = allBalances.used?.[
+            asset as keyof typeof allBalances.used
+          ] as number;
+
+          return {
+            asset,
+            total,
+            free,
+            used,
+          };
+        }
       );
 
       return NextResponse.json(assets);
