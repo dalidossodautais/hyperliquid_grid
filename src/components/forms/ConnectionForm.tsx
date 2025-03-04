@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
+import Alert from "@/components/ui/Alert";
 
 interface ConnectionFormData {
   name: string;
@@ -102,11 +103,7 @@ export default function ConnectionForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
+      {error && <Alert type="error">{error}</Alert>}
       <Input
         id="name"
         name="name"

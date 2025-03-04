@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import LanguageSelector from "@/components/LanguageSelector";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import Alert from "@/components/ui/Alert";
 
 export default function SignIn() {
   const router = useRouter();
@@ -121,11 +122,7 @@ export default function SignIn() {
                 placeholder={t("signin.password")}
               />
 
-              {error && (
-                <div className="text-sm text-red-600 bg-red-50 rounded-md p-3">
-                  {error}
-                </div>
-              )}
+              {error && <Alert type="error">{error}</Alert>}
 
               <div>
                 <Button type="submit" disabled={loading} fullWidth>

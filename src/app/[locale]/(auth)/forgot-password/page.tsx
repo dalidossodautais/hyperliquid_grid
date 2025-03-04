@@ -6,6 +6,7 @@ import { useTranslations, useLocale } from "next-intl";
 import LanguageSelector from "@/components/LanguageSelector";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import Alert from "@/components/ui/Alert";
 
 // Fonction pour valider un email
 const validateEmail = (email: string): boolean => {
@@ -148,11 +149,7 @@ export default function ForgotPassword() {
                   />
                 </div>
 
-                {error && (
-                  <div className="text-sm text-red-600 bg-red-50 rounded-md p-3">
-                    {error}
-                  </div>
-                )}
+                {error && <Alert type="error">{error}</Alert>}
 
                 <div>
                   <Button type="submit" disabled={loading} fullWidth>
