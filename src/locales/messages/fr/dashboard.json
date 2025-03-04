@@ -122,15 +122,21 @@
       "selectConnection": "Sélectionner une connexion",
       "baseAsset": "Actif de base",
       "selectBaseAsset": "Sélectionner l'actif de base",
+      "baseAssetQuantity": "Quantité d'actif de base",
       "quoteAsset": "Actif de cotation",
       "selectQuoteAsset": "Sélectionner l'actif de cotation",
+      "quoteAssetQuantity": "Quantité d'actif de cotation",
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
         "typeRequired": "Le type est requis",
         "connectionRequired": "Veuillez sélectionner une connexion",
         "baseAssetRequired": "Veuillez sélectionner un actif de base",
+        "baseAssetQuantityRequired": "Veuillez entrer une quantité d'actif de base",
+        "baseAssetQuantityInvalid": "La quantité d'actif de base doit être supérieure à 0",
         "quoteAssetRequired": "Veuillez sélectionner un actif de cotation",
+        "quoteAssetQuantityRequired": "Veuillez entrer une quantité d'actif de cotation",
+        "quoteAssetQuantityInvalid": "La quantité d'actif de cotation doit être supérieure à 0",
         "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
         "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange"
       }
@@ -139,8 +145,10 @@
       "name": "Nom",
       "type": "Type",
       "pair": "Paire",
+      "quantities": "Quantités",
       "status": "Statut",
       "createdAt": "Créé le",
+      "actions": "Actions",
       "start": "Démarrer",
       "stop": "Arrêter",
       "noBots": "Aucun bot trouvé"

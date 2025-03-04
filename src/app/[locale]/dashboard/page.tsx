@@ -302,6 +302,8 @@ export default function Dashboard() {
     connectionId: string;
     baseAsset: string;
     quoteAsset: string;
+    baseAssetQuantity: number;
+    quoteAssetQuantity: number;
   }) => {
     try {
       const response = await fetch("/api/bots", {
@@ -316,6 +318,8 @@ export default function Dashboard() {
           config: {
             baseAsset: data.baseAsset,
             quoteAsset: data.quoteAsset,
+            baseAssetQuantity: data.baseAssetQuantity,
+            quoteAssetQuantity: data.quoteAssetQuantity,
           },
         }),
       });

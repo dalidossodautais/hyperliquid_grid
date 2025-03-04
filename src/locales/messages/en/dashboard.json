@@ -122,15 +122,21 @@
       "selectConnection": "Select a connection",
       "baseAsset": "Base Asset",
       "selectBaseAsset": "Select base asset",
+      "baseAssetQuantity": "Base Asset Quantity",
       "quoteAsset": "Quote Asset",
       "selectQuoteAsset": "Select quote asset",
+      "quoteAssetQuantity": "Quote Asset Quantity",
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
         "typeRequired": "Type is required",
         "connectionRequired": "Please select a connection",
         "baseAssetRequired": "Please select a base asset",
+        "baseAssetQuantityRequired": "Please enter a base asset quantity",
+        "baseAssetQuantityInvalid": "Base asset quantity must be greater than 0",
         "quoteAssetRequired": "Please select a quote asset",
+        "quoteAssetQuantityRequired": "Please enter a quote asset quantity",
+        "quoteAssetQuantityInvalid": "Quote asset quantity must be greater than 0",
         "sameAsset": "Base and quote assets cannot be the same",
         "invalidTradingPair": "This trading pair is not available on the exchange"
       }
@@ -139,8 +145,10 @@
       "name": "Name",
       "type": "Type",
       "pair": "Pair",
+      "quantities": "Quantities",
       "status": "Status",
       "createdAt": "Created At",
+      "actions": "Actions",
       "start": "Start",
       "stop": "Stop",
       "noBots": "No bots found"

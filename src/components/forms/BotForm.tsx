@@ -3,13 +3,17 @@ import { useState, useEffect, useCallback } from "react";
 
 interface BotFormData {
   name: string;
+  baseAssetQuantity: string;
+  quoteAssetQuantity: string;
 }
 
 interface BotFormErrors {
   name?: string;
   connection?: string;
   baseAsset?: string;
+  baseAssetQuantity?: string;
   quoteAsset?: string;
+  quoteAssetQuantity?: string;
   submit?: string;
 }
 
@@ -29,6 +33,8 @@ interface BotFormProps {
     connectionId: string;
     baseAsset: string;
     quoteAsset: string;
+    baseAssetQuantity: number;
+    quoteAssetQuantity: number;
   }) => Promise<void>;
   onCancel: () => void;
   connections: ExchangeConnection[];
@@ -46,6 +52,8 @@ export default function BotForm({
   const t = useTranslations("dashboard");
   const [botFormData, setBotFormData] = useState<BotFormData>({
     name: "",
+    baseAssetQuantity: "",
+    quoteAssetQuantity: "",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
   const [isBotFormValid, setIsBotFormValid] = useState(false);
@@ -79,8 +87,28 @@ export default function BotForm({
         errors.baseAsset = t("bots.form.errors.baseAssetRequired");
       }
 
+      if (!data.baseAssetQuantity) {
+        errors.baseAssetQuantity = t(
+          "bots.form.errors.baseAssetQuantityRequired"
+        );
+      } else if (parseFloat(data.baseAssetQuantity) <= 0) {
+        errors.baseAssetQuantity = t(
+          "bots.form.errors.baseAssetQuantityInvalid"
+        );
+      }
+
       if (!quoteAsset) {
         errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
+      }
+
+      if (!data.quoteAssetQuantity) {
+        errors.quoteAssetQuantity = t(
+          "bots.form.errors.quoteAssetQuantityRequired"
+        );
+      } else if (parseFloat(data.quoteAssetQuantity) <= 0) {
+        errors.quoteAssetQuantity = t(
+          "bots.form.errors.quoteAssetQuantityInvalid"
+        );
       }
 
       if (baseAsset === quoteAsset) {
@@ -199,6 +227,8 @@ export default function BotForm({
       connectionId: selectedConnection,
       baseAsset,
       quoteAsset,
+      baseAssetQuantity: parseFloat(botFormData.baseAssetQuantity),
+      quoteAssetQuantity: parseFloat(botFormData.quoteAssetQuantity),
     });
   };
 
@@ -298,6 +328,32 @@ export default function BotForm({
       {baseAsset && !botFormErrors.baseAsset && (
         <div className="mb-4">
           <label
+            htmlFor="baseAssetQuantity"
+            className="block text-sm font-medium text-gray-800"
+          >
+            {t("bots.form.baseAssetQuantity")}
+          </label>
+          <input
+            type="number"
+            id="baseAssetQuantity"
+            name="baseAssetQuantity"
+            value={botFormData.baseAssetQuantity}
+            onChange={handleBotInputChange}
+            min="0"
+            step="any"
+            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+            required
+          />
+          {botFormErrors.baseAssetQuantity && (
+            <p className="mt-1 text-sm text-red-600">
+              {botFormErrors.baseAssetQuantity}
+            </p>
+          )}
+        </div>
+      )}
+      {baseAsset && !botFormErrors.baseAsset && (
+        <div className="mb-4">
+          <label
             htmlFor="quoteAsset"
             className="block text-sm font-medium text-gray-800"
           >
@@ -321,6 +377,32 @@ export default function BotForm({
           {botFormErrors.quoteAsset && (
             <p className="mt-1 text-sm text-red-600">
               {botFormErrors.quoteAsset}
+            </p>
+          )}
+        </div>
+      )}
+      {quoteAsset && !botFormErrors.quoteAsset && (
+        <div className="mb-4">
+          <label
+            htmlFor="quoteAssetQuantity"
+            className="block text-sm font-medium text-gray-800"
+          >
+            {t("bots.form.quoteAssetQuantity")}
+          </label>
+          <input
+            type="number"
+            id="quoteAssetQuantity"
+            name="quoteAssetQuantity"
+            value={botFormData.quoteAssetQuantity}
+            onChange={handleBotInputChange}
+            min="0"
+            step="any"
+            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm bg-white text-black [color:black]"
+            required
+          />
+          {botFormErrors.quoteAssetQuantity && (
+            <p className="mt-1 text-sm text-red-600">
+              {botFormErrors.quoteAssetQuantity}
             </p>
           )}
         </div>
