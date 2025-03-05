@@ -153,7 +153,11 @@
         "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
         "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange",
         "quantitiesRequired": "Veuillez entrer au moins une quantité",
-        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0"
+        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0",
+        "frequencyValueRequired": "La fréquence est requise",
+        "frequencyValueInvalid": "La fréquence doit être supérieure à 0",
+        "frequencyValueDecimal": "La fréquence doit être un nombre entier",
+        "frequencyUnitRequired": "L'unité de fréquence est requise"
       }
     },
     "table": {

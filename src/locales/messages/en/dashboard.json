@@ -153,7 +153,11 @@
         "sameAsset": "Base and quote assets cannot be the same",
         "invalidTradingPair": "This trading pair is not available on the exchange",
         "quantitiesRequired": "Please enter at least one quantity",
-        "quantitiesInvalid": "At least one quantity must be greater than 0"
+        "quantitiesInvalid": "At least one quantity must be greater than 0",
+        "frequencyValueRequired": "Frequency is required",
+        "frequencyValueInvalid": "Frequency must be greater than 0",
+        "frequencyValueDecimal": "Frequency must be a whole number",
+        "frequencyUnitRequired": "Frequency unit is required"
       }
     },
     "table": {

@@ -38,19 +38,9 @@ export default function DurationInput({
     onChange("frequencyUnit", e.target.value);
   };
 
-  const displayError =
-    error ||
-    (value === "0"
-      ? t("bots.errors.frequencyValueInvalid")
-      : value === ""
-      ? t("bots.errors.frequencyValueRequired")
-      : value.includes(".") || value.includes(",")
-      ? t("bots.errors.frequencyValueDecimal")
-      : undefined);
-
   return (
     <div className={className}>
-      <Label title={label} error={displayError} required={required}>
+      <Label title={label} error={error} required={required}>
         <div className="relative">
           <div className="flex items-center">
             <input
@@ -66,7 +56,7 @@ export default function DurationInput({
               min={1}
               className={cn(
                 "block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-white text-black [color:black]",
-                displayError ? "border-red-300" : "border-gray-300",
+                error ? "border-red-300" : "border-gray-300",
                 disabled && "opacity-50 cursor-not-allowed",
                 !disabled && "hover:border-gray-400",
                 "[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none",
@@ -83,7 +73,7 @@ export default function DurationInput({
                 className={cn(
                   "text-sm bg-transparent border-none focus:outline-none focus:ring-0 p-0",
                   disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer",
-                  displayError ? "text-red-500" : "text-gray-500"
+                  error ? "text-red-500" : "text-gray-500"
                 )}
               >
                 <option value="minutes">
