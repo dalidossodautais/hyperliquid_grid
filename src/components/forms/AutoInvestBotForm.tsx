@@ -38,7 +38,7 @@ export default function AutoInvestBotForm({
         <Input
           id="baseAssetQuantity"
           name="baseAssetQuantity"
-          label={`${t("bots.form.totalQuantity")} (${baseAsset})`}
+          label={t("bots.form.totalQuantity")}
           value={baseAssetQuantity}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onQuantityChange(e.target.name, e.target.value)
@@ -48,6 +48,7 @@ export default function AutoInvestBotForm({
           disabled={isLoadingAssets}
           maxValue={availableAssets.find((a) => a.asset === baseAsset)?.free}
           onMaxClick={() => onUseAvailableAsset(baseAsset)}
+          unit={baseAsset}
         />
       </div>
       <div>
