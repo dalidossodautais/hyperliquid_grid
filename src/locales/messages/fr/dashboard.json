@@ -106,7 +106,11 @@
       "MISSING_FIELD": "Un champ requis est manquant",
       "DATABASE_ERROR": "Erreur de base de données",
       "NOT_FOUND": "Ressource non trouvée",
-      "BOT_ERROR": "Erreur du bot"
+      "BOT_ERROR": "Erreur du bot",
+      "frequencyValueRequired": "La fréquence est requise",
+      "frequencyValueInvalid": "La fréquence doit être supérieure à 0",
+      "frequencyValueDecimal": "La fréquence doit être un nombre entier",
+      "frequencyUnitRequired": "L'unité de fréquence est requise"
     },
     "status": {
       "running": "En cours",
@@ -149,10 +153,7 @@
         "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
         "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange",
         "quantitiesRequired": "Veuillez entrer au moins une quantité",
-        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0",
-        "frequencyValueRequired": "Veuillez entrer une fréquence d'investissement",
-        "frequencyValueInvalid": "La fréquence d'investissement doit être supérieure à 0",
-        "frequencyUnitRequired": "Veuillez sélectionner une unité de temps"
+        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0"
       }
     },
     "table": {

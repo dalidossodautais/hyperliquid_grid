@@ -40,15 +40,23 @@ export default function DurationInput({
 
   const displayError =
     error ||
-    (value === "0" ? t("bots.form.errors.frequencyValueInvalid") : undefined);
+    (value === "0"
+      ? t("bots.errors.frequencyValueInvalid")
+      : value === ""
+      ? t("bots.errors.frequencyValueRequired")
+      : value.includes(".") || value.includes(",")
+      ? t("bots.errors.frequencyValueDecimal")
+      : undefined);
 
   return (
-    <div className={`mb-4 ${className}`}>
+    <div className={className}>
       <Label title={label} error={displayError} required={required}>
         <div className="relative">
           <div className="flex items-center">
             <input
-              type="number"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
               id={id}
               name={name}
               value={value}
@@ -56,7 +64,6 @@ export default function DurationInput({
               disabled={disabled}
               required={required}
               min={1}
-              step={1}
               className={cn(
                 "block w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-gray-500 focus:border-gray-500 sm:text-sm bg-white text-black [color:black]",
                 displayError ? "border-red-300" : "border-gray-300",
@@ -66,7 +73,7 @@ export default function DurationInput({
                 "pr-32"
               )}
             />
-            <div className="absolute right-3 flex items-center space-x-2">
+            <div className="absolute right-3 flex items-center">
               <select
                 id={`${id}-unit`}
                 name={`${name}-unit`}

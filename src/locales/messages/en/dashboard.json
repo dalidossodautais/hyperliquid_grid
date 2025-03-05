@@ -106,7 +106,11 @@
       "MISSING_FIELD": "A required field is missing",
       "DATABASE_ERROR": "Database error",
       "NOT_FOUND": "Resource not found",
-      "BOT_ERROR": "Bot error occurred"
+      "BOT_ERROR": "Bot error occurred",
+      "frequencyValueRequired": "Frequency is required",
+      "frequencyValueInvalid": "Frequency must be greater than 0",
+      "frequencyValueDecimal": "Frequency must be a whole number",
+      "frequencyUnitRequired": "Frequency unit is required"
     },
     "status": {
       "running": "Running",
@@ -149,10 +153,7 @@
         "sameAsset": "Base and quote assets cannot be the same",
         "invalidTradingPair": "This trading pair is not available on the exchange",
         "quantitiesRequired": "Please enter at least one quantity",
-        "quantitiesInvalid": "At least one quantity must be greater than 0",
-        "frequencyValueRequired": "Please enter an investment frequency",
-        "frequencyValueInvalid": "Investment frequency must be greater than 0",
-        "frequencyUnitRequired": "Please select a time unit"
+        "quantitiesInvalid": "At least one quantity must be greater than 0"
       }
     },
     "table": {
