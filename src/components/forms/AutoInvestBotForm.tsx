@@ -33,7 +33,7 @@ export default function AutoInvestBotForm({
   const t = useTranslations("dashboard");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div>
         <Input
           id="baseAssetQuantity"
