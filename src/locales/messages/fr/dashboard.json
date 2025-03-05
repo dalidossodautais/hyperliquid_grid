@@ -127,6 +127,14 @@
       "selectQuoteAsset": "Sélectionner l'actif de cotation",
       "quoteAssetQuantity": "Quantité d'actif de cotation",
       "quantity": "Quantité",
+      "frequency": "Fréquence d'investissement",
+      "frequencyUnits": {
+        "minutes": "Minutes",
+        "hours": "Heures",
+        "days": "Jours",
+        "weeks": "Semaines",
+        "months": "Mois"
+      },
       "errors": {
         "nameRequired": "Le nom est requis",
         "nameLength": "Le nom doit contenir au moins 3 caractères",
@@ -141,7 +149,10 @@
         "sameAsset": "L'actif de base et l'actif de cotation ne peuvent pas être identiques",
         "invalidTradingPair": "Cette paire de trading n'est pas disponible sur l'exchange",
         "quantitiesRequired": "Veuillez entrer au moins une quantité",
-        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0"
+        "quantitiesInvalid": "Au moins une quantité doit être supérieure à 0",
+        "frequencyValueRequired": "Veuillez entrer une fréquence d'investissement",
+        "frequencyValueInvalid": "La fréquence d'investissement doit être supérieure à 0",
+        "frequencyUnitRequired": "Veuillez sélectionner une unité de temps"
       }
     },
     "table": {

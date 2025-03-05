@@ -127,6 +127,14 @@
       "selectQuoteAsset": "Select quote asset",
       "quoteAssetQuantity": "Quote Asset Quantity",
       "quantity": "Quantity",
+      "frequency": "Investment Frequency",
+      "frequencyUnits": {
+        "minutes": "Minutes",
+        "hours": "Hours",
+        "days": "Days",
+        "weeks": "Weeks",
+        "months": "Months"
+      },
       "errors": {
         "nameRequired": "Name is required",
         "nameLength": "Name must be at least 3 characters",
@@ -141,7 +149,10 @@
         "sameAsset": "Base and quote assets cannot be the same",
         "invalidTradingPair": "This trading pair is not available on the exchange",
         "quantitiesRequired": "Please enter at least one quantity",
-        "quantitiesInvalid": "At least one quantity must be greater than 0"
+        "quantitiesInvalid": "At least one quantity must be greater than 0",
+        "frequencyValueRequired": "Please enter an investment frequency",
+        "frequencyValueInvalid": "Investment frequency must be greater than 0",
+        "frequencyUnitRequired": "Please select a time unit"
       }
     },
     "table": {

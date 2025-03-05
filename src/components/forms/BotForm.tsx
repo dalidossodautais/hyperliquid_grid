@@ -13,6 +13,8 @@ interface BotFormData {
   type: string;
   baseAssetQuantity: string;
   quoteAssetQuantity: string;
+  frequencyValue: string;
+  frequencyUnit: string;
 }
 
 interface BotFormErrors {
@@ -25,6 +27,8 @@ interface BotFormErrors {
   quoteAssetQuantity?: string;
   submit?: string;
   quantities?: string;
+  frequencyValue?: string;
+  frequencyUnit?: string;
 }
 
 interface ExchangeConnection {
@@ -45,6 +49,8 @@ interface BotFormProps {
     quoteAsset: string;
     baseAssetQuantity: number;
     quoteAssetQuantity: number;
+    frequencyValue: number;
+    frequencyUnit: string;
   }) => Promise<void>;
   onCancel: () => void;
   connections: ExchangeConnection[];
@@ -67,6 +73,8 @@ export default function BotForm({
     type: "grid",
     baseAssetQuantity: "0",
     quoteAssetQuantity: "0",
+    frequencyValue: "1",
+    frequencyUnit: "days",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
   const [isBotFormValid, setIsBotFormValid] = useState(false);
@@ -139,6 +147,19 @@ export default function BotForm({
         (!data.quoteAssetQuantity || parseFloat(data.quoteAssetQuantity) <= 0)
       ) {
         errors.quantities = t("bots.form.errors.quantitiesInvalid");
+      }
+
+      // Validation de la fréquence pour les bots auto-invest
+      if (data.type === "dca") {
+        if (!data.frequencyValue) {
+          errors.frequencyValue = t("bots.form.errors.frequencyValueRequired");
+        } else if (parseInt(data.frequencyValue) <= 0) {
+          errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+        }
+
+        if (!data.frequencyUnit) {
+          errors.frequencyUnit = t("bots.form.errors.frequencyUnitRequired");
+        }
       }
 
       setBotFormErrors(errors);
@@ -272,6 +293,10 @@ export default function BotForm({
           botFormData.type === "grid"
             ? parseFloat(botFormData.quoteAssetQuantity)
             : 0,
+        frequencyValue:
+          botFormData.type === "dca" ? parseInt(botFormData.frequencyValue) : 0,
+        frequencyUnit:
+          botFormData.type === "dca" ? botFormData.frequencyUnit : "",
       });
     } finally {
       setIsSubmitting(false);
@@ -376,10 +401,13 @@ export default function BotForm({
                   <AutoInvestBotForm
                     baseAsset={baseAsset}
                     baseAssetQuantity={botFormData.baseAssetQuantity}
+                    frequencyValue={botFormData.frequencyValue}
+                    frequencyUnit={botFormData.frequencyUnit}
                     availableAssets={availableAssets}
                     isLoadingAssets={isLoadingAssets}
                     error={botFormErrors.baseAssetQuantity}
                     onQuantityChange={handleQuantityChange}
+                    onFrequencyChange={handleBotInputChange}
                     onUseAvailableAsset={(asset) =>
                       handleUseAvailableAsset(asset, "base")
                     }
