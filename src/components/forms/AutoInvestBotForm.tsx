@@ -38,7 +38,7 @@ export default function AutoInvestBotForm({
         <Input
           id="baseAssetQuantity"
           name="baseAssetQuantity"
-          label={t("bots.form.quantity")}
+          label={`${t("bots.form.totalQuantity")} (${baseAsset})`}
           value={baseAssetQuantity}
           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
             onQuantityChange(e.target.name, e.target.value)
