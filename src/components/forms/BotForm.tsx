@@ -125,9 +125,13 @@ export default function BotForm({
 
       // Validation globale des quantités
       if (!data.baseAssetQuantity) {
-        errors.quantities = t("bots.form.errors.quantitiesRequired");
+        errors.baseAssetQuantity = t(
+          "bots.form.errors.baseAssetQuantityRequired"
+        );
       } else if (parseFloat(data.baseAssetQuantity) <= 0) {
-        errors.quantities = t("bots.form.errors.quantitiesInvalid");
+        errors.baseAssetQuantity = t(
+          "bots.form.errors.baseAssetQuantityInvalid"
+        );
       }
 
       if (
@@ -374,7 +378,7 @@ export default function BotForm({
                     baseAssetQuantity={botFormData.baseAssetQuantity}
                     availableAssets={availableAssets}
                     isLoadingAssets={isLoadingAssets}
-                    error={botFormErrors.quantities}
+                    error={botFormErrors.baseAssetQuantity}
                     onQuantityChange={handleQuantityChange}
                     onUseAvailableAsset={(asset) =>
                       handleUseAvailableAsset(asset, "base")
