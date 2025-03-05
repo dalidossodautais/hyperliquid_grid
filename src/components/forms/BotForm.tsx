@@ -153,13 +153,27 @@ export default function BotForm({
       if (data.type === "dca") {
         if (!data.frequencyValue) {
           errors.frequencyValue = t("bots.form.errors.frequencyValueRequired");
-        } else if (parseInt(data.frequencyValue) <= 0) {
-          errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+        } else if (
+          data.frequencyValue.includes(".") ||
+          data.frequencyValue.includes(",")
+        ) {
+          errors.frequencyValue = t("bots.form.errors.frequencyValueDecimal");
+        } else {
+          const frequency = parseInt(data.frequencyValue);
+          if (isNaN(frequency)) {
+            errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+          } else if (frequency <= 0) {
+            errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+          }
         }
 
         if (!data.frequencyUnit) {
           errors.frequencyUnit = t("bots.form.errors.frequencyUnitRequired");
         }
+      } else {
+        // Réinitialiser les erreurs de fréquence si ce n'est pas un bot dca
+        errors.frequencyValue = undefined;
+        errors.frequencyUnit = undefined;
       }
 
       setBotFormErrors(errors);
@@ -294,7 +308,9 @@ export default function BotForm({
             ? parseFloat(botFormData.quoteAssetQuantity)
             : 0,
         frequencyValue:
-          botFormData.type === "dca" ? parseInt(botFormData.frequencyValue) : 0,
+          botFormData.type === "dca"
+            ? parseFloat(botFormData.frequencyValue)
+            : 0,
         frequencyUnit:
           botFormData.type === "dca" ? botFormData.frequencyUnit : "",
       });
@@ -405,7 +421,8 @@ export default function BotForm({
                     frequencyUnit={botFormData.frequencyUnit}
                     availableAssets={availableAssets}
                     isLoadingAssets={isLoadingAssets}
-                    error={botFormErrors.baseAssetQuantity}
+                    quantityError={botFormErrors.baseAssetQuantity}
+                    frequencyError={botFormErrors.frequencyValue}
                     onQuantityChange={handleQuantityChange}
                     onFrequencyChange={handleBotInputChange}
                     onUseAvailableAsset={(asset) =>
