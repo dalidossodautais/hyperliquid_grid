@@ -289,7 +289,7 @@ export default function BotForm({
         isLoading={isLoadingAssets}
       />
       {selectedConnection && !botFormErrors.connection && (
-        <div className="space-y-4">
+        <div>
           <div className="grid grid-cols-2 gap-4">
             <Select
               id="baseAsset"
@@ -331,6 +331,7 @@ export default function BotForm({
               <Label
                 title={t("bots.form.quantity")}
                 error={botFormErrors.quantities}
+                required
               >
                 <div className="grid grid-cols-2 gap-4">
                   <div>
