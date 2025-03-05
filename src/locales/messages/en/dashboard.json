@@ -151,7 +151,6 @@
       "quantities": "Quantities",
       "status": "Status",
       "createdAt": "Created At",
-      "actions": "Actions",
       "start": "Start",
       "stop": "Stop",
       "noBots": "No bots found"

@@ -75,11 +75,13 @@ export default function BotsTable({ bots, onDelete }: BotsTableProps) {
     },
     {
       key: "actions",
-      header: t("bots.table.actions"),
+      header: "",
       cell: (bot: Bot) => (
-        <ActionButton onClick={() => onDelete(bot.id)} variant="danger">
-          {t("delete")}
-        </ActionButton>
+        <div className="flex justify-end">
+          <ActionButton onClick={() => onDelete(bot.id)} variant="danger">
+            {t("delete")}
+          </ActionButton>
+        </div>
       ),
     },
   ];
