@@ -2,6 +2,7 @@
 
 import { NextIntlClientProvider } from "next-intl";
 import { Providers } from "@/app/providers";
+import NotificationContainer from "@/components/ui/NotificationContainer";
 
 interface ClientLayoutProps {
   children: React.ReactNode;
@@ -16,7 +17,12 @@ export default function ClientLayout({
 }: ClientLayoutProps) {
   return (
     <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
-      <Providers>{children}</Providers>
+      <Providers>
+        <div className="min-h-screen flex flex-col">
+          <main className="flex-1">{children}</main>
+          <NotificationContainer />
+        </div>
+      </Providers>
     </NextIntlClientProvider>
   );
 }

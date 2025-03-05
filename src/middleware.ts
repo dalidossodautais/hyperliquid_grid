@@ -2,14 +2,22 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { locales, localePrefix, pathnames, defaultLocale } from "./config";
+import { locales, defaultLocale, Locale } from "@/config";
 
 // Create the internationalization middleware
 const intlMiddleware = createMiddleware({
-  locales,
-  defaultLocale,
-  localePrefix,
-  pathnames,
+  locales: locales,
+  defaultLocale: defaultLocale,
+  localePrefix: "always",
+  getRequestConfig: async ({ locale }: { locale: Locale }) => {
+    return {
+      messages: (await import(`@/locales/messages/${locale}/dashboard.json`))
+        .default,
+      timeZone: "UTC",
+      now: new Date(),
+      locale,
+    };
+  },
 });
 
 export default async function middleware(request: NextRequest) {
@@ -22,6 +30,9 @@ export default async function middleware(request: NextRequest) {
   const isPublicPage = publicPages.some((page) =>
     request.nextUrl.pathname.endsWith(page)
   );
+
+  // Get the locale from the URL
+  const locale = request.nextUrl.pathname.split("/")[1] as Locale;
 
   // Appliquer l'internationalisation
   const response = intlMiddleware(request);
@@ -40,7 +51,6 @@ export default async function middleware(request: NextRequest) {
   const token = await getToken({ req: request });
   if (!token) {
     // Rediriger vers la page de connexion avec la locale actuelle
-    const locale = request.nextUrl.pathname.split("/")[1];
     const signInUrl = new URL(`/${locale}/signin`, request.url);
     return NextResponse.redirect(signInUrl);
   }
@@ -49,5 +59,5 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|_next|.*\\..*).*)"],
+  matcher: ["/", "/(fr|en)/:path*"],
 };

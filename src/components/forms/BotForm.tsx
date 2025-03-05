@@ -4,16 +4,20 @@ import Input from "@/components/ui/Input";
 import Select from "@/components/ui/Select";
 import Button from "@/components/ui/Button";
 import Alert from "@/components/ui/Alert";
-import Label from "@/components/ui/Label";
+import GridBotForm from "./GridBotForm";
+import AutoInvestBotForm from "./AutoInvestBotForm";
+import { Asset } from "./types";
 
 interface BotFormData {
   name: string;
+  type: string;
   baseAssetQuantity: string;
   quoteAssetQuantity: string;
 }
 
 interface BotFormErrors {
   name?: string;
+  type?: string;
   connection?: string;
   baseAsset?: string;
   baseAssetQuantity?: string;
@@ -31,14 +35,6 @@ interface ExchangeConnection {
   createdAt: string;
   updatedAt: string;
   availableSymbols?: string[];
-}
-
-interface Asset {
-  asset: string;
-  total: number;
-  free: number;
-  used: number;
-  usdValue?: number;
 }
 
 interface BotFormProps {
@@ -68,6 +64,7 @@ export default function BotForm({
   const t = useTranslations("dashboard");
   const [botFormData, setBotFormData] = useState<BotFormData>({
     name: "",
+    type: "grid",
     baseAssetQuantity: "0",
     quoteAssetQuantity: "0",
   });
@@ -127,11 +124,15 @@ export default function BotForm({
       }
 
       // Validation globale des quantités
-      if (!data.baseAssetQuantity || !data.quoteAssetQuantity) {
+      if (!data.baseAssetQuantity) {
         errors.quantities = t("bots.form.errors.quantitiesRequired");
-      } else if (
-        parseFloat(data.baseAssetQuantity) <= 0 &&
-        parseFloat(data.quoteAssetQuantity) <= 0
+      } else if (parseFloat(data.baseAssetQuantity) <= 0) {
+        errors.quantities = t("bots.form.errors.quantitiesInvalid");
+      }
+
+      if (
+        data.type === "grid" &&
+        (!data.quoteAssetQuantity || parseFloat(data.quoteAssetQuantity) <= 0)
       ) {
         errors.quantities = t("bots.form.errors.quantitiesInvalid");
       }
@@ -183,11 +184,16 @@ export default function BotForm({
     }
   }, [baseAsset, availableSymbols, cleanSymbol]);
 
-  const handleBotInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
+  const handleBotInputChange = (name: string, value: string) => {
     setBotFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleBotInputChange(e.target.name, e.target.value);
+  };
+
+  const handleTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    handleBotInputChange(e.target.name, e.target.value);
   };
 
   const handleConnectionChange = async (
@@ -238,6 +244,10 @@ export default function BotForm({
     }
   };
 
+  const handleQuantityChange = (name: string, value: string) => {
+    handleBotInputChange(name, value);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBotFormErrors({});
@@ -254,7 +264,10 @@ export default function BotForm({
         baseAsset,
         quoteAsset,
         baseAssetQuantity: parseFloat(botFormData.baseAssetQuantity),
-        quoteAssetQuantity: parseFloat(botFormData.quoteAssetQuantity),
+        quoteAssetQuantity:
+          botFormData.type === "grid"
+            ? parseFloat(botFormData.quoteAssetQuantity)
+            : 0,
       });
     } finally {
       setIsSubmitting(false);
@@ -269,7 +282,7 @@ export default function BotForm({
         name="name"
         label={t("bots.form.name")}
         value={botFormData.name}
-        onChange={handleBotInputChange}
+        onChange={handleNameChange}
         error={botFormErrors.name}
         required
       />
@@ -287,6 +300,20 @@ export default function BotForm({
         }))}
         placeholder={t("bots.form.selectConnection")}
         isLoading={isLoadingAssets}
+      />
+      <Select
+        id="type"
+        name="type"
+        label={t("bots.form.type")}
+        value={botFormData.type}
+        onChange={handleTypeChange}
+        error={botFormErrors.type}
+        required
+        options={[
+          { value: "grid", label: "Grid" },
+          { value: "dca", label: "Auto-Invest" },
+        ]}
+        placeholder={t("bots.form.selectType")}
       />
       {selectedConnection && !botFormErrors.connection && (
         <div>
@@ -328,78 +355,33 @@ export default function BotForm({
             !botFormErrors.baseAsset &&
             quoteAsset &&
             !botFormErrors.quoteAsset && (
-              <Label
-                title={t("bots.form.quantity")}
-                error={botFormErrors.quantities}
-                required
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <div className="relative">
-                      <Input
-                        id="baseAssetQuantity"
-                        name="baseAssetQuantity"
-                        label=""
-                        type="number"
-                        value={botFormData.baseAssetQuantity}
-                        onChange={handleBotInputChange}
-                        error={botFormErrors.baseAssetQuantity}
-                        required
-                        min={0}
-                        step={0.00000001}
-                        unit={baseAsset}
-                        disabled={isLoadingAssets}
-                      />
-                      {availableAssets.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUseAvailableAsset(baseAsset, "base")
-                          }
-                          className="absolute -bottom-6 right-0 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
-                        >
-                          {`${
-                            availableAssets.find((a) => a.asset === baseAsset)
-                              ?.free || 0
-                          } ${baseAsset}`}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="relative">
-                      <Input
-                        id="quoteAssetQuantity"
-                        name="quoteAssetQuantity"
-                        label=""
-                        type="number"
-                        value={botFormData.quoteAssetQuantity}
-                        onChange={handleBotInputChange}
-                        error={botFormErrors.quoteAssetQuantity}
-                        required
-                        min={0}
-                        step={0.00000001}
-                        unit={quoteAsset}
-                        disabled={isLoadingAssets}
-                      />
-                      {availableAssets.length > 0 && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleUseAvailableAsset(quoteAsset, "quote")
-                          }
-                          className="absolute -bottom-6 right-0 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
-                        >
-                          {`${
-                            availableAssets.find((a) => a.asset === quoteAsset)
-                              ?.free || 0
-                          } ${quoteAsset}`}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </Label>
+              <>
+                {botFormData.type === "grid" ? (
+                  <GridBotForm
+                    baseAsset={baseAsset}
+                    quoteAsset={quoteAsset}
+                    baseAssetQuantity={botFormData.baseAssetQuantity}
+                    quoteAssetQuantity={botFormData.quoteAssetQuantity}
+                    availableAssets={availableAssets}
+                    isLoadingAssets={isLoadingAssets}
+                    error={botFormErrors.quantities}
+                    onQuantityChange={handleQuantityChange}
+                    onUseAvailableAsset={handleUseAvailableAsset}
+                  />
+                ) : (
+                  <AutoInvestBotForm
+                    baseAsset={baseAsset}
+                    baseAssetQuantity={botFormData.baseAssetQuantity}
+                    availableAssets={availableAssets}
+                    isLoadingAssets={isLoadingAssets}
+                    error={botFormErrors.quantities}
+                    onQuantityChange={handleQuantityChange}
+                    onUseAvailableAsset={(asset) =>
+                      handleUseAvailableAsset(asset, "base")
+                    }
+                  />
+                )}
+              </>
             )}
         </div>
       )}
