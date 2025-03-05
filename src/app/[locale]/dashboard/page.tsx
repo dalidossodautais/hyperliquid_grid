@@ -495,6 +495,7 @@ export default function Dashboard() {
                 connections={connections}
                 error={error}
                 onFetchSymbols={fetchSymbols}
+                onFetchAssets={fetchAssets}
               />
             </Modal>
 
