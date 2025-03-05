@@ -33,6 +33,14 @@ interface ExchangeConnection {
   availableSymbols?: string[];
 }
 
+interface Asset {
+  asset: string;
+  total: number;
+  free: number;
+  used: number;
+  usdValue?: number;
+}
+
 interface BotFormProps {
   onSubmit: (data: {
     name: string;
@@ -46,6 +54,7 @@ interface BotFormProps {
   connections: ExchangeConnection[];
   error: string | null;
   onFetchSymbols: (connectionId: string) => Promise<string[]>;
+  onFetchAssets: (connectionId: string) => Promise<Asset[]>;
 }
 
 export default function BotForm({
@@ -54,6 +63,7 @@ export default function BotForm({
   connections,
   error,
   onFetchSymbols,
+  onFetchAssets,
 }: BotFormProps) {
   const t = useTranslations("dashboard");
   const [botFormData, setBotFormData] = useState<BotFormData>({
@@ -71,6 +81,7 @@ export default function BotForm({
   const [validQuoteAssets, setValidQuoteAssets] = useState<string[]>([]);
   const [isLoadingAssets, setIsLoadingAssets] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [availableAssets, setAvailableAssets] = useState<Asset[]>([]);
 
   const cleanSymbol = useCallback((symbol: string): string => {
     return symbol.replace(/:USDC$/, "");
@@ -188,12 +199,17 @@ export default function BotForm({
     setQuoteAsset("");
     setValidBaseAssets([]);
     setValidQuoteAssets([]);
+    setAvailableAssets([]);
 
     if (connectionId) {
       setIsLoadingAssets(true);
       try {
-        const symbols = await onFetchSymbols(connectionId);
+        const [symbols, assets] = await Promise.all([
+          onFetchSymbols(connectionId),
+          onFetchAssets(connectionId),
+        ]);
         setAvailableSymbols(symbols);
+        setAvailableAssets(assets);
       } finally {
         setIsLoadingAssets(false);
       }
@@ -209,6 +225,17 @@ export default function BotForm({
 
   const handleQuoteAssetChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setQuoteAsset(e.target.value);
+  };
+
+  const handleUseAvailableAsset = (asset: string, type: "base" | "quote") => {
+    const availableAsset = availableAssets.find((a) => a.asset === asset);
+    if (availableAsset) {
+      setBotFormData((prev) => ({
+        ...prev,
+        [type === "base" ? "baseAssetQuantity" : "quoteAssetQuantity"]:
+          availableAsset.free.toString(),
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -306,34 +333,70 @@ export default function BotForm({
                 error={botFormErrors.quantities}
               >
                 <div className="grid grid-cols-2 gap-4">
-                  <Input
-                    id="baseAssetQuantity"
-                    name="baseAssetQuantity"
-                    label=""
-                    type="number"
-                    value={botFormData.baseAssetQuantity}
-                    onChange={handleBotInputChange}
-                    error={botFormErrors.baseAssetQuantity}
-                    required
-                    min={0}
-                    step={0.00000001}
-                    unit={baseAsset}
-                    disabled={isLoadingAssets}
-                  />
-                  <Input
-                    id="quoteAssetQuantity"
-                    name="quoteAssetQuantity"
-                    label=""
-                    type="number"
-                    value={botFormData.quoteAssetQuantity}
-                    onChange={handleBotInputChange}
-                    error={botFormErrors.quoteAssetQuantity}
-                    required
-                    min={0}
-                    step={0.00000001}
-                    unit={quoteAsset}
-                    disabled={isLoadingAssets}
-                  />
+                  <div>
+                    <div className="relative">
+                      <Input
+                        id="baseAssetQuantity"
+                        name="baseAssetQuantity"
+                        label=""
+                        type="number"
+                        value={botFormData.baseAssetQuantity}
+                        onChange={handleBotInputChange}
+                        error={botFormErrors.baseAssetQuantity}
+                        required
+                        min={0}
+                        step={0.00000001}
+                        unit={baseAsset}
+                        disabled={isLoadingAssets}
+                      />
+                      {availableAssets.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUseAvailableAsset(baseAsset, "base")
+                          }
+                          className="absolute -bottom-6 right-0 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                        >
+                          {`${
+                            availableAssets.find((a) => a.asset === baseAsset)
+                              ?.free || 0
+                          } ${baseAsset}`}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="relative">
+                      <Input
+                        id="quoteAssetQuantity"
+                        name="quoteAssetQuantity"
+                        label=""
+                        type="number"
+                        value={botFormData.quoteAssetQuantity}
+                        onChange={handleBotInputChange}
+                        error={botFormErrors.quoteAssetQuantity}
+                        required
+                        min={0}
+                        step={0.00000001}
+                        unit={quoteAsset}
+                        disabled={isLoadingAssets}
+                      />
+                      {availableAssets.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            handleUseAvailableAsset(quoteAsset, "quote")
+                          }
+                          className="absolute -bottom-6 right-0 text-sm text-blue-600 hover:text-blue-800 cursor-pointer"
+                        >
+                          {`${
+                            availableAssets.find((a) => a.asset === quoteAsset)
+                              ?.free || 0
+                          } ${quoteAsset}`}
+                        </button>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </Label>
             )}
