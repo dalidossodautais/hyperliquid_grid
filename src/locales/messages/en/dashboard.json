@@ -131,6 +131,7 @@
       "selectQuoteAsset": "Select quote asset",
       "quoteAssetQuantity": "Quote Asset Quantity",
       "quantity": "Quantity",
+      "totalQuantity": "Total Quantity",
       "frequency": "Investment Frequency",
       "frequencyUnits": {
         "minutes": "Minutes",

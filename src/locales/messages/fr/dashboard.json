@@ -131,6 +131,7 @@
       "selectQuoteAsset": "Sélectionner l'actif de cotation",
       "quoteAssetQuantity": "Quantité d'actif de cotation",
       "quantity": "Quantité",
+      "totalQuantity": "Quantité totale",
       "frequency": "Fréquence d'investissement",
       "frequencyUnits": {
         "minutes": "Minutes",
