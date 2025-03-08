@@ -15,6 +15,13 @@ interface AutoInvestBotFormProps {
   onQuantityChange: (name: string, value: string) => void;
   onFrequencyChange: (name: string, value: string) => void;
   onUseAvailableAsset: (asset: string) => void;
+  numberOfShares: number;
+  totalDuration: string;
+  salePerShare: string;
+  onNumberOfSharesChange: (name: string, value: number) => void;
+  onTotalDurationChange: (name: string, value: string) => void;
+  onSalePerShareChange: (name: string, value: string) => void;
+  totalDurationUnit: string;
 }
 
 export default function AutoInvestBotForm({
@@ -29,6 +36,13 @@ export default function AutoInvestBotForm({
   onQuantityChange,
   onFrequencyChange,
   onUseAvailableAsset,
+  numberOfShares,
+  totalDuration,
+  salePerShare,
+  onNumberOfSharesChange,
+  onTotalDurationChange,
+  onSalePerShareChange,
+  totalDurationUnit,
 }: AutoInvestBotFormProps) {
   const t = useTranslations("dashboard");
 
@@ -51,18 +65,61 @@ export default function AutoInvestBotForm({
           unit={baseAsset}
         />
       </div>
-      <div>
-        <DurationInput
-          id="frequency"
-          name="frequency"
-          label={t("bots.form.frequency")}
-          value={frequencyValue}
-          unit={frequencyUnit}
-          onChange={onFrequencyChange}
-          error={frequencyError}
-          required
-          disabled={isLoadingAssets}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Input
+            id="numberOfShares"
+            name="numberOfShares"
+            label={t("bots.form.numberOfShares")}
+            value={numberOfShares.toString()}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onNumberOfSharesChange(
+                e.target.name,
+                parseInt(e.target.value, 10)
+              )
+            }
+            required
+            disabled={isLoadingAssets}
+          />
+        </div>
+        <div>
+          <DurationInput
+            id="totalDuration"
+            name="totalDuration"
+            label={t("bots.form.totalDuration")}
+            value={totalDuration}
+            onChange={onTotalDurationChange}
+            required
+            disabled={isLoadingAssets}
+            unit={totalDurationUnit}
+          />
+        </div>
+        <div>
+          <DurationInput
+            id="durationPerShare"
+            name="frequency"
+            label={t("bots.form.durationPerShare")}
+            value={frequencyValue}
+            onChange={onFrequencyChange}
+            error={frequencyError}
+            required
+            disabled={isLoadingAssets}
+            unit={frequencyUnit}
+          />
+        </div>
+        <div>
+          <Input
+            id="salePerShare"
+            name="salePerShare"
+            label={t("bots.form.salePerShare")}
+            value={salePerShare}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              onSalePerShareChange(e.target.name, e.target.value)
+            }
+            required
+            disabled={isLoadingAssets}
+          />
+        </div>
       </div>
     </div>
   );

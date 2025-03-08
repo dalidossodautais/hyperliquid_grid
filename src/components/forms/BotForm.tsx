@@ -15,6 +15,12 @@ interface BotFormData {
   quoteAssetQuantity: string;
   frequencyValue: string;
   frequencyUnit: string;
+  numberOfShares: number;
+  totalDuration: string;
+  durationPerShare: string;
+  salePerShare: string;
+  totalDurationUnit: string;
+  durationPerShareUnit: string;
 }
 
 interface BotFormErrors {
@@ -75,6 +81,12 @@ export default function BotForm({
     quoteAssetQuantity: "0",
     frequencyValue: "1",
     frequencyUnit: "days",
+    numberOfShares: 1,
+    totalDuration: "1",
+    durationPerShare: "1",
+    salePerShare: "0",
+    totalDurationUnit: "days",
+    durationPerShareUnit: "days",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
   const [isBotFormValid, setIsBotFormValid] = useState(false);
@@ -287,6 +299,10 @@ export default function BotForm({
     handleBotInputChange(name, value);
   };
 
+  const handleNumberOfSharesChange = (name: string, value: number) => {
+    setBotFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBotFormErrors({});
@@ -428,6 +444,13 @@ export default function BotForm({
                     onUseAvailableAsset={(asset) =>
                       handleUseAvailableAsset(asset, "base")
                     }
+                    numberOfShares={botFormData.numberOfShares}
+                    totalDuration={botFormData.totalDuration}
+                    salePerShare={botFormData.salePerShare}
+                    onNumberOfSharesChange={handleNumberOfSharesChange}
+                    onTotalDurationChange={handleBotInputChange}
+                    onSalePerShareChange={handleBotInputChange}
+                    totalDurationUnit={botFormData.totalDurationUnit}
                   />
                 )}
               </>

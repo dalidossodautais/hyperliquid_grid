@@ -133,6 +133,10 @@
       "quantity": "Quantité",
       "totalQuantity": "Quantité totale",
       "frequency": "Fréquence d'investissement",
+      "numberOfShares": "Nombre de parts",
+      "totalDuration": "Durée totale",
+      "durationPerShare": "Durée par part",
+      "salePerShare": "Vente par part",
       "frequencyUnits": {
         "minutes": "Minutes",
         "hours": "Heures",
