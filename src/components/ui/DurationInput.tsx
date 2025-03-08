@@ -2,6 +2,11 @@ import { cn } from "@/lib/utils";
 import Label from "./Label";
 import { useTranslations } from "next-intl";
 
+export interface Duration {
+  value: string;
+  unit: string;
+}
+
 interface DurationInputProps {
   id: string;
   name: string;

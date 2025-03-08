@@ -1,12 +1,7 @@
 import { useTranslations } from "next-intl";
 import Input from "@/components/ui/Input";
-import DurationInput from "@/components/ui/DurationInput";
+import DurationInput, { Duration } from "@/components/ui/DurationInput";
 import { Asset } from "./types";
-
-interface Duration {
-  value: string;
-  unit: string;
-}
 
 interface AutoInvestBotFormProps {
   baseAsset: string;

@@ -7,11 +7,7 @@ import Alert from "@/components/ui/Alert";
 import GridBotForm from "./GridBotForm";
 import AutoInvestBotForm from "./AutoInvestBotForm";
 import { Asset } from "./types";
-
-interface Duration {
-  value: string;
-  unit: string;
-}
+import { Duration } from "@/components/ui/DurationInput";
 
 interface BotFormData {
   name: string;
