@@ -10,7 +10,8 @@ interface AutoInvestBotFormProps {
   availableAssets: Asset[];
   isLoadingAssets: boolean;
   quantityError?: string;
-  frequencyError?: string;
+  totalDurationError?: string;
+  durationPerShareError?: string;
   onQuantityChange: (name: string, value: string) => void;
   onFrequencyChange: (name: string, duration: Duration) => void;
   onUseAvailableAsset: (asset: string) => void;
@@ -29,7 +30,8 @@ export default function AutoInvestBotForm({
   availableAssets,
   isLoadingAssets,
   quantityError,
-  frequencyError,
+  totalDurationError,
+  durationPerShareError,
   onQuantityChange,
   onFrequencyChange,
   onUseAvailableAsset,
@@ -84,9 +86,13 @@ export default function AutoInvestBotForm({
             name="totalDuration"
             label={t("bots.form.totalDuration")}
             value={totalDuration.value}
-            onChange={(name, value) =>
-              onTotalDurationChange(name, { value, unit: totalDuration.unit })
+            onChange={(name, value, unit) =>
+              onTotalDurationChange(name, {
+                value,
+                unit: unit || totalDuration.unit,
+              })
             }
+            error={totalDurationError}
             required
             disabled={isLoadingAssets}
             unit={totalDuration.unit}
@@ -108,7 +114,7 @@ export default function AutoInvestBotForm({
                 });
               }
             }}
-            error={frequencyError}
+            error={durationPerShareError}
             required
             disabled={isLoadingAssets}
             unit={frequency.unit}

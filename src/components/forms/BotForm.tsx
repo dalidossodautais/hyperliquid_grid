@@ -32,6 +32,8 @@ interface BotFormErrors {
   submit?: string;
   quantities?: string;
   frequency?: string;
+  totalDuration?: string;
+  durationPerShare?: string;
 }
 
 interface ExchangeConnection {
@@ -157,8 +159,8 @@ export default function BotForm({
 
       // Validation de la fréquence pour les bots auto-invest
       if (data.type === "dca") {
-        if (!data.frequency.value) {
-          errors.frequency = t("bots.form.errors.frequencyValueRequired");
+        if (!data.frequency.value || !data.frequency.unit) {
+          errors.frequency = t("bots.form.errors.frequencyRequired");
         } else if (
           data.frequency.value.includes(".") ||
           data.frequency.value.includes(",")
@@ -166,19 +168,47 @@ export default function BotForm({
           errors.frequency = t("bots.form.errors.frequencyValueDecimal");
         } else {
           const frequency = parseInt(data.frequency.value);
-          if (isNaN(frequency)) {
-            errors.frequency = t("bots.form.errors.frequencyValueInvalid");
-          } else if (frequency <= 0) {
+          if (isNaN(frequency) || frequency <= 0) {
             errors.frequency = t("bots.form.errors.frequencyValueInvalid");
           }
         }
 
-        if (!data.frequency.unit) {
-          errors.frequency = t("bots.form.errors.frequencyUnitRequired");
+        // Validation de l'objet Duration pour totalDuration
+        if (!data.totalDuration.value || !data.totalDuration.unit) {
+          errors.totalDuration = t("bots.form.errors.durationRequired");
+        } else if (
+          data.totalDuration.value.includes(".") ||
+          data.totalDuration.value.includes(",")
+        ) {
+          errors.totalDuration = t("bots.form.errors.durationValueDecimal");
+        } else {
+          const duration = parseInt(data.totalDuration.value);
+          if (isNaN(duration) || duration <= 0) {
+            errors.totalDuration = t("bots.form.errors.durationValueInvalid");
+          }
+        }
+
+        // Validation de l'objet Duration pour durationPerShare
+        if (!data.durationPerShare.value || !data.durationPerShare.unit) {
+          errors.durationPerShare = t("bots.form.errors.durationRequired");
+        } else if (
+          data.durationPerShare.value.includes(".") ||
+          data.durationPerShare.value.includes(",")
+        ) {
+          errors.durationPerShare = t("bots.form.errors.durationValueDecimal");
+        } else {
+          const duration = parseInt(data.durationPerShare.value);
+          if (isNaN(duration) || duration <= 0) {
+            errors.durationPerShare = t(
+              "bots.form.errors.durationValueInvalid"
+            );
+          }
         }
       } else {
         // Réinitialiser les erreurs de fréquence pour les bots grid
         errors.frequency = undefined;
+        errors.totalDuration = undefined;
+        errors.durationPerShare = undefined;
       }
 
       setBotFormErrors(errors);
@@ -436,7 +466,8 @@ export default function BotForm({
                     availableAssets={availableAssets}
                     isLoadingAssets={isLoadingAssets}
                     quantityError={botFormErrors.baseAssetQuantity}
-                    frequencyError={botFormErrors.frequency}
+                    totalDurationError={botFormErrors.totalDuration}
+                    durationPerShareError={botFormErrors.frequency}
                     onQuantityChange={handleQuantityChange}
                     onFrequencyChange={handleDurationChange}
                     onUseAvailableAsset={(asset) =>

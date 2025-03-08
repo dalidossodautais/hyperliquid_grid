@@ -110,7 +110,11 @@
       "frequencyValueRequired": "La fréquence est requise",
       "frequencyValueInvalid": "La fréquence doit être supérieure à 0",
       "frequencyValueDecimal": "La fréquence doit être un nombre entier",
-      "frequencyUnitRequired": "L'unité de fréquence est requise"
+      "frequencyUnitRequired": "L'unité de fréquence est requise",
+      "frequencyRequired": "La fréquence et l'unité sont requises",
+      "durationRequired": "La durée et l'unité sont requises",
+      "durationValueInvalid": "La durée doit être supérieure à 0",
+      "durationValueDecimal": "La durée doit être un nombre entier"
     },
     "status": {
       "running": "En cours",
