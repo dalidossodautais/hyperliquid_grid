@@ -375,20 +375,6 @@ export default function BotForm({
         placeholder={t("bots.form.selectConnection")}
         isLoading={isLoadingAssets}
       />
-      <Select
-        id="type"
-        name="type"
-        label={t("bots.form.type")}
-        value={botFormData.type}
-        onChange={handleTypeChange}
-        error={botFormErrors.type}
-        required
-        options={[
-          { value: "grid", label: "Grid" },
-          { value: "dca", label: "Auto-Invest" },
-        ]}
-        placeholder={t("bots.form.selectType")}
-      />
       {selectedConnection && !botFormErrors.connection && (
         <div>
           <div className="grid grid-cols-2 gap-4">
@@ -405,26 +391,40 @@ export default function BotForm({
                 label: asset,
               }))}
               placeholder={t("bots.form.selectBaseAsset")}
-              disabled={isLoadingAssets}
+              disabled={isLoadingAssets || validBaseAssets.length === 0}
             />
-            {baseAsset && !botFormErrors.baseAsset && (
-              <Select
-                id="quoteAsset"
-                name="quoteAsset"
-                label={t("bots.form.quoteAsset")}
-                value={quoteAsset}
-                onChange={handleQuoteAssetChange}
-                error={botFormErrors.quoteAsset}
-                required
-                options={validQuoteAssets.map((asset) => ({
-                  value: asset,
-                  label: asset,
-                }))}
-                placeholder={t("bots.form.selectQuoteAsset")}
-                disabled={isLoadingAssets}
-              />
-            )}
+            <Select
+              id="quoteAsset"
+              name="quoteAsset"
+              label={t("bots.form.quoteAsset")}
+              value={quoteAsset}
+              onChange={handleQuoteAssetChange}
+              error={botFormErrors.quoteAsset}
+              required
+              options={validQuoteAssets.map((asset) => ({
+                value: asset,
+                label: asset,
+              }))}
+              placeholder={t("bots.form.selectQuoteAsset")}
+              disabled={
+                isLoadingAssets || !baseAsset || validQuoteAssets.length === 0
+              }
+            />
           </div>
+          <Select
+            id="type"
+            name="type"
+            label={t("bots.form.type")}
+            value={botFormData.type}
+            onChange={handleTypeChange}
+            error={botFormErrors.type}
+            required
+            options={[
+              { value: "grid", label: "Grid" },
+              { value: "dca", label: "Auto-Invest" },
+            ]}
+            placeholder={t("bots.form.selectType")}
+          />
           {baseAsset &&
             !botFormErrors.baseAsset &&
             quoteAsset &&
