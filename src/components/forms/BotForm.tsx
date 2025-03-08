@@ -428,7 +428,8 @@ export default function BotForm({
           {baseAsset &&
             !botFormErrors.baseAsset &&
             quoteAsset &&
-            !botFormErrors.quoteAsset && (
+            !botFormErrors.quoteAsset &&
+            botFormData.type && (
               <>
                 {botFormData.type === "grid" ? (
                   <GridBotForm
