@@ -13,7 +13,7 @@ interface DurationInputProps {
   label: string;
   value: string;
   unit: string;
-  onChange: (name: string, value: string) => void;
+  onChange: (name: string, value: string, unit?: string) => void;
   error?: string;
   required?: boolean;
   disabled?: boolean;
@@ -36,11 +36,11 @@ export default function DurationInput({
 
   const handleValueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
-    onChange("frequencyValue", newValue);
+    onChange(name, newValue, unit);
   };
 
   const handleUnitChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    onChange("frequencyUnit", e.target.value);
+    onChange(name, value, e.target.value);
   };
 
   return (

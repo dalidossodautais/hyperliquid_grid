@@ -248,6 +248,13 @@ export default function BotForm({
     }
   };
 
+  const handleDurationChange = (name: string, duration: Duration) => {
+    setBotFormData((prev) => ({
+      ...prev,
+      [name]: duration,
+    }));
+  };
+
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     handleBotInputChange(e.target.name, e.target.value);
   };
@@ -457,7 +464,7 @@ export default function BotForm({
                     totalDuration={botFormData.totalDuration}
                     salePerShare={botFormData.salePerShare}
                     onNumberOfSharesChange={handleNumberOfSharesChange}
-                    onTotalDurationChange={handleBotInputChange}
+                    onTotalDurationChange={handleDurationChange}
                     onSalePerShareChange={handleBotInputChange}
                   />
                 )}

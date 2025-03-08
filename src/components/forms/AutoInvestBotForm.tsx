@@ -19,7 +19,7 @@ interface AutoInvestBotFormProps {
   totalDuration: Duration;
   salePerShare: string;
   onNumberOfSharesChange: (name: string, value: number) => void;
-  onTotalDurationChange: (name: string, value: string, unit?: string) => void;
+  onTotalDurationChange: (name: string, duration: Duration) => void;
   onSalePerShareChange: (name: string, value: string) => void;
 }
 
@@ -87,7 +87,7 @@ export default function AutoInvestBotForm({
             label={t("bots.form.totalDuration")}
             value={totalDuration.value}
             onChange={(name, value) =>
-              onTotalDurationChange(name, value, totalDuration.unit)
+              onTotalDurationChange(name, { value, unit: totalDuration.unit })
             }
             required
             disabled={isLoadingAssets}
@@ -100,7 +100,14 @@ export default function AutoInvestBotForm({
             name="frequency"
             label={t("bots.form.durationPerShare")}
             value={frequencyValue}
-            onChange={onFrequencyChange}
+            onChange={(name, value, unit) => {
+              if (name === "frequency" && unit) {
+                onFrequencyChange("frequencyValue", value);
+                onFrequencyChange("frequencyUnit", unit);
+              } else {
+                onFrequencyChange(name, value);
+              }
+            }}
             error={frequencyError}
             required
             disabled={isLoadingAssets}
