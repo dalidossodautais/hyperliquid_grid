@@ -101,22 +101,25 @@ export default function BotForm({
   }, []);
 
   // Ajouter une fonction de validation générique pour les objets Duration
-  const validateDuration = (
-    duration: Duration,
-    errorType: "frequency" | "duration"
-  ): string | undefined => {
-    if (!duration.value || !duration.unit) {
-      return t(`bots.form.errors.${errorType}Required`);
-    } else if (duration.value.includes(".") || duration.value.includes(",")) {
-      return t(`bots.form.errors.${errorType}ValueDecimal`);
-    } else {
-      const value = parseInt(duration.value);
-      if (isNaN(value) || value <= 0) {
-        return t(`bots.form.errors.${errorType}ValueInvalid`);
+  const validateDuration = useCallback(
+    (
+      duration: Duration,
+      errorType: "frequency" | "duration"
+    ): string | undefined => {
+      if (!duration.value || !duration.unit) {
+        return t(`bots.form.errors.${errorType}Required`);
+      } else if (duration.value.includes(".") || duration.value.includes(",")) {
+        return t(`bots.form.errors.${errorType}ValueDecimal`);
+      } else {
+        const value = parseInt(duration.value);
+        if (isNaN(value) || value <= 0) {
+          return t(`bots.form.errors.${errorType}ValueInvalid`);
+        }
       }
-    }
-    return undefined;
-  };
+      return undefined;
+    },
+    [t]
+  );
 
   const validateBotForm = useCallback(
     (data: BotFormData): boolean => {
@@ -207,6 +210,7 @@ export default function BotForm({
       quoteAsset,
       availableSymbols,
       cleanSymbol,
+      validateDuration,
     ]
   );
 
