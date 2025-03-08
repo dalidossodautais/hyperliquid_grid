@@ -8,6 +8,11 @@ import GridBotForm from "./GridBotForm";
 import AutoInvestBotForm from "./AutoInvestBotForm";
 import { Asset } from "./types";
 
+interface Duration {
+  value: string;
+  unit: string;
+}
+
 interface BotFormData {
   name: string;
   type: string;
@@ -16,10 +21,9 @@ interface BotFormData {
   frequencyValue: string;
   frequencyUnit: string;
   numberOfShares: number;
-  totalDuration: string;
+  totalDuration: Duration;
   durationPerShare: string;
   salePerShare: string;
-  totalDurationUnit: string;
   durationPerShareUnit: string;
 }
 
@@ -82,10 +86,9 @@ export default function BotForm({
     frequencyValue: "1",
     frequencyUnit: "days",
     numberOfShares: 1,
-    totalDuration: "1",
+    totalDuration: { value: "1", unit: "days" },
     durationPerShare: "1",
     salePerShare: "0",
-    totalDurationUnit: "days",
     durationPerShareUnit: "days",
   });
   const [botFormErrors, setBotFormErrors] = useState<BotFormErrors>({});
@@ -235,8 +238,18 @@ export default function BotForm({
     }
   }, [baseAsset, availableSymbols, cleanSymbol]);
 
-  const handleBotInputChange = (name: string, value: string) => {
-    setBotFormData((prev) => ({ ...prev, [name]: value }));
+  const handleBotInputChange = (name: string, value: string, unit?: string) => {
+    if (name === "totalDuration") {
+      setBotFormData((prev) => ({
+        ...prev,
+        totalDuration: {
+          value,
+          unit: unit || prev.totalDuration.unit,
+        },
+      }));
+    } else {
+      setBotFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -450,7 +463,6 @@ export default function BotForm({
                     onNumberOfSharesChange={handleNumberOfSharesChange}
                     onTotalDurationChange={handleBotInputChange}
                     onSalePerShareChange={handleBotInputChange}
-                    totalDurationUnit={botFormData.totalDurationUnit}
                   />
                 )}
               </>

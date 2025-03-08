@@ -3,6 +3,11 @@ import Input from "@/components/ui/Input";
 import DurationInput from "@/components/ui/DurationInput";
 import { Asset } from "./types";
 
+interface Duration {
+  value: string;
+  unit: string;
+}
+
 interface AutoInvestBotFormProps {
   baseAsset: string;
   baseAssetQuantity: string;
@@ -16,12 +21,11 @@ interface AutoInvestBotFormProps {
   onFrequencyChange: (name: string, value: string) => void;
   onUseAvailableAsset: (asset: string) => void;
   numberOfShares: number;
-  totalDuration: string;
+  totalDuration: Duration;
   salePerShare: string;
   onNumberOfSharesChange: (name: string, value: number) => void;
-  onTotalDurationChange: (name: string, value: string) => void;
+  onTotalDurationChange: (name: string, value: string, unit?: string) => void;
   onSalePerShareChange: (name: string, value: string) => void;
-  totalDurationUnit: string;
 }
 
 export default function AutoInvestBotForm({
@@ -42,7 +46,6 @@ export default function AutoInvestBotForm({
   onNumberOfSharesChange,
   onTotalDurationChange,
   onSalePerShareChange,
-  totalDurationUnit,
 }: AutoInvestBotFormProps) {
   const t = useTranslations("dashboard");
 
@@ -87,11 +90,13 @@ export default function AutoInvestBotForm({
             id="totalDuration"
             name="totalDuration"
             label={t("bots.form.totalDuration")}
-            value={totalDuration}
-            onChange={onTotalDurationChange}
+            value={totalDuration.value}
+            onChange={(name, value) =>
+              onTotalDurationChange(name, value, totalDuration.unit)
+            }
             required
             disabled={isLoadingAssets}
-            unit={totalDurationUnit}
+            unit={totalDuration.unit}
           />
         </div>
         <div>
