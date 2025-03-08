@@ -129,7 +129,7 @@ export default function AutoInvestBotForm({
         <DurationField
           id="durationPerShare"
           name="frequency"
-          label={t("bots.form.durationPerShare")}
+          label={t("bots.form.frequency")}
           duration={frequency}
           error={durationPerShareError}
           onChange={onFrequencyChange}
