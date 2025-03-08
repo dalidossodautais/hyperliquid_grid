@@ -23,6 +23,43 @@ interface AutoInvestBotFormProps {
   onSalePerShareChange: (name: string, value: string) => void;
 }
 
+// Créer un composant réutilisable pour les champs de durée
+const DurationField = ({
+  id,
+  name,
+  label,
+  duration,
+  error,
+  onChange,
+  disabled,
+}: {
+  id: string;
+  name: string;
+  label: string;
+  duration: Duration;
+  error?: string;
+  onChange: (name: string, duration: Duration) => void;
+  disabled: boolean;
+}) => {
+  return (
+    <div>
+      <DurationInput
+        id={id}
+        name={name}
+        label={label}
+        value={duration.value}
+        onChange={(name, value, unit) =>
+          onChange(name, { value, unit: unit || duration.unit })
+        }
+        error={error}
+        required
+        disabled={disabled}
+        unit={duration.unit}
+      />
+    </div>
+  );
+};
+
 export default function AutoInvestBotForm({
   baseAsset,
   baseAssetQuantity,
@@ -80,46 +117,24 @@ export default function AutoInvestBotForm({
             disabled={isLoadingAssets}
           />
         </div>
-        <div>
-          <DurationInput
-            id="totalDuration"
-            name="totalDuration"
-            label={t("bots.form.totalDuration")}
-            value={totalDuration.value}
-            onChange={(name, value, unit) =>
-              onTotalDurationChange(name, {
-                value,
-                unit: unit || totalDuration.unit,
-              })
-            }
-            error={totalDurationError}
-            required
-            disabled={isLoadingAssets}
-            unit={totalDuration.unit}
-          />
-        </div>
-        <div>
-          <DurationInput
-            id="durationPerShare"
-            name="frequency"
-            label={t("bots.form.durationPerShare")}
-            value={frequency.value}
-            onChange={(name, value, unit) => {
-              if (name === "frequency" && unit) {
-                onFrequencyChange(name, { value, unit });
-              } else {
-                onFrequencyChange(name, {
-                  value,
-                  unit: unit || frequency.unit,
-                });
-              }
-            }}
-            error={durationPerShareError}
-            required
-            disabled={isLoadingAssets}
-            unit={frequency.unit}
-          />
-        </div>
+        <DurationField
+          id="totalDuration"
+          name="totalDuration"
+          label={t("bots.form.totalDuration")}
+          duration={totalDuration}
+          error={totalDurationError}
+          onChange={onTotalDurationChange}
+          disabled={isLoadingAssets}
+        />
+        <DurationField
+          id="durationPerShare"
+          name="frequency"
+          label={t("bots.form.durationPerShare")}
+          duration={frequency}
+          error={durationPerShareError}
+          onChange={onFrequencyChange}
+          disabled={isLoadingAssets}
+        />
         <div>
           <Input
             id="salePerShare"

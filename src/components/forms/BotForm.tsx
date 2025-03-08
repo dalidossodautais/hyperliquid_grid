@@ -100,6 +100,24 @@ export default function BotForm({
     return symbol.replace(/:USDC$/, "");
   }, []);
 
+  // Ajouter une fonction de validation générique pour les objets Duration
+  const validateDuration = (
+    duration: Duration,
+    errorType: "frequency" | "duration"
+  ): string | undefined => {
+    if (!duration.value || !duration.unit) {
+      return t(`bots.form.errors.${errorType}Required`);
+    } else if (duration.value.includes(".") || duration.value.includes(",")) {
+      return t(`bots.form.errors.${errorType}ValueDecimal`);
+    } else {
+      const value = parseInt(duration.value);
+      if (isNaN(value) || value <= 0) {
+        return t(`bots.form.errors.${errorType}ValueInvalid`);
+      }
+    }
+    return undefined;
+  };
+
   const validateBotForm = useCallback(
     (data: BotFormData): boolean => {
       const errors: BotFormErrors = {};
@@ -157,55 +175,21 @@ export default function BotForm({
         errors.quantities = t("bots.form.errors.quantitiesInvalid");
       }
 
-      // Validation de la fréquence pour les bots auto-invest
+      // Validation des durées pour les bots auto-invest
       if (data.type === "dca") {
-        if (!data.frequency.value || !data.frequency.unit) {
-          errors.frequency = t("bots.form.errors.frequencyRequired");
-        } else if (
-          data.frequency.value.includes(".") ||
-          data.frequency.value.includes(",")
-        ) {
-          errors.frequency = t("bots.form.errors.frequencyValueDecimal");
-        } else {
-          const frequency = parseInt(data.frequency.value);
-          if (isNaN(frequency) || frequency <= 0) {
-            errors.frequency = t("bots.form.errors.frequencyValueInvalid");
-          }
-        }
+        // Validation de l'objet Duration pour la fréquence
+        errors.frequency = validateDuration(data.frequency, "frequency");
 
         // Validation de l'objet Duration pour totalDuration
-        if (!data.totalDuration.value || !data.totalDuration.unit) {
-          errors.totalDuration = t("bots.form.errors.durationRequired");
-        } else if (
-          data.totalDuration.value.includes(".") ||
-          data.totalDuration.value.includes(",")
-        ) {
-          errors.totalDuration = t("bots.form.errors.durationValueDecimal");
-        } else {
-          const duration = parseInt(data.totalDuration.value);
-          if (isNaN(duration) || duration <= 0) {
-            errors.totalDuration = t("bots.form.errors.durationValueInvalid");
-          }
-        }
+        errors.totalDuration = validateDuration(data.totalDuration, "duration");
 
         // Validation de l'objet Duration pour durationPerShare
-        if (!data.durationPerShare.value || !data.durationPerShare.unit) {
-          errors.durationPerShare = t("bots.form.errors.durationRequired");
-        } else if (
-          data.durationPerShare.value.includes(".") ||
-          data.durationPerShare.value.includes(",")
-        ) {
-          errors.durationPerShare = t("bots.form.errors.durationValueDecimal");
-        } else {
-          const duration = parseInt(data.durationPerShare.value);
-          if (isNaN(duration) || duration <= 0) {
-            errors.durationPerShare = t(
-              "bots.form.errors.durationValueInvalid"
-            );
-          }
-        }
+        errors.durationPerShare = validateDuration(
+          data.durationPerShare,
+          "duration"
+        );
       } else {
-        // Réinitialiser les erreurs de fréquence pour les bots grid
+        // Réinitialiser les erreurs de durée pour les bots grid
         errors.frequency = undefined;
         errors.totalDuration = undefined;
         errors.durationPerShare = undefined;
