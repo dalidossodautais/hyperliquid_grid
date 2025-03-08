@@ -6,14 +6,13 @@ import { Asset } from "./types";
 interface AutoInvestBotFormProps {
   baseAsset: string;
   baseAssetQuantity: string;
-  frequencyValue: string;
-  frequencyUnit: string;
+  frequency: Duration;
   availableAssets: Asset[];
   isLoadingAssets: boolean;
   quantityError?: string;
   frequencyError?: string;
   onQuantityChange: (name: string, value: string) => void;
-  onFrequencyChange: (name: string, value: string) => void;
+  onFrequencyChange: (name: string, duration: Duration) => void;
   onUseAvailableAsset: (asset: string) => void;
   numberOfShares: number;
   totalDuration: Duration;
@@ -26,8 +25,7 @@ interface AutoInvestBotFormProps {
 export default function AutoInvestBotForm({
   baseAsset,
   baseAssetQuantity,
-  frequencyValue,
-  frequencyUnit,
+  frequency,
   availableAssets,
   isLoadingAssets,
   quantityError,
@@ -99,19 +97,21 @@ export default function AutoInvestBotForm({
             id="durationPerShare"
             name="frequency"
             label={t("bots.form.durationPerShare")}
-            value={frequencyValue}
+            value={frequency.value}
             onChange={(name, value, unit) => {
               if (name === "frequency" && unit) {
-                onFrequencyChange("frequencyValue", value);
-                onFrequencyChange("frequencyUnit", unit);
+                onFrequencyChange(name, { value, unit });
               } else {
-                onFrequencyChange(name, value);
+                onFrequencyChange(name, {
+                  value,
+                  unit: unit || frequency.unit,
+                });
               }
             }}
             error={frequencyError}
             required
             disabled={isLoadingAssets}
-            unit={frequencyUnit}
+            unit={frequency.unit}
           />
         </div>
         <div>
