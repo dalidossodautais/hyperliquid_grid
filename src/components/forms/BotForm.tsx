@@ -31,8 +31,7 @@ interface BotFormErrors {
   quoteAssetQuantity?: string;
   submit?: string;
   quantities?: string;
-  frequencyValue?: string;
-  frequencyUnit?: string;
+  frequency?: string;
 }
 
 interface ExchangeConnection {
@@ -159,28 +158,27 @@ export default function BotForm({
       // Validation de la fréquence pour les bots auto-invest
       if (data.type === "dca") {
         if (!data.frequency.value) {
-          errors.frequencyValue = t("bots.form.errors.frequencyValueRequired");
+          errors.frequency = t("bots.form.errors.frequencyValueRequired");
         } else if (
           data.frequency.value.includes(".") ||
           data.frequency.value.includes(",")
         ) {
-          errors.frequencyValue = t("bots.form.errors.frequencyValueDecimal");
+          errors.frequency = t("bots.form.errors.frequencyValueDecimal");
         } else {
           const frequency = parseInt(data.frequency.value);
           if (isNaN(frequency)) {
-            errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+            errors.frequency = t("bots.form.errors.frequencyValueInvalid");
           } else if (frequency <= 0) {
-            errors.frequencyValue = t("bots.form.errors.frequencyValueInvalid");
+            errors.frequency = t("bots.form.errors.frequencyValueInvalid");
           }
         }
 
         if (!data.frequency.unit) {
-          errors.frequencyUnit = t("bots.form.errors.frequencyUnitRequired");
+          errors.frequency = t("bots.form.errors.frequencyUnitRequired");
         }
       } else {
-        // Réinitialiser les erreurs de fréquence si ce n'est pas un bot dca
-        errors.frequencyValue = undefined;
-        errors.frequencyUnit = undefined;
+        // Réinitialiser les erreurs de fréquence pour les bots grid
+        errors.frequency = undefined;
       }
 
       setBotFormErrors(errors);
@@ -230,34 +228,8 @@ export default function BotForm({
     }
   }, [baseAsset, availableSymbols, cleanSymbol]);
 
-  const handleBotInputChange = (name: string, value: string, unit?: string) => {
-    if (name === "frequency") {
-      setBotFormData((prev) => ({
-        ...prev,
-        frequency: {
-          value,
-          unit: unit || prev.frequency.unit,
-        },
-      }));
-    } else if (name === "totalDuration") {
-      setBotFormData((prev) => ({
-        ...prev,
-        totalDuration: {
-          value,
-          unit: unit || prev.totalDuration.unit,
-        },
-      }));
-    } else if (name === "durationPerShare") {
-      setBotFormData((prev) => ({
-        ...prev,
-        durationPerShare: {
-          value,
-          unit: unit || prev.durationPerShare.unit,
-        },
-      }));
-    } else {
-      setBotFormData((prev) => ({ ...prev, [name]: value }));
-    }
+  const handleBotInputChange = (name: string, value: string) => {
+    setBotFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleDurationChange = (name: string, duration: Duration) => {
@@ -333,11 +305,7 @@ export default function BotForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setBotFormErrors({});
-
-    if (!validateBotForm(botFormData)) {
-      return;
-    }
+    if (!isBotFormValid) return;
 
     setIsSubmitting(true);
     try {
@@ -346,7 +314,10 @@ export default function BotForm({
         connectionId: selectedConnection,
         baseAsset,
         quoteAsset,
-        baseAssetQuantity: parseFloat(botFormData.baseAssetQuantity),
+        baseAssetQuantity:
+          botFormData.type === "grid"
+            ? parseFloat(botFormData.baseAssetQuantity)
+            : 0,
         quoteAssetQuantity:
           botFormData.type === "grid"
             ? parseFloat(botFormData.quoteAssetQuantity)
@@ -465,7 +436,7 @@ export default function BotForm({
                     availableAssets={availableAssets}
                     isLoadingAssets={isLoadingAssets}
                     quantityError={botFormErrors.baseAssetQuantity}
-                    frequencyError={botFormErrors.frequencyValue}
+                    frequencyError={botFormErrors.frequency}
                     onQuantityChange={handleQuantityChange}
                     onFrequencyChange={handleDurationChange}
                     onUseAvailableAsset={(asset) =>
