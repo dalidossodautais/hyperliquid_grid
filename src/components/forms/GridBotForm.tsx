@@ -44,12 +44,16 @@ export default function GridBotForm({
               required
               min={0}
               step={0.00000001}
-              unit={baseAsset}
-              disabled={isLoadingAssets}
+              unit={baseAsset || t("bots.form.baseAsset")}
+              disabled={isLoadingAssets || !baseAsset}
               maxValue={
-                availableAssets.find((a) => a.asset === baseAsset)?.free
+                baseAsset
+                  ? availableAssets.find((a) => a.asset === baseAsset)?.free
+                  : undefined
               }
-              onMaxClick={() => onUseAvailableAsset(baseAsset, "base")}
+              onMaxClick={() =>
+                baseAsset && onUseAvailableAsset(baseAsset, "base")
+              }
             />
           </div>
         </div>
@@ -66,12 +70,16 @@ export default function GridBotForm({
               required
               min={0}
               step={0.00000001}
-              unit={quoteAsset}
-              disabled={isLoadingAssets}
+              unit={quoteAsset || t("bots.form.quoteAsset")}
+              disabled={isLoadingAssets || !quoteAsset}
               maxValue={
-                availableAssets.find((a) => a.asset === quoteAsset)?.free
+                quoteAsset
+                  ? availableAssets.find((a) => a.asset === quoteAsset)?.free
+                  : undefined
               }
-              onMaxClick={() => onUseAvailableAsset(quoteAsset, "quote")}
+              onMaxClick={() =>
+                quoteAsset && onUseAvailableAsset(quoteAsset, "quote")
+              }
             />
           </div>
         </div>

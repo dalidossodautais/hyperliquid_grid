@@ -135,44 +135,50 @@ export default function BotForm({
         errors.connection = t("bots.form.errors.connectionRequired");
       }
 
-      if (!baseAsset) {
-        errors.baseAsset = t("bots.form.errors.baseAssetRequired");
+      // Validation des actifs seulement si une connexion est sélectionnée
+      if (selectedConnection) {
+        if (!baseAsset) {
+          errors.baseAsset = t("bots.form.errors.baseAssetRequired");
+        }
+
+        if (!quoteAsset) {
+          errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
+        }
+
+        if (baseAsset === quoteAsset && baseAsset && quoteAsset) {
+          errors.quoteAsset = t("bots.form.errors.sameAsset");
+        }
+
+        const cleanedTradingPair = `${cleanSymbol(baseAsset)}/${cleanSymbol(
+          quoteAsset
+        )}`;
+        if (
+          baseAsset &&
+          quoteAsset &&
+          !availableSymbols.some(
+            (symbol) => cleanSymbol(symbol) === cleanedTradingPair
+          )
+        ) {
+          errors.quoteAsset = t("bots.form.errors.invalidTradingPair");
+        }
       }
 
-      if (!quoteAsset) {
-        errors.quoteAsset = t("bots.form.errors.quoteAssetRequired");
-      }
-
-      if (baseAsset === quoteAsset) {
-        errors.quoteAsset = t("bots.form.errors.sameAsset");
-      }
-
-      const cleanedTradingPair = `${cleanSymbol(baseAsset)}/${cleanSymbol(
-        quoteAsset
-      )}`;
-      if (
-        baseAsset &&
-        quoteAsset &&
-        !availableSymbols.some(
-          (symbol) => cleanSymbol(symbol) === cleanedTradingPair
-        )
-      ) {
-        errors.quoteAsset = t("bots.form.errors.invalidTradingPair");
-      }
-
-      // Validation globale des quantités
-      if (!data.baseAssetQuantity) {
-        errors.baseAssetQuantity = t(
-          "bots.form.errors.baseAssetQuantityRequired"
-        );
-      } else if (parseFloat(data.baseAssetQuantity) <= 0) {
-        errors.baseAssetQuantity = t(
-          "bots.form.errors.baseAssetQuantityInvalid"
-        );
+      // Validation des quantités seulement si les actifs sont sélectionnés
+      if (baseAsset) {
+        if (!data.baseAssetQuantity) {
+          errors.baseAssetQuantity = t(
+            "bots.form.errors.baseAssetQuantityRequired"
+          );
+        } else if (parseFloat(data.baseAssetQuantity) <= 0) {
+          errors.baseAssetQuantity = t(
+            "bots.form.errors.baseAssetQuantityInvalid"
+          );
+        }
       }
 
       if (
         data.type === "grid" &&
+        quoteAsset &&
         (!data.quoteAssetQuantity || parseFloat(data.quoteAssetQuantity) <= 0)
       ) {
         errors.quantities = t("bots.form.errors.quantitiesInvalid");
@@ -379,101 +385,91 @@ export default function BotForm({
         placeholder={t("bots.form.selectConnection")}
         isLoading={isLoadingAssets}
       />
-      {selectedConnection && !botFormErrors.connection && (
-        <div>
-          <div className="grid grid-cols-2 gap-4">
-            <Select
-              id="baseAsset"
-              name="baseAsset"
-              label={t("bots.form.baseAsset")}
-              value={baseAsset}
-              onChange={handleBaseAssetChange}
-              error={botFormErrors.baseAsset}
-              required
-              options={validBaseAssets.map((asset) => ({
-                value: asset,
-                label: asset,
-              }))}
-              placeholder={t("bots.form.selectBaseAsset")}
-              disabled={isLoadingAssets || validBaseAssets.length === 0}
-            />
-            <Select
-              id="quoteAsset"
-              name="quoteAsset"
-              label={t("bots.form.quoteAsset")}
-              value={quoteAsset}
-              onChange={handleQuoteAssetChange}
-              error={botFormErrors.quoteAsset}
-              required
-              options={validQuoteAssets.map((asset) => ({
-                value: asset,
-                label: asset,
-              }))}
-              placeholder={t("bots.form.selectQuoteAsset")}
-              disabled={
-                isLoadingAssets || !baseAsset || validQuoteAssets.length === 0
-              }
-            />
-          </div>
+      <div>
+        <div className="grid grid-cols-2 gap-4">
           <Select
-            id="type"
-            name="type"
-            label={t("bots.form.type")}
-            value={botFormData.type}
-            onChange={handleTypeChange}
-            error={botFormErrors.type}
+            id="baseAsset"
+            name="baseAsset"
+            label={t("bots.form.baseAsset")}
+            value={baseAsset}
+            onChange={handleBaseAssetChange}
+            error={botFormErrors.baseAsset}
             required
-            options={[
-              { value: "grid", label: "Grid" },
-              { value: "dca", label: "Auto-Invest" },
-            ]}
-            placeholder={t("bots.form.selectType")}
+            options={validBaseAssets.map((asset) => ({
+              value: asset,
+              label: asset,
+            }))}
+            placeholder={t("bots.form.selectBaseAsset")}
+            disabled={isLoadingAssets || validBaseAssets.length === 0}
           />
-          {baseAsset &&
-            !botFormErrors.baseAsset &&
-            quoteAsset &&
-            !botFormErrors.quoteAsset &&
-            botFormData.type && (
-              <>
-                {botFormData.type === "grid" ? (
-                  <GridBotForm
-                    baseAsset={baseAsset}
-                    quoteAsset={quoteAsset}
-                    baseAssetQuantity={botFormData.baseAssetQuantity}
-                    quoteAssetQuantity={botFormData.quoteAssetQuantity}
-                    availableAssets={availableAssets}
-                    isLoadingAssets={isLoadingAssets}
-                    error={botFormErrors.quantities}
-                    onQuantityChange={handleQuantityChange}
-                    onUseAvailableAsset={handleUseAvailableAsset}
-                  />
-                ) : (
-                  <AutoInvestBotForm
-                    baseAsset={baseAsset}
-                    baseAssetQuantity={botFormData.baseAssetQuantity}
-                    frequency={botFormData.frequency}
-                    availableAssets={availableAssets}
-                    isLoadingAssets={isLoadingAssets}
-                    quantityError={botFormErrors.baseAssetQuantity}
-                    totalDurationError={botFormErrors.totalDuration}
-                    durationPerShareError={botFormErrors.frequency}
-                    onQuantityChange={handleQuantityChange}
-                    onFrequencyChange={handleDurationChange}
-                    onUseAvailableAsset={(asset) =>
-                      handleUseAvailableAsset(asset, "base")
-                    }
-                    numberOfShares={botFormData.numberOfShares}
-                    totalDuration={botFormData.totalDuration}
-                    salePerShare={botFormData.salePerShare}
-                    onNumberOfSharesChange={handleNumberOfSharesChange}
-                    onTotalDurationChange={handleDurationChange}
-                    onSalePerShareChange={handleBotInputChange}
-                  />
-                )}
-              </>
-            )}
+          <Select
+            id="quoteAsset"
+            name="quoteAsset"
+            label={t("bots.form.quoteAsset")}
+            value={quoteAsset}
+            onChange={handleQuoteAssetChange}
+            error={botFormErrors.quoteAsset}
+            required
+            options={validQuoteAssets.map((asset) => ({
+              value: asset,
+              label: asset,
+            }))}
+            placeholder={t("bots.form.selectQuoteAsset")}
+            disabled={
+              isLoadingAssets || !baseAsset || validQuoteAssets.length === 0
+            }
+          />
         </div>
-      )}
+        <Select
+          id="type"
+          name="type"
+          label={t("bots.form.type")}
+          value={botFormData.type}
+          onChange={handleTypeChange}
+          error={botFormErrors.type}
+          required
+          options={[
+            { value: "grid", label: "Grid" },
+            { value: "dca", label: "Auto-Invest" },
+          ]}
+          placeholder={t("bots.form.selectType")}
+        />
+        {botFormData.type === "grid" ? (
+          <GridBotForm
+            baseAsset={baseAsset}
+            quoteAsset={quoteAsset}
+            baseAssetQuantity={botFormData.baseAssetQuantity}
+            quoteAssetQuantity={botFormData.quoteAssetQuantity}
+            availableAssets={availableAssets}
+            isLoadingAssets={isLoadingAssets}
+            error={botFormErrors.quantities}
+            onQuantityChange={handleQuantityChange}
+            onUseAvailableAsset={handleUseAvailableAsset}
+          />
+        ) : (
+          <AutoInvestBotForm
+            baseAsset={baseAsset}
+            baseAssetQuantity={botFormData.baseAssetQuantity}
+            frequency={botFormData.frequency}
+            availableAssets={availableAssets}
+            isLoadingAssets={isLoadingAssets}
+            quantityError={botFormErrors.baseAssetQuantity}
+            totalDurationError={botFormErrors.totalDuration}
+            durationPerShareError={botFormErrors.frequency}
+            onQuantityChange={handleQuantityChange}
+            onFrequencyChange={handleDurationChange}
+            onUseAvailableAsset={(asset) =>
+              handleUseAvailableAsset(asset, "base")
+            }
+            numberOfShares={botFormData.numberOfShares}
+            totalDuration={botFormData.totalDuration}
+            salePerShare={botFormData.salePerShare}
+            onNumberOfSharesChange={handleNumberOfSharesChange}
+            onTotalDurationChange={handleDurationChange}
+            onSalePerShareChange={handleBotInputChange}
+          />
+        )}
+      </div>
       <div className="flex justify-end space-x-3">
         <Button
           type="button"

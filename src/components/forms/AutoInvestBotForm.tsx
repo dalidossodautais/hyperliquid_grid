@@ -94,10 +94,14 @@ export default function AutoInvestBotForm({
           }
           error={quantityError}
           required
-          disabled={isLoadingAssets}
-          maxValue={availableAssets.find((a) => a.asset === baseAsset)?.free}
-          onMaxClick={() => onUseAvailableAsset(baseAsset)}
-          unit={baseAsset}
+          disabled={isLoadingAssets || !baseAsset}
+          maxValue={
+            baseAsset
+              ? availableAssets.find((a) => a.asset === baseAsset)?.free
+              : undefined
+          }
+          onMaxClick={() => baseAsset && onUseAvailableAsset(baseAsset)}
+          unit={baseAsset || t("bots.form.baseAsset")}
         />
       </div>
       <div className="grid grid-cols-2 gap-4">
